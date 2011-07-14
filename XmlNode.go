@@ -5,9 +5,11 @@ package libxml
 #include <libxml/HTMLparser.h> 
 #include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
+xmlNode * NodeNext(xmlNode *node) { return node->next; } 
+xmlNode * NodeChildren(xmlNode *node) { return node->children; } 
+int NodeType(xmlNode *node) { return (int)node->type; }
 */ 
 import "C"
-
 
 type XmlNode struct { 
   Ptr *C.xmlNode 
@@ -35,7 +37,7 @@ func (node *XmlNode) Children() *XmlNode {
 }
 
 func (node *XmlNode) Name() string { 
-  return C.GoString( C.xmlChar2C(node.Ptr.name) ) 
+  return XmlChar2String(node.Ptr.name)
 }
 
 func (node *XmlNode) Type() int { 

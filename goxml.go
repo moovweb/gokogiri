@@ -6,9 +6,6 @@ package libxml
 #include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
 char* xmlChar2C(xmlChar* x) { return (char *) x; } 
-xmlNode * NodeNext(xmlNode *node) { return node->next; } 
-xmlNode * NodeChildren(xmlNode *node) { return node->children; } 
-int NodeType(xmlNode *node) { return (int)node->type; } 
 */ 
 import "C" 
 
