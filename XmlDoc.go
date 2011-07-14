@@ -6,7 +6,6 @@ package libxml
 #include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
 #include <libxml/xpath.h> 
-#include <libxml/xpathInternals.h>
 */ 
 import "C"
 
@@ -32,4 +31,8 @@ func (doc *XmlDoc) MetaEncoding() string {
 
 func (doc *XmlDoc) RootElement() *XmlNode { 
   return BuildXmlNode(C.xmlDocGetRootElement(doc.Ptr))
+}
+
+func (doc *XmlDoc) XPathContext() *XPathContext {
+  return &XPathContext{Ptr: C.xmlXPathNewContext(doc.Ptr)}
 }

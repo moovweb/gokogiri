@@ -5,7 +5,8 @@ package libxml
 #include <libxml/HTMLparser.h> 
 #include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
-char* xmlChar2C(xmlChar* x) { return (char *) x; } 
+char* xmlChar2C(xmlChar* x) { return (char *) x; }
+xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
 */ 
 import "C" 
 
@@ -36,6 +37,10 @@ func HtmlReadDocSimple(content string) *XmlDoc {
 
 func XmlChar2String(s *C.xmlChar) string {
   return C.GoString( C.xmlChar2C(s) ) 
+}
+
+func String2XmlChar(s string) *C.xmlChar {
+  return C.C2xmlChar(C.CString(s))
 }
  
 func HtmlTagLookup(name string) *C.htmlElemDesc { 
