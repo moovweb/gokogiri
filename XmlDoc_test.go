@@ -18,8 +18,11 @@ func TestDocBuilding(t *testing.T) {
 }
 
 func TestXPathContext(t *testing.T) {
-  //doc := HtmlReadDocSimple("<html />")
-  //xpath_context := doc.XPathContext()
+  doc := HtmlReadDocSimple("<html />")
+  xpath_context := doc.XPathContext()
+  if xpath_context == nil {
+    t.Error("Didnt return a valid XPath context")
+  }
 }
 
 func TestMetaEncoding(t *testing.T) {
