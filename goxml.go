@@ -94,12 +94,17 @@ func HtmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc 
   return &XmlDoc{Ptr: xmlDocPtr}
 } 
 
-func (doc *XmlDoc) GetMetaEncoding() string { 
+func HtmlReadDocSimple(content string) *XmlDoc {
+  return HtmlReadDoc(content, "", "", HTML_PARSE_COMPACT | HTML_PARSE_NOBLANKS | 
+                                      HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING)
+}
+
+func (doc *XmlDoc) MetaEncoding() string { 
   s := C.htmlGetMetaEncoding(doc.Ptr) 
   return C.GoString( C.xmlChar2C(s) ) 
-} 
+}
 
-func (doc *XmlDoc) GetRootElement() *XmlNode { 
+func (doc *XmlDoc) RootElement() *XmlNode { 
   return BuildXmlNode(C.xmlDocGetRootElement(doc.Ptr))
 } 
 
@@ -124,9 +129,7 @@ func HtmlEntityValueLookup(value uint) *C.htmlEntityDesc {
 }
 
 //Helpers 
-func NewDoc() (doc *C.xmlDoc) { return } 
-func NewNode() (node *C.xmlNode) { return } 
-func (node *XmlNode) GetNext() *XmlNode { return BuildXmlNode(C.NodeNext(node.Ptr)) } 
-func (node *XmlNode) GetChildren() *XmlNode { return BuildXmlNode(C.NodeChildren(node.Ptr)) } 
-func (node *XmlNode) GetName() string { return C.GoString( C.xmlChar2C(node.Ptr.name) ) } 
-func (node *XmlNode) GetType() int { return int(C.NodeType(node.Ptr)) }
+func (node *XmlNode) Next() *XmlNode { return BuildXmlNode(C.NodeNext(node.Ptr)) } 
+func (node *XmlNode) Children() *XmlNode { return BuildXmlNode(C.NodeChildren(node.Ptr)) } 
+func (node *XmlNode) Name() string { return C.GoString( C.xmlChar2C(node.Ptr.name) ) } 
+func (node *XmlNode) Type() int { return int(C.NodeType(node.Ptr)) }
