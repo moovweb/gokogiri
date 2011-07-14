@@ -12,10 +12,6 @@ int NodeType(xmlNode *node) { return (int)node->type; }
 */ 
 import "C" 
 
-type XmlNode struct { 
-  Ptr *C.xmlNode 
-}
-
 func XmlCheckVersion() int { 
   var v C.int 
   C.xmlCheckVersion(v) 
@@ -24,13 +20,6 @@ func XmlCheckVersion() int {
 
 func XmlCleanUpParser() { 
   C.xmlCleanupParser() 
-}
-
-func BuildXmlNode(ptr *C.xmlNode) *XmlNode {
-  if ptr == nil {
-    return nil
-  }
-  return &XmlNode{Ptr: ptr}
 }
 
 func HtmlReadFile(url string, encoding string, opts int) *XmlDoc { 
@@ -47,12 +36,6 @@ func HtmlReadDocSimple(content string) *XmlDoc {
   return HtmlReadDoc(content, "", "", HTML_PARSE_COMPACT | HTML_PARSE_NOBLANKS | 
                                       HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING)
 }
-
-func (node *XmlNode) GetProp(name string) string { 
-  c := C.xmlCharStrdup( C.CString(name) ) 
-  s := C.xmlGetProp(node.Ptr, c) 
-  return XmlChar2String(s)
-} 
 
 func XmlChar2String(s *C.xmlChar) string {
   return C.GoString( C.xmlChar2C(s) ) 
@@ -73,7 +56,3 @@ func HtmlEntityValueLookup(value uint) *C.htmlEntityDesc {
 }
 
 //Helpers 
-func (node *XmlNode) Next() *XmlNode { return BuildXmlNode(C.NodeNext(node.Ptr)) } 
-func (node *XmlNode) Children() *XmlNode { return BuildXmlNode(C.NodeChildren(node.Ptr)) } 
-func (node *XmlNode) Name() string { return C.GoString( C.xmlChar2C(node.Ptr.name) ) } 
-func (node *XmlNode) Type() int { return int(C.NodeType(node.Ptr)) }
