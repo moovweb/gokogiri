@@ -1,5 +1,5 @@
 include $(GOROOT)/src/Make.inc
-TARG=goxml
+TARG=libxml
 CGOFILES=goxml.go 
 CGO_LDFLAGS=-lxml2
 CGO_CFLAGS=-I/usr/include/libxml2
