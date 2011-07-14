@@ -11,10 +11,6 @@ xmlNode * NodeChildren(xmlNode *node) { return node->children; }
 int NodeType(xmlNode *node) { return (int)node->type; } 
 */ 
 import "C" 
-import ( 
-//      "unsafe" 
-//      "os" 
-) 
 
 type XmlNode struct { 
   Ptr *C.xmlNode 
