@@ -1,13 +1,19 @@
-GoXml
+GoXML 
+by Hampton Catlin™
 
 A pretty straightforward and simple library for using
-LibXML.
+LibXML in native Go.
 
-First, install Go on your system. You can google that
-one yourself.
+First, install Go and libxml on your system. You can google that
+one yourself. You probably have libxml2 and since you are looking
+for a Go lib, assumedly you have that too.
 
-Secondly, just run "make" and it should build itself.
+Secondly, just run "make install" and it should build itself.
 
 Also, if you don't want to do active development, just run...
 
 goinstall goxml
+
+-------------
+
+
