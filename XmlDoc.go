@@ -30,9 +30,9 @@ func (doc *XmlDoc) MetaEncoding() string {
 }
 
 func (doc *XmlDoc) RootElement() *XmlNode { 
-  return BuildXmlNode(C.xmlDocGetRootElement(doc.Ptr))
+  return BuildXmlNode(C.xmlDocGetRootElement(doc.Ptr), doc)
 }
 
 func (doc *XmlDoc) XPathContext() *XPathContext {
-  return &XPathContext{Ptr: C.xmlXPathNewContext(doc.Ptr)}
+  return &XPathContext{Ptr: C.xmlXPathNewContext(doc.Ptr), Doc: doc}
 }

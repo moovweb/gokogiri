@@ -46,7 +46,7 @@ func String2XmlChar(s string) *C.xmlChar {
 func HtmlTagLookup(name string) *C.htmlElemDesc { 
   c := C.xmlCharStrdup( C.CString(name) ) 
   return C.htmlTagLookup(c) 
-} 
+}
 
 func HtmlEntityLookup(name string) *C.htmlEntityDesc { 
   c := C.xmlCharStrdup( C.CString(name) ) 

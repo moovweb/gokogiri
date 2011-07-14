@@ -6,20 +6,21 @@ package libxml
 #include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
 xmlNode * NodeNext(xmlNode *node) { return node->next; } 
-xmlNode * NodeChildren(xmlNode *node) { return node->children; } 
+xmlNode * NodeChildren(xmlNode *node) { return node->children; }
 int NodeType(xmlNode *node) { return (int)node->type; }
-*/ 
+*/
 import "C"
 
 type XmlNode struct { 
-  Ptr *C.xmlNode 
+  Ptr    *C.xmlNode
+  Doc    *XmlDoc
 }
 
-func BuildXmlNode(ptr *C.xmlNode) *XmlNode {
+func BuildXmlNode(ptr *C.xmlNode, doc *XmlDoc) *XmlNode {
   if ptr == nil {
     return nil
   }
-  return &XmlNode{Ptr: ptr}
+  return &XmlNode{Ptr: ptr, Doc: doc}
 }
 
 func (node *XmlNode) GetProp(name string) string { 
@@ -29,11 +30,11 @@ func (node *XmlNode) GetProp(name string) string {
 }
 
 func (node *XmlNode) Next() *XmlNode { 
-  return BuildXmlNode(C.NodeNext(node.Ptr)) 
+  return BuildXmlNode(C.NodeNext(node.Ptr), node.Doc) 
 }
 
 func (node *XmlNode) Children() *XmlNode { 
-  return BuildXmlNode(C.NodeChildren(node.Ptr)) 
+  return BuildXmlNode(C.NodeChildren(node.Ptr), node.Doc) 
 }
 
 func (node *XmlNode) Name() string { 
@@ -43,3 +44,12 @@ func (node *XmlNode) Name() string {
 func (node *XmlNode) Type() int { 
   return int(C.NodeType(node.Ptr)) 
 }
+
+func (node *XmlNode) Search(xpath_expression string) []XmlNode {
+  if node.Doc == nil {
+    println("Must define document in node")
+  }
+  ctx := node.Doc.XPathContext()
+  ctx.SetNode(node)
+  return ctx.EvalToNodes(xpath_expression)
+} 
