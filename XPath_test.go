@@ -38,15 +38,18 @@ func TestXPathEvaluation(t *testing.T) {
 func TestXPathNodeSearches(t *testing.T) {
   doc, _ := BuildSampleDoc()
   root := doc.RootElement()
-  spans := root.Search("//span")
+  spans := root.Search(".//span")
   if len(spans) != 2 {
     t.Error("too many spans.. returned ", len(spans), " nodes")
   }
   divs := root.Search("//div")
   div := divs[0]
 
-  spans = div.Search("span")
-  if len(spans) != 1 {
+  spans = div.Search(".//span")
+  if len(spans) >= 2 {
     t.Error("Search is NOT scoped: returned ", len(spans), " nodes")
+  }
+  if len(spans) == 0 {
+    t.Error("Should have found SOMETHING. Found nothing.")
   }
 }
