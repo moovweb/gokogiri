@@ -1,0 +1,13 @@
+GoXml
+
+A pretty straightforward and simple library for using
+LibXML.
+
+First, install Go on your system. You can google that
+one yourself.
+
+Secondly, just run "make" and it should build itself.
+
+Also, if you don't want to do active development, just run...
+
+goinstall goxml
