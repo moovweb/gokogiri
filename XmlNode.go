@@ -45,6 +45,10 @@ func (node *XmlNode) Type() int {
   return int(C.NodeType(node.Ptr)) 
 }
 
+func (node *XmlNode) Remove() {
+  C.xmlUnlinkNode(node.Ptr)
+}
+
 func (node *XmlNode) Search(xpath_expression string) *XmlNodeSet {
   if node.Doc == nil {
     println("Must define document in node")

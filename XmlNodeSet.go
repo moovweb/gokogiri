@@ -55,3 +55,12 @@ func (nodeSet *XmlNodeSet) Slice() []XmlNode {
 
   return list
 }
+
+func (nodeSet *XmlNodeSet) RemoveAll() {
+  for i := 0; i < nodeSet.Size(); i++ {
+    node := nodeSet.NodeAt(i);
+    if node != nil {
+      node.Remove()
+    }
+  }
+}
