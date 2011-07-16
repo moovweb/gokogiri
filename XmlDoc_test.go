@@ -7,7 +7,7 @@ import (
 func TestDocBuilding(t *testing.T) {
   //t.Error("hi")
   doc := HtmlReadDocSimple("<html />")
-  root := doc.RootElement()
+  root := doc.RootNode()
   if root == nil {
     t.Error("Should return a root node")
   }

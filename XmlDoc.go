@@ -29,7 +29,7 @@ func (doc *XmlDoc) MetaEncoding() string {
   return XmlChar2String(s)
 }
 
-func (doc *XmlDoc) RootElement() *XmlNode { 
+func (doc *XmlDoc) RootNode() *XmlNode { 
   return BuildXmlNode(C.xmlDocGetRootElement(doc.Ptr), doc)
 }
 

@@ -37,7 +37,7 @@ func TestXPathEvaluation(t *testing.T) {
 
 func TestXPathNodeSearches(t *testing.T) {
   doc, _ := BuildSampleDoc()
-  root := doc.RootElement()
+  root := doc.RootNode()
   span_set := root.Search(".//span")
   spans := span_set.Slice()
   if len(spans) != 2 {
