@@ -11,9 +11,9 @@ xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
 import "C" 
 
 func XmlCheckVersion() int { 
-  var v C.int 
+  var v C.int
   C.xmlCheckVersion(v) 
-  return int(v) 
+  return int(v)
 } 
 
 func XmlCleanUpParser() { 

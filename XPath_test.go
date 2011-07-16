@@ -19,17 +19,17 @@ func TestXPathRegisterNamespace(t *testing.T) {
 
 func TestXPathEvaluation(t *testing.T) {
   _, context := BuildSampleDoc()
-  nodes := context.EvalToNodes("/html/body")
-  if len(nodes) != 1 {
+  nodeSet := context.EvalToNodes("/html/body")
+  if nodeSet.Size() != 1 {
     t.Error("Too many elements returned. Maybe some are nil!")
   }
-  for i := 0; i < len(nodes); i++ {
-    node := nodes[i]
+  for i := 0; i < nodeSet.Size(); i++ {
+    node := nodeSet.NodeAt(i)
     if node.Name() != "body" {
       t.Error("Nil node returned")
     }
     subnodes := node.Search("//div")
-    if len(subnodes) != 1 {
+    if subnodes.Size() != 1 {
       t.Error("selected wrong!")
     }
   }
@@ -38,14 +38,17 @@ func TestXPathEvaluation(t *testing.T) {
 func TestXPathNodeSearches(t *testing.T) {
   doc, _ := BuildSampleDoc()
   root := doc.RootElement()
-  spans := root.Search(".//span")
+  span_set := root.Search(".//span")
+  spans := span_set.Slice()
   if len(spans) != 2 {
     t.Error("too many spans.. returned ", len(spans), " nodes")
   }
-  divs := root.Search("//div")
+  div_set := root.Search("//div")
+  divs := div_set.Slice()
   div := divs[0]
 
-  spans = div.Search(".//span")
+  span_set = div.Search(".//span")
+  spans = span_set.Slice()
   if len(spans) >= 2 {
     t.Error("Search is NOT scoped: returned ", len(spans), " nodes")
   }
