@@ -1,4 +1,4 @@
-GoXML 
+Gokogiri 
 by Hampton Catlin™
 
 A pretty straightforward and simple library for using
@@ -12,5 +12,5 @@ Secondly, just run "make install" and it should build itself.
 
 Also, if you don't want to do active development, just run...
 
-    goinstall goxml
+    goinstall gokogiri
 
