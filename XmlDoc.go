@@ -6,6 +6,17 @@ package libxml
 #include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
 #include <libxml/xpath.h> 
+
+xmlChar *
+DumpToXmlChar(xmlDoc *doc) {
+  xmlChar *buff;
+  int buffersize;
+  xmlDocDumpFormatMemory(doc, 
+                         &buff,
+                         &buffersize, 1);
+  return buff;
+}
+
 */ 
 import "C"
 
@@ -27,6 +38,10 @@ func (doc *XmlDoc) Free() {
 func (doc *XmlDoc) MetaEncoding() string { 
   s := C.htmlGetMetaEncoding(doc.Ptr) 
   return XmlChar2String(s)
+}
+
+func (doc *XmlDoc) Dump() string {
+  return XmlChar2String(C.DumpToXmlChar(doc.Ptr))
 }
 
 func (doc *XmlDoc) RootNode() *XmlNode { 
