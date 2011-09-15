@@ -43,6 +43,10 @@ func (nodeSet *XmlNodeSet) NodeAt(pos int) *XmlNode {
   return BuildXmlNode(node, nodeSet.Doc)
 }
 
+func (nodeSet *XmlNodeSet) First() *XmlNode {
+	return nodeSet.NodeAt(0)
+}
+
 func (nodeSet *XmlNodeSet) Slice() []XmlNode {
   list := make([]XmlNode, 0, 100)
 
