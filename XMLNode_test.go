@@ -4,7 +4,7 @@ import (
   "testing"
 )
 
-func TestAttributeFetch(t *testing.T) {
+func TestXmlNodeAttributes(t *testing.T) {
   doc := HtmlReadDocSimple("<div id='hi' />")
   root := doc.RootNode()
   div := root.Search("//div").First()
@@ -18,4 +18,21 @@ func TestAttributeFetch(t *testing.T) {
 	if div.Attribute("class") != "classy" {
 		t.Error("Attributes aren't set")
 	}
+}
+
+func TestXmlNodeName(t *testing.T) {
+	doc := HtmlReadDocSimple("<div id='hi' />")
+  root := doc.RootNode()
+  div := root.Search("//div").First()
+  if div.Name() != "div" {
+		t.Error("Something is wrong with XMLNode.Name()")
+	}
+	div.SetName("span")
+	if div.Name() != "span" {
+		t.Error("Something is wrong with XMLNode.SetName()")
+	}
+}
+
+func TestXmlNodeDump(t *testing.T) {
+	
 }

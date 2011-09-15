@@ -47,6 +47,10 @@ func (node *XmlNode) Name() string {
   return XmlChar2String(node.Ptr.name)
 }
 
+func (node *XmlNode) SetName(name string) {
+	C.xmlNodeSetName(node.Ptr, C.xmlCharStrdup( C.CString(name) ))
+}
+
 func (node *XmlNode) Type() int { 
   return int(C.NodeType(node.Ptr)) 
 }
