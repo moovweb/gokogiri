@@ -2,7 +2,7 @@ package libxml
 /* 
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
-
+#include <stdlib.h> 
 
 xmlNode ** 
 NodeSetArray(xmlNodeSet *nodes) { 
@@ -20,7 +20,7 @@ SizeOfSet(xmlNodeSet *set) {
 }
 
 */
-import("C")
+import "C"
 
 type XmlNodeSet struct {
   Ptr *C.xmlNodeSet

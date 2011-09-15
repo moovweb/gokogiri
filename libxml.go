@@ -31,7 +31,7 @@ func HtmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc 
 } 
 
 func HtmlReadDocSimple(content string) *XmlDoc {
-  return HtmlReadDoc(content, "", "", HTML_PARSE_COMPACT | HTML_PARSE_NOBLANKS | 
+  return HtmlReadDoc(content, "", "", HTML_PARSE_RECOVER | HTML_PARSE_NONET |
                                       HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING)
 }
 

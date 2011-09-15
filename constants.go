@@ -33,4 +33,13 @@ const (
         XML_XINCLUDE_START = 19 
         XML_XINCLUDE_END = 20 
         XML_DOCB_DOCUMENT_NODE = 21 
+
+				XML_SAVE_FORMAT = 1 // format save output
+				XML_SAVE_NO_DECL = 2 // drop the xml declaration
+				XML_SAVE_NO_EMPTY = 4 // no empty tags
+				XML_SAVE_NO_XHTML = 8 // disable XHTML1 specific rules
+				XML_SAVE_XHTML = 16 // force XHTML1 specific rules
+				XML_SAVE_AS_XML = 32 // force XML serialization on HTML doc
+				XML_SAVE_AS_HTML = 64 // force HTML serialization on XML doc
+				XML_SAVE_WSNONSIG = 128 // format with non-significant whitespace
 )

@@ -17,6 +17,14 @@ DumpToXmlChar(xmlDoc *doc) {
   return buff;
 }
 
+xmlChar *
+DumpHTMLToXmlChar(xmlDoc *doc) {
+  xmlChar *buff;
+  int buffersize;
+  htmlDocDumpMemory(doc, &buff, &buffersize);
+  return buff;
+}
+
 */ 
 import "C"
 
@@ -42,6 +50,10 @@ func (doc *XmlDoc) MetaEncoding() string {
 
 func (doc *XmlDoc) Dump() string {
   return XmlChar2String(C.DumpToXmlChar(doc.Ptr))
+}
+
+func (doc *XmlDoc) DumpHTML() string {
+  return XmlChar2String(C.DumpHTMLToXmlChar(doc.Ptr))
 }
 
 func (doc *XmlDoc) RootNode() *XmlNode { 

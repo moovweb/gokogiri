@@ -25,12 +25,20 @@ func TestXPathContext(t *testing.T) {
   }
 }
 
-func TestDump(t *testing.T) {
-  /*doc := HtmlReadDocSimple("<html><body /></html>")
-  if doc.Dump() != "<?xml version=\"1.0\" standalone=\"yes\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">\n<html>\n  <body />\n</html>" {
-    println(doc.Dump())
+func TestDumpHTML(t *testing.T) {
+  doc := HtmlReadDocSimple("<html><body /></html>")
+  if doc.DumpHTML() != "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">\n<html><body></body></html>\n" {
+    println(doc.DumpHTML())
     t.Error("ERROR!")
-  }*/
+  }
+}
+
+func TestDump(t *testing.T) {
+	doc := HtmlReadDocSimple("<html><body /></html>")
+	if doc.Dump() != "" {
+		println(doc.Dump())
+    t.Error("ERROR!")
+	}
 }
 
 func TestMetaEncoding(t *testing.T) {
