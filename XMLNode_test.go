@@ -34,5 +34,16 @@ func TestXmlNodeName(t *testing.T) {
 }
 
 func TestXmlNodeDump(t *testing.T) {
-	
+	doc := HtmlReadDocSimple("<div id='hi' />")
+  root := doc.RootNode()
+  div := root.Search("//div").First()
+	result := div.Dump()
+	if result != "<div id=\"hi\"/>" {
+		t.Error("Node dumping is being... dumpy. Got back this pile of poo: ", result)
+	}
+	div.SetName("span")
+	result = div.Dump()
+	if result != "<span id=\"hi\"/>" {
+		t.Error("Node dumping is being... dumpy. Got back this pile of poo: ", result)
+	}
 }

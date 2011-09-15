@@ -8,6 +8,13 @@ package libxml
 xmlNode * NodeNext(xmlNode *node) { return node->next; } 
 xmlNode * NodeChildren(xmlNode *node) { return node->children; }
 int NodeType(xmlNode *node) { return (int)node->type; }
+
+xmlChar *
+DumpNodeToXmlChar(xmlNode *node, xmlDoc *doc) {
+  xmlBuffer *buff = xmlBufferCreate();
+  xmlNodeDump(buff, doc, node, 0, 0);
+  return buff->content;
+}
 */
 import "C"
 
@@ -67,3 +74,7 @@ func (node *XmlNode) Search(xpath_expression string) *XmlNodeSet {
   ctx.SetNode(node)
   return ctx.EvalToNodes(xpath_expression)
 } 
+
+func (node *XmlNode) Dump() string {
+	return XmlChar2String(C.DumpNodeToXmlChar(node.Ptr, node.Doc.Ptr))
+}
