@@ -30,9 +30,23 @@ func HtmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc 
   return &XmlDoc{Ptr: xmlDocPtr}
 } 
 
+func XmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc {
+	c := C.xmlCharStrdup( C.CString(content) ) 
+	c_encoding := C.CString(encoding)
+	if encoding == "" {
+		c_encoding = nil
+	}
+  xmlDocPtr := C.xmlReadDoc( c, C.CString(url), c_encoding, C.int(opts) )
+  return &XmlDoc{Ptr: xmlDocPtr}
+}
+
 func HtmlReadDocSimple(content string) *XmlDoc {
   return HtmlReadDoc(content, "", "", HTML_PARSE_RECOVER | HTML_PARSE_NONET |
                                       HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING)
+}
+
+func XmlReadDocSimple(content string) *XmlDoc {
+  return XmlReadDoc(content, "", "", 0)
 }
 
 func XmlChar2String(s *C.xmlChar) string {

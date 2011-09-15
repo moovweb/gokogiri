@@ -34,8 +34,8 @@ func TestDumpHTML(t *testing.T) {
 }
 
 func TestDump(t *testing.T) {
-	doc := HtmlReadDocSimple("<html><body /></html>")
-	if doc.Dump() != "" {
+	doc := XmlReadDocSimple("<html><body /></html>")
+	if doc.Dump() != "<?xml version=\"1.0\"?>\n<html>\n  <body/>\n</html>\n" {
 		println(doc.Dump())
     t.Error("ERROR!")
 	}
