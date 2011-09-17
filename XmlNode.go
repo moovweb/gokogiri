@@ -73,7 +73,7 @@ func (node *XmlNode) Search(xpath_expression string) *XmlNodeSet {
   ctx := node.Doc.XPathContext()
   ctx.SetNode(node)
   return ctx.EvalToNodes(xpath_expression)
-} 
+}
 
 func (node *XmlNode) Dump() string {
 	return XmlChar2String(C.DumpNodeToXmlChar(node.Ptr, node.Doc.Ptr))

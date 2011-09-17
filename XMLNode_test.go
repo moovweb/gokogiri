@@ -47,3 +47,15 @@ func TestXmlNodeDump(t *testing.T) {
 		t.Error("Node dumping is being... dumpy. Got back this pile of poo: ", result)
 	}
 }
+
+func TestXmlNodeRemove(t *testing.T) {
+	doc := HtmlReadDocSimple("<html><body><div><span>hi</span></div></body></html>")
+  root := doc.RootNode()
+  span := root.Search("//span").First()
+	span.Remove()
+	result := doc.DumpHTML()
+	if result != "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">\n<html><body><div></div></body></html>\n" {
+		t.Error("Node dumping is being... dumpy. Got back this pile of poo: ", result)
+	}
+
+}
