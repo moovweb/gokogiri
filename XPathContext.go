@@ -27,8 +27,8 @@ func (context *XPathContext) RegisterNamespace(prefix, href string) bool {
   return result == 0
 }
 
-func (context *XPathContext) SetNode(node *XmlNode) {
-  C.xmlXPathContextSetNode(context.Ptr, node.Ptr)
+func (context *XPathContext) SetNode(node Node) {
+  C.xmlXPathContextSetNode(context.Ptr, node.Ptr())
 }
 
 func (context *XPathContext) Eval(expression string) *XPathObject {
@@ -36,7 +36,7 @@ func (context *XPathContext) Eval(expression string) *XPathObject {
   return &XPathObject{Ptr: object_pointer, Doc: context.Doc}
 }
 
-func (context *XPathContext) EvalToNodes(expression string) *XmlNodeSet {
+func (context *XPathContext) EvalToNodes(expression string) *NodeSet {
   obj := context.Eval(expression)
   return obj.NodeSet()
 }
@@ -45,6 +45,6 @@ func (context *XPathContext) Free() {
   C.xmlXPathFreeContext(context.Ptr)
 }
 
-func (obj *XPathObject) NodeSet() *XmlNodeSet {
-  return BuildXmlNodeSet(C.FetchNodeSet(obj.Ptr), obj.Doc)
+func (obj *XPathObject) NodeSet() *NodeSet {
+  return BuildNodeSet(C.FetchNodeSet(obj.Ptr), obj.Doc)
 }

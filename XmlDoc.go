@@ -56,8 +56,8 @@ func (doc *XmlDoc) DumpHTML() string {
   return XmlChar2String(C.DumpHTMLToXmlChar(doc.Ptr))
 }
 
-func (doc *XmlDoc) RootNode() *XmlNode { 
-  return BuildXmlNode(C.xmlDocGetRootElement(doc.Ptr), doc)
+func (doc *XmlDoc) RootNode() Node { 
+  return BuildNode(C.xmlDocGetRootElement(doc.Ptr), doc)
 }
 
 func (doc *XmlDoc) XPathContext() *XPathContext {

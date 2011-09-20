@@ -7,7 +7,7 @@ import (
 func TestXmlElementAttributes(t *testing.T) {
   doc := HtmlReadDocSimple("<div id='hi' />")
   root := doc.RootNode()
-  div := root.Search("//div").First()
+  div := root.Search("//div").First().(*XmlElement)
   if div.Attribute("id") != "hi" {
 		t.Error("looking for id should return 'hi'")
 	}

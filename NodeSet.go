@@ -22,45 +22,45 @@ SizeOfSet(xmlNodeSet *set) {
 */
 import "C"
 
-type XmlNodeSet struct {
+type NodeSet struct {
   Ptr *C.xmlNodeSet
   Doc *XmlDoc
 }
 
-func BuildXmlNodeSet(ptr *C.xmlNodeSet, doc *XmlDoc) *XmlNodeSet {
+func BuildNodeSet(ptr *C.xmlNodeSet, doc *XmlDoc) *NodeSet {
   if ptr == nil {
     return nil
   }
-  return &XmlNodeSet{Ptr: ptr, Doc: doc}
+  return &NodeSet{Ptr: ptr, Doc: doc}
 }
 
-func (nodeSet *XmlNodeSet) Size() int {
+func (nodeSet *NodeSet) Size() int {
   return int(C.SizeOfSet(nodeSet.Ptr))
 }
 
-func (nodeSet *XmlNodeSet) NodeAt(pos int) *XmlNode {
+func (nodeSet *NodeSet) NodeAt(pos int) Node {
   node := C.FetchNode(nodeSet.Ptr, C.int(pos))
-  return BuildXmlNode(node, nodeSet.Doc)
+  return BuildNode(node, nodeSet.Doc)
 }
 
-func (nodeSet *XmlNodeSet) First() *XmlNode {
+func (nodeSet *NodeSet) First() Node {
 	return nodeSet.NodeAt(0)
 }
 
-func (nodeSet *XmlNodeSet) Slice() []XmlNode {
-  list := make([]XmlNode, 0, 100)
+func (nodeSet *NodeSet) Slice() []Node {
+  list := make([]Node, 0, 0)
 
   for i := 0; i < nodeSet.Size(); i++ {
     node := nodeSet.NodeAt(i);
     if node != nil {
-      list = append(list, *node)
+      list = append(list, node)
     }
   }
 
   return list
 }
 
-func (nodeSet *XmlNodeSet) RemoveAll() {
+func (nodeSet *NodeSet) RemoveAll() {
   for i := 0; i < nodeSet.Size(); i++ {
     node := nodeSet.NodeAt(i);
     if node != nil {
