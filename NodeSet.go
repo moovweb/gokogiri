@@ -27,7 +27,7 @@ type NodeSet struct {
   Doc *XmlDoc
 }
 
-func BuildNodeSet(ptr *C.xmlNodeSet, doc *XmlDoc) *NodeSet {
+func buildNodeSet(ptr *C.xmlNodeSet, doc *XmlDoc) *NodeSet {
   if ptr == nil {
     return nil
   }
@@ -40,7 +40,7 @@ func (nodeSet *NodeSet) Size() int {
 
 func (nodeSet *NodeSet) NodeAt(pos int) Node {
   node := C.FetchNode(nodeSet.Ptr, C.int(pos))
-  return BuildNode(node, nodeSet.Doc)
+  return buildNode(node, nodeSet.Doc)
 }
 
 func (nodeSet *NodeSet) First() Node {

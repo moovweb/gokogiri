@@ -46,5 +46,5 @@ func (context *XPathContext) Free() {
 }
 
 func (obj *XPathObject) NodeSet() *NodeSet {
-  return BuildNodeSet(C.FetchNodeSet(obj.Ptr), obj.Doc)
+  return buildNodeSet(C.FetchNodeSet(obj.Ptr), obj.Doc)
 }

@@ -51,13 +51,18 @@ type XmlNode struct {
 	DocRef  *XmlDoc
 }
 
-func BuildNode(ptr *C.xmlNode, doc *XmlDoc) Node {
+func buildNode(ptr *C.xmlNode, doc *XmlDoc) Node {
   if ptr == nil {
     return nil
   }
 	node_type := int(C.NodeType(ptr))
 	xml_node := &XmlNode{NodePtr: ptr, DocRef: doc}
-	if node_type == 1 {
+	if doc == nil {
+		doc := &XmlDoc{XmlNode: xml_node}
+		// If we are a doc, then we reference ourselves
+		doc.XmlNode.DocRef = doc
+		return doc
+	} else if node_type == XML_ELEMENT_NODE {
 		return &XmlElement{XmlNode: xml_node}
 	}
 	return xml_node
@@ -85,23 +90,23 @@ func (node *XmlNode) Search(xpath_expression string) *NodeSet {
 }
 
 func (node *XmlNode) Parent() Node { 
-  return BuildNode(C.GoNodeParent(node.Ptr()), node.Doc()) 
+  return buildNode(C.GoNodeParent(node.Ptr()), node.Doc()) 
 }
 
 func (node *XmlNode) Next() Node { 
-  return BuildNode(C.GoNodeNext(node.Ptr()), node.Doc()) 
+  return buildNode(C.GoNodeNext(node.Ptr()), node.Doc()) 
 }
 
 func (node *XmlNode) Prev() Node { 
-  return BuildNode(C.GoNodePrev(node.Ptr()), node.Doc()) 
+  return buildNode(C.GoNodePrev(node.Ptr()), node.Doc()) 
 }
 
 func (node *XmlNode) First() Node { 
-  return BuildNode(C.GoNodeChildren(node.Ptr()), node.Doc()) 
+  return buildNode(C.GoNodeChildren(node.Ptr()), node.Doc()) 
 }
 
 func (node *XmlNode) Last() Node { 
-  return BuildNode(C.GoNodeLast(node.Ptr()), node.Doc()) 
+  return buildNode(C.GoNodeLast(node.Ptr()), node.Doc()) 
 }
 
 func (node *XmlNode) Remove() {
@@ -117,7 +122,7 @@ func (node *XmlNode) SetName(name string) {
 }
 
 func (node *XmlNode) Dump() string {
-	return XmlChar2String(C.DumpNodeToXmlChar(node.Ptr(), node.Doc().Ptr))
+	return XmlChar2String(C.DumpNodeToXmlChar(node.Ptr(), node.Doc().DocPtr))
 }
 
 func (node *XmlNode) Attribute(name string) string { 

@@ -21,13 +21,13 @@ func XmlCleanUpParser() {
 }
 
 func HtmlReadFile(url string, encoding string, opts int) *XmlDoc { 
-  return BuildXmlDoc(C.htmlReadFile( C.CString(url), C.CString(encoding), C.int(opts) ))
+  return buildXmlDoc(C.htmlReadFile( C.CString(url), C.CString(encoding), C.int(opts) ))
 } 
 
 func HtmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc { 
   c := C.xmlCharStrdup( C.CString(content) ) 
   xmlDocPtr := C.htmlReadDoc( c, C.CString(url), C.CString(encoding), C.int(opts) )
-  return &XmlDoc{Ptr: xmlDocPtr}
+  return buildXmlDoc(xmlDocPtr)
 } 
 
 func XmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc {
@@ -37,7 +37,7 @@ func XmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc {
 		c_encoding = nil
 	}
   xmlDocPtr := C.xmlReadDoc( c, C.CString(url), c_encoding, C.int(opts) )
-  return &XmlDoc{Ptr: xmlDocPtr}
+  return buildXmlDoc(xmlDocPtr)
 }
 
 func HtmlReadDocSimple(content string) *XmlDoc {
