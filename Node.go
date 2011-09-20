@@ -24,8 +24,8 @@ type Node interface {
 	
 	Name() string;
 	SetName(name string);
-	Attribute(name string) string;
-	SetAttribute(name string, value string);
+	AttributeValue(name string) string;
+	SetAttributeValue(name string, value string);
 }
 
 func buildNode(ptr *C.xmlNode, doc *XmlDoc) Node {

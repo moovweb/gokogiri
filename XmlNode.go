@@ -94,13 +94,13 @@ func (node *XmlNode) Dump() string {
 	return XmlChar2String(C.DumpNodeToXmlChar(node.Ptr(), node.Doc().DocPtr))
 }
 
-func (node *XmlNode) Attribute(name string) string { 
+func (node *XmlNode) AttributeValue(name string) string { 
   c := C.xmlCharStrdup( C.CString(name) ) 
   s := C.xmlGetProp(node.Ptr(), c) 
   return XmlChar2String(s)
 }
 
-func (node *XmlNode) SetAttribute(name string, value string) {
+func (node *XmlNode) SetAttributeValue(name string, value string) {
 	c_name  := C.xmlCharStrdup( C.CString(name) ) 
 	c_value := C.xmlCharStrdup( C.CString(value) ) 
 	C.xmlSetProp(node.Ptr(), c_name, c_value)
