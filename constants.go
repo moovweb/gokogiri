@@ -11,6 +11,7 @@ const (
         HTML_PARSE_NOBLANKS = 1 << 8      //remove blank nodes 
         HTML_PARSE_NONET = 1 << 11                //forbid network access 
         HTML_PARSE_COMPACT = 1 << 16      //compact small text nodes 
+
         //element type 
         XML_ELEMENT_NODE = 1 
         XML_ATTRIBUTE_NODE = 2 

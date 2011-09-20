@@ -4,7 +4,8 @@ CGOFILES=\
           constants.go\
           libxml.go\
           XmlDoc.go\
-          XmlNode.go\
+					XmlNode.go\
+          XmlElement.go\
           XPathContext.go\
           XmlNodeSet.go
 CGO_LDFLAGS=-lxml2

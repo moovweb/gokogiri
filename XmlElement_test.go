@@ -4,7 +4,7 @@ import (
   "testing"
 )
 
-func TestXmlNodeAttributes(t *testing.T) {
+func TestXmlElementAttributes(t *testing.T) {
   doc := HtmlReadDocSimple("<div id='hi' />")
   root := doc.RootNode()
   div := root.Search("//div").First()
@@ -20,7 +20,7 @@ func TestXmlNodeAttributes(t *testing.T) {
 	}
 }
 
-func TestXmlNodeName(t *testing.T) {
+func TestXmlElementName(t *testing.T) {
 	doc := HtmlReadDocSimple("<div id='hi' />")
   root := doc.RootNode()
   div := root.Search("//div").First()
@@ -33,7 +33,7 @@ func TestXmlNodeName(t *testing.T) {
 	}
 }
 
-func TestXmlNodeDump(t *testing.T) {
+func TestXmlElementDump(t *testing.T) {
 	doc := HtmlReadDocSimple("<div id='hi' />")
   root := doc.RootNode()
   div := root.Search("//div").First()
@@ -48,7 +48,7 @@ func TestXmlNodeDump(t *testing.T) {
 	}
 }
 
-func TestXmlNodeRemove(t *testing.T) {
+func TestXmlElementRemove(t *testing.T) {
 	doc := HtmlReadDocSimple("<html><body><div><span>hi</span></div></body></html>")
   root := doc.RootNode()
   span := root.Search("//span").First()
