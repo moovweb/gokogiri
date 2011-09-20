@@ -42,6 +42,8 @@ type Node interface {
 	
 	Name() string;
 	SetName(name string);
+	Attribute(name string) string;
+	SetAttribute(name string, value string);
 }
 
 type XmlNode struct {
@@ -82,7 +84,6 @@ func (node *XmlNode) Search(xpath_expression string) *NodeSet {
   return ctx.EvalToNodes(xpath_expression)
 }
 
-
 func (node *XmlNode) Parent() Node { 
   return BuildNode(C.GoNodeParent(node.Ptr()), node.Doc()) 
 }
@@ -117,4 +118,16 @@ func (node *XmlNode) SetName(name string) {
 
 func (node *XmlNode) Dump() string {
 	return XmlChar2String(C.DumpNodeToXmlChar(node.Ptr(), node.Doc().Ptr))
+}
+
+func (node *XmlNode) Attribute(name string) string { 
+  c := C.xmlCharStrdup( C.CString(name) ) 
+  s := C.xmlGetProp(node.Ptr(), c) 
+  return XmlChar2String(s)
+}
+
+func (node *XmlNode) SetAttribute(name string, value string) {
+	c_name  := C.xmlCharStrdup( C.CString(name) ) 
+	c_value := C.xmlCharStrdup( C.CString(value) ) 
+	C.xmlSetProp(node.Ptr(), c_name, c_value)
 }
