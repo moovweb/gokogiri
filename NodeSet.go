@@ -1,5 +1,7 @@
 package libxml 
 /* 
+#cgo LDFLAGS: -lxml2
+#cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
 #include <stdlib.h> 
