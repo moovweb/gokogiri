@@ -8,6 +8,7 @@ GOFILES=\
 
 
 CGOFILES=\
+	HtmlDoc.go\
 	Node.go\
 	NodeSet.go\
 	XPathContext.go\

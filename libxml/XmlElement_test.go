@@ -5,7 +5,7 @@ import (
 )
 
 func TestXmlElementAttributes(t *testing.T) {
-	doc := HtmlReadDocSimple("<div id='hi' />")
+	doc := HtmlParse("<div id='hi' />")
 	root := doc.RootNode()
 	div := root.Search("//div").First().(*XmlElement)
 	if div.AttributeValue("id") != "hi" {
@@ -21,7 +21,7 @@ func TestXmlElementAttributes(t *testing.T) {
 }
 
 func TestXmlElementName(t *testing.T) {
-	doc := HtmlReadDocSimple("<div id='hi' />")
+	doc := HtmlParse("<div id='hi' />")
 	root := doc.RootNode()
 	div := root.Search("//div").First()
 	if div.Name() != "div" {
@@ -34,7 +34,7 @@ func TestXmlElementName(t *testing.T) {
 }
 
 func TestXmlElementDump(t *testing.T) {
-	doc := HtmlReadDocSimple("<div id='hi' />")
+	doc := HtmlParse("<div id='hi' />")
 	root := doc.RootNode()
 	div := root.Search("//div").First()
 	result := div.Dump()
@@ -49,7 +49,7 @@ func TestXmlElementDump(t *testing.T) {
 }
 
 func TestXmlElementRemove(t *testing.T) {
-	doc := HtmlReadDocSimple("<html><body><div><span>hi</span></div></body></html>")
+	doc := HtmlParse("<html><body><div><span>hi</span></div></body></html>")
 	root := doc.RootNode()
 	span := root.Search("//span").First()
 	span.Remove()

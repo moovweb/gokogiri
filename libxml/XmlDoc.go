@@ -42,6 +42,20 @@ func buildXmlDoc(ptr *C.xmlDoc) *XmlDoc {
 	return doc
 }
 
+func ParseXmlString(content string, url string, encoding string, opts int) *XmlDoc {
+	c := C.xmlCharStrdup(C.CString(content))
+	c_encoding := C.CString(encoding)
+	if encoding == "" {
+		c_encoding = nil
+	}
+	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), c_encoding, C.int(opts))
+	return buildXmlDoc(xmlDocPtr)
+}
+
+func XmlParse(content string) *XmlDoc {
+	return ParseXmlString(content, "", "", 0)
+}
+
 func (doc *XmlDoc) Free() {
 	C.xmlFreeDoc(doc.DocPtr)
 }

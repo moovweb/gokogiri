@@ -4,13 +4,12 @@ package libxml
 #cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/xmlversion.h> 
 #include <libxml/parser.h> 
-#include <libxml/HTMLparser.h> 
-#include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
 char* xmlChar2C(xmlChar* x) { return (char *) x; }
 xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
 */
 import "C"
+//import "unsafe"
 
 func XmlCheckVersion() int {
 	var v C.int
@@ -22,55 +21,12 @@ func XmlCleanUpParser() {
 	C.xmlCleanupParser()
 }
 
-func HtmlReadFile(url string, encoding string, opts int) *XmlDoc {
-	return buildXmlDoc(C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts)))
-}
-
-func HtmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc {
-	c := C.xmlCharStrdup(C.CString(content))
-	xmlDocPtr := C.htmlReadDoc(c, C.CString(url), C.CString(encoding), C.int(opts))
-	return buildXmlDoc(xmlDocPtr)
-}
-
-func XmlReadDoc(content string, url string, encoding string, opts int) *XmlDoc {
-	c := C.xmlCharStrdup(C.CString(content))
-	c_encoding := C.CString(encoding)
-	if encoding == "" {
-		c_encoding = nil
-	}
-	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), c_encoding, C.int(opts))
-	return buildXmlDoc(xmlDocPtr)
-}
-
-func HtmlReadDocSimple(content string) *XmlDoc {
-	return HtmlReadDoc(content, "", "", HTML_PARSE_RECOVER|HTML_PARSE_NONET|
-		HTML_PARSE_NOERROR|HTML_PARSE_NOWARNING)
-}
-
-func XmlReadDocSimple(content string) *XmlDoc {
-	return XmlReadDoc(content, "", "", 0)
-}
-
 func XmlChar2String(s *C.xmlChar) string {
-	return C.GoString(C.xmlChar2C(s))
+	cString := C.xmlChar2C(s)
+	//defer C.free(unsafe.Pointer(cString))
+	return C.GoString(cString)
 }
 
 func String2XmlChar(s string) *C.xmlChar {
 	return C.C2xmlChar(C.CString(s))
 }
-
-func HtmlTagLookup(name string) *C.htmlElemDesc {
-	c := C.xmlCharStrdup(C.CString(name))
-	return C.htmlTagLookup(c)
-}
-
-func HtmlEntityLookup(name string) *C.htmlEntityDesc {
-	c := C.xmlCharStrdup(C.CString(name))
-	return C.htmlEntityLookup(c)
-}
-
-func HtmlEntityValueLookup(value uint) *C.htmlEntityDesc {
-	return C.htmlEntityValueLookup(C.uint(value))
-}
-
-//Helpers 

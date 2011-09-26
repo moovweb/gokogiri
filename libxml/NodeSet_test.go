@@ -5,7 +5,7 @@ import (
 )
 
 func BuildSampleNodeSetDoc() (doc *XmlDoc, context *XPathContext) {
-	doc = HtmlReadDocSimple("<html><body><span /><div><span /><span>content</span></div></body></html>")
+	doc = HtmlParse("<html><body><span /><div><span /><span>content</span></div></body></html>")
 	context = doc.XPathContext()
 	return
 }
