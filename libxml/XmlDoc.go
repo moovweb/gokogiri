@@ -1,4 +1,4 @@
-package libxml 
+package libxml
 /* 
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -28,41 +28,41 @@ DumpHTMLToXmlChar(xmlDoc *doc) {
 }
 
 xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
-*/ 
+*/
 import "C"
 
 type XmlDoc struct {
 	DocPtr *C.xmlDoc
-  *XmlNode
+	*XmlNode
 }
 
 func buildXmlDoc(ptr *C.xmlDoc) *XmlDoc {
-  doc := buildNode(C.GoXmlCastDocToNode(ptr), nil).(*XmlDoc)
+	doc := buildNode(C.GoXmlCastDocToNode(ptr), nil).(*XmlDoc)
 	doc.DocPtr = ptr
 	return doc
 }
 
-func (doc *XmlDoc) Free() { 
-  C.xmlFreeDoc(doc.DocPtr) 
+func (doc *XmlDoc) Free() {
+	C.xmlFreeDoc(doc.DocPtr)
 }
 
-func (doc *XmlDoc) MetaEncoding() string { 
-  s := C.htmlGetMetaEncoding(doc.DocPtr) 
-  return XmlChar2String(s)
+func (doc *XmlDoc) MetaEncoding() string {
+	s := C.htmlGetMetaEncoding(doc.DocPtr)
+	return XmlChar2String(s)
 }
 
 func (doc *XmlDoc) Dump() string {
-  return XmlChar2String(C.DumpToXmlChar(doc.DocPtr))
+	return XmlChar2String(C.DumpToXmlChar(doc.DocPtr))
 }
 
 func (doc *XmlDoc) DumpHTML() string {
-  return XmlChar2String(C.DumpHTMLToXmlChar(doc.DocPtr))
+	return XmlChar2String(C.DumpHTMLToXmlChar(doc.DocPtr))
 }
 
-func (doc *XmlDoc) RootNode() Node { 
-  return buildNode(C.xmlDocGetRootElement(doc.DocPtr), doc)
+func (doc *XmlDoc) RootNode() Node {
+	return buildNode(C.xmlDocGetRootElement(doc.DocPtr), doc)
 }
 
 func (doc *XmlDoc) XPathContext() *XPathContext {
-  return &XPathContext{Ptr: C.xmlXPathNewContext(doc.DocPtr), Doc: doc}
+	return &XPathContext{Ptr: C.xmlXPathNewContext(doc.DocPtr), Doc: doc}
 }

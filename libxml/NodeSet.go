@@ -1,4 +1,4 @@
-package libxml 
+package libxml
 /* 
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -25,24 +25,24 @@ SizeOfSet(xmlNodeSet *set) {
 import "C"
 
 type NodeSet struct {
-  Ptr *C.xmlNodeSet
-  Doc *XmlDoc
+	Ptr *C.xmlNodeSet
+	Doc *XmlDoc
 }
 
 func buildNodeSet(ptr *C.xmlNodeSet, doc *XmlDoc) *NodeSet {
-  if ptr == nil {
-    return nil
-  }
-  return &NodeSet{Ptr: ptr, Doc: doc}
+	if ptr == nil {
+		return nil
+	}
+	return &NodeSet{Ptr: ptr, Doc: doc}
 }
 
 func (nodeSet *NodeSet) Size() int {
-  return int(C.SizeOfSet(nodeSet.Ptr))
+	return int(C.SizeOfSet(nodeSet.Ptr))
 }
 
 func (nodeSet *NodeSet) NodeAt(pos int) Node {
-  node := C.FetchNode(nodeSet.Ptr, C.int(pos))
-  return buildNode(node, nodeSet.Doc)
+	node := C.FetchNode(nodeSet.Ptr, C.int(pos))
+	return buildNode(node, nodeSet.Doc)
 }
 
 func (nodeSet *NodeSet) First() Node {
@@ -50,23 +50,23 @@ func (nodeSet *NodeSet) First() Node {
 }
 
 func (nodeSet *NodeSet) Slice() []Node {
-  list := make([]Node, 0, 0)
+	list := make([]Node, 0, 0)
 
-  for i := 0; i < nodeSet.Size(); i++ {
-    node := nodeSet.NodeAt(i);
-    if node != nil {
-      list = append(list, node)
-    }
-  }
+	for i := 0; i < nodeSet.Size(); i++ {
+		node := nodeSet.NodeAt(i)
+		if node != nil {
+			list = append(list, node)
+		}
+	}
 
-  return list
+	return list
 }
 
 func (nodeSet *NodeSet) RemoveAll() {
-  for i := 0; i < nodeSet.Size(); i++ {
-    node := nodeSet.NodeAt(i);
-    if node != nil {
-      node.Remove()
-    }
-  }
+	for i := 0; i < nodeSet.Size(); i++ {
+		node := nodeSet.NodeAt(i)
+		if node != nil {
+			node.Remove()
+		}
+	}
 }

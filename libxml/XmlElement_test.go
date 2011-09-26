@@ -1,30 +1,30 @@
 package libxml
 
 import (
-  "testing"
+	"testing"
 )
 
 func TestXmlElementAttributes(t *testing.T) {
-  doc := HtmlReadDocSimple("<div id='hi' />")
-  root := doc.RootNode()
-  div := root.Search("//div").First().(*XmlElement)
-  if div.Attribute("id") != "hi" {
+	doc := HtmlReadDocSimple("<div id='hi' />")
+	root := doc.RootNode()
+	div := root.Search("//div").First().(*XmlElement)
+	if div.AttributeValue("id") != "hi" {
 		t.Error("looking for id should return 'hi'")
 	}
-	if div.Attribute("class") != "" {
+	if div.AttributeValue("class") != "" {
 		t.Error("Non-existant attributes should return nil")
 	}
-	div.SetAttribute("class", "classy")
-	if div.Attribute("class") != "classy" {
+	div.SetAttributeValue("class", "classy")
+	if div.AttributeValue("class") != "classy" {
 		t.Error("Attributes aren't set")
 	}
 }
 
 func TestXmlElementName(t *testing.T) {
 	doc := HtmlReadDocSimple("<div id='hi' />")
-  root := doc.RootNode()
-  div := root.Search("//div").First()
-  if div.Name() != "div" {
+	root := doc.RootNode()
+	div := root.Search("//div").First()
+	if div.Name() != "div" {
 		t.Error("Something is wrong with XMLNode.Name()")
 	}
 	div.SetName("span")
@@ -35,8 +35,8 @@ func TestXmlElementName(t *testing.T) {
 
 func TestXmlElementDump(t *testing.T) {
 	doc := HtmlReadDocSimple("<div id='hi' />")
-  root := doc.RootNode()
-  div := root.Search("//div").First()
+	root := doc.RootNode()
+	div := root.Search("//div").First()
 	result := div.Dump()
 	if result != "<div id=\"hi\"/>" {
 		t.Error("Node dumping is being... dumpy. Got back this pile of poo: ", result)
@@ -50,8 +50,8 @@ func TestXmlElementDump(t *testing.T) {
 
 func TestXmlElementRemove(t *testing.T) {
 	doc := HtmlReadDocSimple("<html><body><div><span>hi</span></div></body></html>")
-  root := doc.RootNode()
-  span := root.Search("//span").First()
+	root := doc.RootNode()
+	span := root.Search("//span").First()
 	span.Remove()
 	result := doc.DumpHTML()
 	if result != "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">\n<html><body><div></div></body></html>\n" {

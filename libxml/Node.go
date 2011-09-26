@@ -8,32 +8,32 @@ package libxml
 import "C"
 
 type Node interface {
-	Ptr() *C.xmlNode;
-	Doc() *XmlDoc;    // reference to doc
-	
-	Dump() string;
-	Search(xpath string) *NodeSet;
-	Remove();
-	
+	Ptr() *C.xmlNode
+	Doc() *XmlDoc // reference to doc
+
+	Dump() string
+	Search(xpath string) *NodeSet
+	Remove()
+
 	// Standard libxml Node interface
 	//Children() []Node;
-	First()    Node;   // first child link
-	Last()     Node;   // last child link
-	Parent()   Node;   // child->parent link
-	Next()     Node;   // next sibling link
-	Prev()     Node;   // previous sibling link
-	Type()     int;
-	
-	Name() string;
-	SetName(name string);
-	AttributeValue(name string) string;
-	SetAttributeValue(name string, value string);
+	First() Node  // first child link
+	Last() Node   // last child link
+	Parent() Node // child->parent link
+	Next() Node   // next sibling link
+	Prev() Node   // previous sibling link
+	Type() int
+
+	Name() string
+	SetName(name string)
+	AttributeValue(name string) string
+	SetAttributeValue(name string, value string)
 }
 
 func buildNode(ptr *C.xmlNode, doc *XmlDoc) Node {
-  if ptr == nil {
-    return nil
-  }
+	if ptr == nil {
+		return nil
+	}
 	node_type := xmlNodeType(ptr)
 	xml_node := &XmlNode{NodePtr: ptr, DocRef: doc}
 	if doc == nil {
@@ -46,4 +46,3 @@ func buildNode(ptr *C.xmlNode, doc *XmlDoc) Node {
 	}
 	return xml_node
 }
-
