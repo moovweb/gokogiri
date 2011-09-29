@@ -31,7 +31,7 @@ type XmlNode struct {
 	DocRef  *XmlDoc
 }
 
-type XmlElement struct {
+type Element struct {
 	*XmlNode
 }
 

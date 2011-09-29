@@ -42,7 +42,7 @@ func buildNode(ptr *C.xmlNode, doc *XmlDoc) Node {
 		doc.XmlNode.DocRef = doc
 		return doc
 	} else if node_type == XML_ELEMENT_NODE {
-		return &XmlElement{XmlNode: xml_node}
+		return &Element{XmlNode: xml_node}
 	}
 	return xml_node
 }
