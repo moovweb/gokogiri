@@ -23,6 +23,7 @@ type Node interface {
 	Parent() Node // child->parent link
 	Next() Node   // next sibling link
 	Prev() Node   // previous sibling link
+	Size() int
 	Type() int
 
 	Name() string

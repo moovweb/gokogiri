@@ -32,14 +32,15 @@ xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
 import "C"
 
 import . "libxml/help"
+import "unsafe"
 
 type Doc struct {
 	DocPtr *C.xmlDoc
 	*XmlNode
 }
 
-func NewDoc(ptr_inf interface{}) *Doc {
-	ptr := ptr_inf.(*C.xmlDoc)
+func NewDoc(ptr unsafe.Pointer) *Doc {
+	//ptr := aPtr.(*C.xmlDoc)
 	doc := NewNode(C.GoXmlCastDocToNode(ptr), nil).(*Doc)
 	doc.DocPtr = ptr
 	return doc

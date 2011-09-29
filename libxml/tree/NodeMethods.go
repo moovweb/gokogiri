@@ -81,6 +81,10 @@ func (node *XmlNode) Name() string {
 	return XmlChar2String(C.GoNodeName(node.Ptr()))
 }
 
+func (node *XmlNode) Size() int {
+	return int(C.xmlChildElementCount(node.Ptr()))
+}
+
 func (node *XmlNode) SetName(name string) {
 	C.xmlNodeSetName(node.Ptr(), C.xmlCharStrdup(C.CString(name)))
 }
