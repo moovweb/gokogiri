@@ -1,24 +1,24 @@
-package libxml
+package xpath
 
 import (
 	"testing"
 )
 
-func BuildSampleDoc() (doc *Doc, context *XPathContext) {
+func NewSampleDoc() (doc *Doc, context *XPathContext) {
 	doc = HtmlParse("<html><body><span /><div><span />content</div></body></html>")
 	context = doc.XPathContext()
 	return
 }
 
 func TestXPathRegisterNamespace(t *testing.T) {
-	_, context := BuildSampleDoc()
+	_, context := NewSampleDoc()
 	if context.RegisterNamespace("me", "/hi") == false {
 		t.Error("Should have been able to register namespace")
 	}
 }
 
 func TestXPathEvaluation(t *testing.T) {
-	_, context := BuildSampleDoc()
+	_, context := NewSampleDoc()
 	nodeSet := context.EvalToNodes("/html/body")
 	if nodeSet.Size() != 1 {
 		t.Error("Too many elements returned. Maybe some are nil!")
@@ -36,7 +36,7 @@ func TestXPathEvaluation(t *testing.T) {
 }
 
 func TestXPathNodeSearches(t *testing.T) {
-	doc, _ := BuildSampleDoc()
+	doc, _ := NewSampleDoc()
 	root := doc.RootNode()
 	spanSet := root.Search(".//span")
 	spans := spanSet.Slice()
@@ -54,5 +54,16 @@ func TestXPathNodeSearches(t *testing.T) {
 	}
 	if len(spans) == 0 {
 		t.Error("Should have found SOMETHING. Found nothing.")
+	}
+}
+
+func TestOnlyElements(t *testing.T) {
+	doc, _ := NewSampleDoc()
+	nodeSet := doc.Search("//*")
+	for i := 0; i < nodeSet.Size(); i++ {
+		node := nodeSet.NodeAt(i)
+		if (Element)node {
+			
+		}
 	}
 }

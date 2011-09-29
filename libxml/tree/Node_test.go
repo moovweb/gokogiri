@@ -1,4 +1,4 @@
-package libxml
+package tree
 
 import (
 	"testing"

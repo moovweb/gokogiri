@@ -1,5 +1,4 @@
-package libxml
-
+package tree
 /*
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -7,12 +6,14 @@ package libxml
 */
 import "C"
 
+//import . "libxml/help"
+
 type Node interface {
 	Ptr() *C.xmlNode
+	AnonPtr() interface{} // Used to access the C.Ptr's externally (and Type Assert them)
 	Doc() *Doc // reference to doc
 
 	Dump() string
-	Search(xpath string) *NodeSet
 	Remove()
 
 	// Standard libxml Node interface
@@ -35,7 +36,8 @@ type XmlNode struct {
 	DocRef  *Doc
 }
 
-func buildNode(ptr *C.xmlNode, doc *Doc) Node {
+func NewNode(undefined_ptr interface{}, doc *Doc) Node {
+	ptr := undefined_ptr.(*C.xmlNode)
 	if ptr == nil {
 		return nil
 	}

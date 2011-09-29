@@ -1,4 +1,4 @@
-package libxml
+package html
 /*
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -7,15 +7,13 @@ package libxml
 */
 import "C"
 
-import (
-	//"unsafe"
-)
+import . "libxml/tree"
 
 func ParseHtmlString(content string, url string, encoding string, opts int) *Doc {
 	cString := C.CString(content)
 	cXmlChar := C.xmlCharStrdup(cString)
 	xmlDocPtr := C.htmlReadDoc(cXmlChar, C.CString(url), C.CString(encoding), C.int(opts))
-	return buildDoc(xmlDocPtr)
+	return NewDoc(xmlDocPtr)
 }
 
 func HtmlParse(content string) *Doc {
@@ -27,5 +25,5 @@ func HtmlParse(content string) *Doc {
 }
 
 func ParseHtmlFile(url string, encoding string, opts int) *Doc {
-	return buildDoc(C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts)))
+	return NewDoc(C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts)))
 }

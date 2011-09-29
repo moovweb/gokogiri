@@ -1,4 +1,4 @@
-package libxml
+package xpath
 /* 
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -13,6 +13,7 @@ FetchNodeSet(xmlXPathObject *obj) {
   return obj->nodesetval; }
 */
 import "C"
+import . "libxml/tree"
 
 type XPathContext struct {
 	Ptr *C.xmlXPathContext
@@ -24,17 +25,36 @@ type XPathObject struct {
 	Doc *Doc
 }
 
+func ContextNew(node Node) *XPathContext {
+	doc := node.Doc()
+	docPtr := doc.AnonPtr().(*C.xmlDoc)
+	ctx := &XPathContext{Ptr: C.xmlXPathNewContext(docPtr), Doc: doc}
+	ctx.SetNode(node)
+	return ctx
+}
+
+func Search(node Node, xpath_expression string) *NodeSet {
+	if node.Doc() == nil {
+		println("Must define document in node")
+	}
+	ctx := ContextNew(node)
+	return ctx.EvalToNodes(xpath_expression)
+}
+
 func (context *XPathContext) RegisterNamespace(prefix, href string) bool {
-	result := C.xmlXPathRegisterNs(context.Ptr, String2XmlChar(prefix), String2XmlChar(href))
+	cPrefix := C.xmlCharStrdup(C.CString(prefix))
+	cHref := C.xmlCharStrdup(C.CString(href))
+	result := C.xmlXPathRegisterNs(context.Ptr, cPrefix, cHref)
 	return result == 0
 }
 
 func (context *XPathContext) SetNode(node Node) {
-	C.xmlXPathContextSetNode(context.Ptr, node.Ptr())
+	C.xmlXPathContextSetNode(context.Ptr, node.AnonPtr().(*C.xmlNode))
 }
 
 func (context *XPathContext) Eval(expression string) *XPathObject {
-	object_pointer := C.xmlXPathEvalExpression(String2XmlChar(expression), context.Ptr)
+	cExpression := C.xmlCharStrdup(C.CString(expression))
+	object_pointer := C.xmlXPathEvalExpression(cExpression, context.Ptr)
 	return &XPathObject{Ptr: object_pointer, Doc: context.Doc}
 }
 
@@ -48,5 +68,5 @@ func (context *XPathContext) Free() {
 }
 
 func (obj *XPathObject) NodeSet() *NodeSet {
-	return buildNodeSet(C.FetchNodeSet(obj.Ptr), obj.Doc)
+	return NewNodeSet(C.FetchNodeSet(obj.Ptr), obj.Doc)
 }

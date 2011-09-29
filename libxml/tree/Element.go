@@ -1,4 +1,4 @@
-package libxml
+package tree
 
 type Element struct {
 	*XmlNode

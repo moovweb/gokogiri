@@ -3,24 +3,17 @@
 
 include $(GOROOT)/src/Make.inc
 
-TARG=libxml
+TARG=libxml/html
 GOFILES=\
-	Element.go\
+	Constants.go\
 
 
 CGOFILES=\
-	Doc.go\
-	Helpers.go\
 	Html.go\
-	Node.go\
-	NodeMethods.go\
-	NodeSet.go\
-	XPathContext.go\
-	constants.go\
 
 
 # gb: this is the local install
-GBROOT=..
+GBROOT=../..
 
 # gb: compile/link against local install
 GC+= -I $(GBROOT)/_obj
@@ -33,3 +26,6 @@ $(GBROOT)/_obj/$(TARG).a: _obj/$(TARG).a
 package: $(GBROOT)/_obj/$(TARG).a
 
 include $(GOROOT)/src/Make.pkg
+
+# gb: local dependencies
+_obj/$(TARG).a: $(GBROOT)/_obj/libxml/tree.a

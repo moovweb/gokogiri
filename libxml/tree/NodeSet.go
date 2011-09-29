@@ -1,4 +1,4 @@
-package libxml
+package tree
 /* 
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -29,7 +29,8 @@ type NodeSet struct {
 	Doc *Doc
 }
 
-func buildNodeSet(ptr *C.xmlNodeSet, doc *Doc) *NodeSet {
+func NewNodeSet(aPtr interface{}, doc *Doc) *NodeSet {
+	ptr := aPtr.(*C.xmlNodeSet)
 	if ptr == nil {
 		return nil
 	}
@@ -42,7 +43,7 @@ func (nodeSet *NodeSet) Size() int {
 
 func (nodeSet *NodeSet) NodeAt(pos int) Node {
 	node := C.FetchNode(nodeSet.Ptr, C.int(pos))
-	return buildNode(node, nodeSet.Doc)
+	return NewNode(node, nodeSet.Doc)
 }
 
 func (nodeSet *NodeSet) First() Node {

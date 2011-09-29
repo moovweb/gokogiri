@@ -1,4 +1,4 @@
-package libxml
+package help
 /* 
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -21,12 +21,7 @@ func XmlCleanUpParser() {
 	C.xmlCleanupParser()
 }
 
-func XmlChar2String(s *C.xmlChar) string {
-	cString := C.xmlChar2C(s)
-	//defer C.free(unsafe.Pointer(cString))
+func XmlChar2String(s interface{}) string {
+	cString := C.xmlChar2C(s.(*C.xmlChar))
 	return C.GoString(cString)
-}
-
-func String2XmlChar(s string) *C.xmlChar {
-	return C.C2xmlChar(C.CString(s))
 }

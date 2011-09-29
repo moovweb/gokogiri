@@ -1,10 +1,10 @@
-package libxml
+package tree
 
 import (
 	"testing"
 )
 
-func TestDocBuilding(t *testing.T) {
+func TestDocNewing(t *testing.T) {
 	//t.Error("hi")
 	doc := HtmlParse("<html />")
 	root := doc.RootNode()

@@ -1,4 +1,4 @@
-package libxml
+package tree
 /*
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -26,6 +26,8 @@ DumpNodeToXmlChar(xmlNode *node, xmlDoc *doc) {
 */
 import "C"
 
+import . "libxml/help"
+
 func xmlNodeType(node *C.xmlNode) int {
 	return int(C.NodeType(node))
 }
@@ -38,37 +40,37 @@ func (node *XmlNode) Ptr() *C.xmlNode {
 	return node.NodePtr
 }
 
+/*
+	In order to properly cast the pointer to a C.xmlDoc later, we must 
+	provide this "anonymous" pointer so that the external function can 
+	use a Type Assertion on it.
+*/
+func (node *XmlNode) AnonPtr() interface{} {
+	return node.Ptr()
+}
+
 func (node *XmlNode) Type() int {
 	return int(C.NodeType(node.Ptr()))
 }
 
-func (node *XmlNode) Search(xpath_expression string) *NodeSet {
-	if node.Doc() == nil {
-		println("Must define document in node")
-	}
-	ctx := node.Doc().XPathContext()
-	ctx.SetNode(node)
-	return ctx.EvalToNodes(xpath_expression)
-}
-
 func (node *XmlNode) Parent() Node {
-	return buildNode(C.GoNodeParent(node.Ptr()), node.Doc())
+	return NewNode(C.GoNodeParent(node.Ptr()), node.Doc())
 }
 
 func (node *XmlNode) Next() Node {
-	return buildNode(C.GoNodeNext(node.Ptr()), node.Doc())
+	return NewNode(C.GoNodeNext(node.Ptr()), node.Doc())
 }
 
 func (node *XmlNode) Prev() Node {
-	return buildNode(C.GoNodePrev(node.Ptr()), node.Doc())
+	return NewNode(C.GoNodePrev(node.Ptr()), node.Doc())
 }
 
 func (node *XmlNode) First() Node {
-	return buildNode(C.GoNodeChildren(node.Ptr()), node.Doc())
+	return NewNode(C.GoNodeChildren(node.Ptr()), node.Doc())
 }
 
 func (node *XmlNode) Last() Node {
-	return buildNode(C.GoNodeLast(node.Ptr()), node.Doc())
+	return NewNode(C.GoNodeLast(node.Ptr()), node.Doc())
 }
 
 func (node *XmlNode) Remove() {

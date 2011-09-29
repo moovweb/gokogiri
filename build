@@ -7,7 +7,10 @@ echo Running goinstall \
 
 else
 echo Building \
-&& echo "(in libxml)" gomake $1 && cd libxml && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/help)" gomake $1 && cd libxml/help && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/tree)" gomake $1 && cd libxml/tree && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/html)" gomake $1 && cd libxml/html && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/xpath)" gomake $1 && cd libxml/xpath && gomake $1 && cd - > /dev/null \
 
 fi
 

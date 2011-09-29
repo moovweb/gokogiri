@@ -1,17 +1,17 @@
-package libxml
+package tree
 
 import (
 	"testing"
 )
 
-func BuildSampleNodeSetDoc() (doc *Doc, context *XPathContext) {
+func NewSampleNodeSetDoc() (doc *Doc, context *XPathContext) {
 	doc = HtmlParse("<html><body><span /><div><span /><span>content</span></div></body></html>")
 	context = doc.XPathContext()
 	return
 }
 
 func TestNodeSetRemoval(t *testing.T) {
-	doc, _ := BuildSampleNodeSetDoc()
+	doc, _ := NewSampleNodeSetDoc()
 	root := doc.RootNode()
 	allNodes := root.Search("//*")
 	if allNodes.Size() != 6 {

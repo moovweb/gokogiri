@@ -1,4 +1,4 @@
-package libxml
+package tree
 /* 
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
@@ -31,13 +31,16 @@ xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
 */
 import "C"
 
+import . "libxml/help"
+
 type Doc struct {
 	DocPtr *C.xmlDoc
 	*XmlNode
 }
 
-func buildDoc(ptr *C.xmlDoc) *Doc {
-	doc := buildNode(C.GoXmlCastDocToNode(ptr), nil).(*Doc)
+func NewDoc(ptr_inf interface{}) *Doc {
+	ptr := ptr_inf.(*C.xmlDoc)
+	doc := NewNode(C.GoXmlCastDocToNode(ptr), nil).(*Doc)
 	doc.DocPtr = ptr
 	return doc
 }
@@ -49,7 +52,7 @@ func ParseXmlString(content string, url string, encoding string, opts int) *Doc 
 		c_encoding = nil
 	}
 	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), c_encoding, C.int(opts))
-	return buildDoc(xmlDocPtr)
+	return NewDoc(xmlDocPtr)
 }
 
 func XmlParse(content string) *Doc {
@@ -74,9 +77,5 @@ func (doc *Doc) DumpHTML() string {
 }
 
 func (doc *Doc) RootNode() Node {
-	return buildNode(C.xmlDocGetRootElement(doc.DocPtr), doc)
-}
-
-func (doc *Doc) XPathContext() *XPathContext {
-	return &XPathContext{Ptr: C.xmlXPathNewContext(doc.DocPtr), Doc: doc}
+	return NewNode(C.xmlDocGetRootElement(doc.DocPtr), doc)
 }
