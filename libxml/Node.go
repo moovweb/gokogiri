@@ -9,7 +9,7 @@ import "C"
 
 type Node interface {
 	Ptr() *C.xmlNode
-	Doc() *XmlDoc // reference to doc
+	Doc() *Doc // reference to doc
 
 	Dump() string
 	Search(xpath string) *NodeSet
@@ -30,14 +30,19 @@ type Node interface {
 	SetAttributeValue(name string, value string)
 }
 
-func buildNode(ptr *C.xmlNode, doc *XmlDoc) Node {
+type XmlNode struct {
+	NodePtr *C.xmlNode
+	DocRef  *Doc
+}
+
+func buildNode(ptr *C.xmlNode, doc *Doc) Node {
 	if ptr == nil {
 		return nil
 	}
 	node_type := xmlNodeType(ptr)
 	xml_node := &XmlNode{NodePtr: ptr, DocRef: doc}
 	if doc == nil {
-		doc := &XmlDoc{XmlNode: xml_node}
+		doc := &Doc{XmlNode: xml_node}
 		// If we are a doc, then we reference ourselves
 		doc.XmlNode.DocRef = doc
 		return doc

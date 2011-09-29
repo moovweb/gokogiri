@@ -26,10 +26,10 @@ import "C"
 
 type NodeSet struct {
 	Ptr *C.xmlNodeSet
-	Doc *XmlDoc
+	Doc *Doc
 }
 
-func buildNodeSet(ptr *C.xmlNodeSet, doc *XmlDoc) *NodeSet {
+func buildNodeSet(ptr *C.xmlNodeSet, doc *Doc) *NodeSet {
 	if ptr == nil {
 		return nil
 	}

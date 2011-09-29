@@ -5,17 +5,18 @@ include $(GOROOT)/src/Make.inc
 
 TARG=libxml
 GOFILES=\
+	Element.go\
 
 
 CGOFILES=\
-	HtmlDoc.go\
+	Doc.go\
+	Helpers.go\
+	Html.go\
 	Node.go\
+	NodeMethods.go\
 	NodeSet.go\
 	XPathContext.go\
-	XmlDoc.go\
-	XmlNode.go\
 	constants.go\
-	libxml.go\
 
 
 # gb: this is the local install

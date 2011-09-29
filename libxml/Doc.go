@@ -31,52 +31,52 @@ xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
 */
 import "C"
 
-type XmlDoc struct {
+type Doc struct {
 	DocPtr *C.xmlDoc
 	*XmlNode
 }
 
-func buildXmlDoc(ptr *C.xmlDoc) *XmlDoc {
-	doc := buildNode(C.GoXmlCastDocToNode(ptr), nil).(*XmlDoc)
+func buildDoc(ptr *C.xmlDoc) *Doc {
+	doc := buildNode(C.GoXmlCastDocToNode(ptr), nil).(*Doc)
 	doc.DocPtr = ptr
 	return doc
 }
 
-func ParseXmlString(content string, url string, encoding string, opts int) *XmlDoc {
+func ParseXmlString(content string, url string, encoding string, opts int) *Doc {
 	c := C.xmlCharStrdup(C.CString(content))
 	c_encoding := C.CString(encoding)
 	if encoding == "" {
 		c_encoding = nil
 	}
 	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), c_encoding, C.int(opts))
-	return buildXmlDoc(xmlDocPtr)
+	return buildDoc(xmlDocPtr)
 }
 
-func XmlParse(content string) *XmlDoc {
+func XmlParse(content string) *Doc {
 	return ParseXmlString(content, "", "", 0)
 }
 
-func (doc *XmlDoc) Free() {
+func (doc *Doc) Free() {
 	C.xmlFreeDoc(doc.DocPtr)
 }
 
-func (doc *XmlDoc) MetaEncoding() string {
+func (doc *Doc) MetaEncoding() string {
 	s := C.htmlGetMetaEncoding(doc.DocPtr)
 	return XmlChar2String(s)
 }
 
-func (doc *XmlDoc) Dump() string {
+func (doc *Doc) Dump() string {
 	return XmlChar2String(C.DumpToXmlChar(doc.DocPtr))
 }
 
-func (doc *XmlDoc) DumpHTML() string {
+func (doc *Doc) DumpHTML() string {
 	return XmlChar2String(C.DumpHTMLToXmlChar(doc.DocPtr))
 }
 
-func (doc *XmlDoc) RootNode() Node {
+func (doc *Doc) RootNode() Node {
 	return buildNode(C.xmlDocGetRootElement(doc.DocPtr), doc)
 }
 
-func (doc *XmlDoc) XPathContext() *XPathContext {
+func (doc *Doc) XPathContext() *XPathContext {
 	return &XPathContext{Ptr: C.xmlXPathNewContext(doc.DocPtr), Doc: doc}
 }

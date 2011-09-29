@@ -26,20 +26,11 @@ DumpNodeToXmlChar(xmlNode *node, xmlDoc *doc) {
 */
 import "C"
 
-type XmlNode struct {
-	NodePtr *C.xmlNode
-	DocRef  *XmlDoc
-}
-
-type Element struct {
-	*XmlNode
-}
-
 func xmlNodeType(node *C.xmlNode) int {
 	return int(C.NodeType(node))
 }
 
-func (node *XmlNode) Doc() *XmlDoc {
+func (node *XmlNode) Doc() *Doc {
 	return node.DocRef
 }
 

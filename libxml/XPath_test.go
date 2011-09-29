@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func BuildSampleDoc() (doc *XmlDoc, context *XPathContext) {
+func BuildSampleDoc() (doc *Doc, context *XPathContext) {
 	doc = HtmlParse("<html><body><span /><div><span />content</div></body></html>")
 	context = doc.XPathContext()
 	return

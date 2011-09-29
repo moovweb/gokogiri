@@ -11,18 +11,14 @@ import (
 	//"unsafe"
 )
 
-type HtmlDoc struct {
-	*XmlDoc
-}
-
-func ParseHtmlString(content string, url string, encoding string, opts int) *XmlDoc {
+func ParseHtmlString(content string, url string, encoding string, opts int) *Doc {
 	cString := C.CString(content)
 	cXmlChar := C.xmlCharStrdup(cString)
 	xmlDocPtr := C.htmlReadDoc(cXmlChar, C.CString(url), C.CString(encoding), C.int(opts))
-	return buildXmlDoc(xmlDocPtr)
+	return buildDoc(xmlDocPtr)
 }
 
-func HtmlParse(content string) *XmlDoc {
+func HtmlParse(content string) *Doc {
 	return ParseHtmlString(content, "", "",
 		HTML_PARSE_RECOVER|
 			HTML_PARSE_NONET|
@@ -30,6 +26,6 @@ func HtmlParse(content string) *XmlDoc {
 			HTML_PARSE_NOWARNING)
 }
 
-func ParseHtmlFile(url string, encoding string, opts int) *XmlDoc {
-	return buildXmlDoc(C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts)))
+func ParseHtmlFile(url string, encoding string, opts int) *Doc {
+	return buildDoc(C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts)))
 }

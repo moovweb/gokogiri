@@ -16,12 +16,12 @@ import "C"
 
 type XPathContext struct {
 	Ptr *C.xmlXPathContext
-	Doc *XmlDoc
+	Doc *Doc
 }
 
 type XPathObject struct {
 	Ptr *C.xmlXPathObject
-	Doc *XmlDoc
+	Doc *Doc
 }
 
 func (context *XPathContext) RegisterNamespace(prefix, href string) bool {
