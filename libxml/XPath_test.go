@@ -38,17 +38,17 @@ func TestXPathEvaluation(t *testing.T) {
 func TestXPathNodeSearches(t *testing.T) {
 	doc, _ := BuildSampleDoc()
 	root := doc.RootNode()
-	span_set := root.Search(".//span")
-	spans := span_set.Slice()
+	spanSet := root.Search(".//span")
+	spans := spanSet.Slice()
 	if len(spans) != 2 {
 		t.Error("too many spans.. returned ", len(spans), " nodes")
 	}
-	div_set := root.Search("//div")
-	divs := div_set.Slice()
+	divSet := root.Search("//div")
+	divs := divSet.Slice()
 	div := divs[0]
 
-	span_set = div.Search(".//span")
-	spans = span_set.Slice()
+	spanSet = div.Search(".//span")
+	spans = spanSet.Slice()
 	if len(spans) >= 2 {
 		t.Error("Search is NOT scoped: returned ", len(spans), " nodes")
 	}
