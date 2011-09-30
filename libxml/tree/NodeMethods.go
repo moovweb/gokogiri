@@ -83,7 +83,7 @@ func (node *XmlNode) SetName(name string) {
 	C.xmlNodeSetName(node.ptr(), C.xmlCharStrdup(C.CString(name)))
 }
 
-func (node *XmlNode) Dump() string {
+func (node *XmlNode) String() string {
 	return C.GoString(C.DumpNodeToXmlChar(node.ptr(), node.Doc().DocPtr))
 }
 

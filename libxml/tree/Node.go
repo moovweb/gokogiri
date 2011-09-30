@@ -13,7 +13,7 @@ type Node interface {
 	Ptr() unsafe.Pointer // Used to access the C.Ptr's externally
 	Doc() *Doc // reference to doc
 
-	Dump() string
+	String() string
 	Remove()
 
 	// Standard libxml Node interface

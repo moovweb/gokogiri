@@ -51,7 +51,7 @@ func (doc *Doc) MetaEncoding() string {
 	return C.GoString((*C.char)(unsafe.Pointer(C.htmlGetMetaEncoding(doc.DocPtr))))
 }
 
-func (doc *Doc) Dump() string {
+func (doc *Doc) String() string {
 	return C.GoString(C.DumpXmlToString(doc.DocPtr))
 }
 
