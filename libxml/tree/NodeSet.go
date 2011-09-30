@@ -23,18 +23,19 @@ SizeOfSet(xmlNodeSet *set) {
 
 */
 import "C"
+import "unsafe"
 
 type NodeSet struct {
 	Ptr *C.xmlNodeSet
 	Doc *Doc
 }
 
-func NewNodeSet(aPtr interface{}, doc *Doc) *NodeSet {
-	ptr := aPtr.(*C.xmlNodeSet)
-	if ptr == nil {
+func NewNodeSet(ptr unsafe.Pointer, doc *Doc) *NodeSet {
+	cPtr := (*C.xmlNodeSet)(ptr)
+	if cPtr == nil {
 		return nil
 	}
-	return &NodeSet{Ptr: ptr, Doc: doc}
+	return &NodeSet{Ptr: cPtr, Doc: doc}
 }
 
 func (nodeSet *NodeSet) Size() int {
@@ -43,7 +44,7 @@ func (nodeSet *NodeSet) Size() int {
 
 func (nodeSet *NodeSet) NodeAt(pos int) Node {
 	node := C.FetchNode(nodeSet.Ptr, C.int(pos))
-	return NewNode(node, nodeSet.Doc)
+	return NewNode(unsafe.Pointer(node), nodeSet.Doc)
 }
 
 func (nodeSet *NodeSet) First() Node {

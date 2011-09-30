@@ -13,6 +13,7 @@ FetchNodeSet(xmlXPathObject *obj) {
   return obj->nodesetval; }
 */
 import "C"
+import "unsafe"
 import . "libxml/tree"
 
 type XPathContext struct {
@@ -27,7 +28,7 @@ type XPathObject struct {
 
 func ContextNew(node Node) *XPathContext {
 	doc := node.Doc()
-	docPtr := doc.AnonPtr().(*C.xmlDoc)
+	docPtr := (*C.xmlDoc)(unsafe.Pointer(doc.Ptr()))
 	ctx := &XPathContext{Ptr: C.xmlXPathNewContext(docPtr), Doc: doc}
 	ctx.SetNode(node)
 	return ctx
@@ -49,7 +50,7 @@ func (context *XPathContext) RegisterNamespace(prefix, href string) bool {
 }
 
 func (context *XPathContext) SetNode(node Node) {
-	C.xmlXPathContextSetNode(context.Ptr, node.AnonPtr().(*C.xmlNode))
+	C.xmlXPathContextSetNode(context.Ptr, (*C.xmlNode)(node.Ptr()))
 }
 
 func (context *XPathContext) Eval(expression string) *XPathObject {
@@ -68,5 +69,5 @@ func (context *XPathContext) Free() {
 }
 
 func (obj *XPathObject) NodeSet() *NodeSet {
-	return NewNodeSet(C.FetchNodeSet(obj.Ptr), obj.Doc)
+	return NewNodeSet(unsafe.Pointer(C.FetchNodeSet(obj.Ptr)), obj.Doc)
 }

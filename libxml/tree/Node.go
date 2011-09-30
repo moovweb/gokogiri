@@ -5,12 +5,12 @@ package tree
 #include <libxml/HTMLtree.h>
 */
 import "C"
-
+import "unsafe"
 //import . "libxml/help"
 
 type Node interface {
-	Ptr() *C.xmlNode
-	AnonPtr() interface{} // Used to access the C.Ptr's externally (and Type Assert them)
+	ptr() *C.xmlNode
+	Ptr() unsafe.Pointer // Used to access the C.Ptr's externally
 	Doc() *Doc // reference to doc
 
 	Dump() string
@@ -37,13 +37,13 @@ type XmlNode struct {
 	DocRef  *Doc
 }
 
-func NewNode(undefined_ptr interface{}, doc *Doc) Node {
-	ptr := undefined_ptr.(*C.xmlNode)
-	if ptr == nil {
+func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
+	cPtr := (*C.xmlNode)(ptr)
+	if cPtr == nil {
 		return nil
 	}
-	node_type := xmlNodeType(ptr)
-	xml_node := &XmlNode{NodePtr: ptr, DocRef: doc}
+	node_type := xmlNodeType(cPtr)
+	xml_node := &XmlNode{NodePtr: cPtr, DocRef: doc}
 	if doc == nil {
 		doc := &Doc{XmlNode: xml_node}
 		// If we are a doc, then we reference ourselves

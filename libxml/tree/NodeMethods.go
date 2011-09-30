@@ -35,71 +35,66 @@ func (node *XmlNode) Doc() *Doc {
 	return node.DocRef
 }
 
-func (node *XmlNode) Ptr() *C.xmlNode {
+func (node *XmlNode) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(node.NodePtr)
+}
+
+func (node *XmlNode) ptr() *C.xmlNode {
 	return node.NodePtr
 }
 
-/*
-	In order to properly cast the pointer to a C.xmlDoc later, we must 
-	provide this "anonymous" pointer so that the external function can 
-	use a Type Assertion on it.
-*/
-func (node *XmlNode) AnonPtr() interface{} {
-	return node.Ptr()
-}
-
 func (node *XmlNode) Type() int {
-	return int(C.NodeType(node.Ptr()))
+	return int(C.NodeType(node.ptr()))
 }
 
 func (node *XmlNode) Parent() Node {
-	return NewNode(C.GoNodeParent(node.Ptr()), node.Doc())
+	return NewNode(unsafe.Pointer(C.GoNodeParent(node.ptr())), node.Doc())
 }
 
 func (node *XmlNode) Next() Node {
-	return NewNode(C.GoNodeNext(node.Ptr()), node.Doc())
+	return NewNode(unsafe.Pointer(C.GoNodeNext(node.ptr())), node.Doc())
 }
 
 func (node *XmlNode) Prev() Node {
-	return NewNode(C.GoNodePrev(node.Ptr()), node.Doc())
+	return NewNode(unsafe.Pointer(C.GoNodePrev(node.ptr())), node.Doc())
 }
 
 func (node *XmlNode) First() Node {
-	return NewNode(C.GoNodeChildren(node.Ptr()), node.Doc())
+	return NewNode(unsafe.Pointer(C.GoNodeChildren(node.ptr())), node.Doc())
 }
 
 func (node *XmlNode) Last() Node {
-	return NewNode(C.GoNodeLast(node.Ptr()), node.Doc())
+	return NewNode(unsafe.Pointer(C.GoNodeLast(node.ptr())), node.Doc())
 }
 
 func (node *XmlNode) Remove() {
-	C.xmlUnlinkNode(node.Ptr())
+	C.xmlUnlinkNode(node.ptr())
 }
 
 func (node *XmlNode) Name() string {
-	return C.GoString(C.GoNodeName(node.Ptr()))
+	return C.GoString(C.GoNodeName(node.ptr()))
 }
 
 func (node *XmlNode) Size() int {
-	return int(C.xmlChildElementCount(node.Ptr()))
+	return int(C.xmlChildElementCount(node.ptr()))
 }
 
 func (node *XmlNode) SetName(name string) {
-	C.xmlNodeSetName(node.Ptr(), C.xmlCharStrdup(C.CString(name)))
+	C.xmlNodeSetName(node.ptr(), C.xmlCharStrdup(C.CString(name)))
 }
 
 func (node *XmlNode) Dump() string {
-	return C.GoString(C.DumpNodeToXmlChar(node.Ptr(), node.Doc().DocPtr))
+	return C.GoString(C.DumpNodeToXmlChar(node.ptr(), node.Doc().DocPtr))
 }
 
 func (node *XmlNode) AttributeValue(name string) string {
 	c := C.xmlCharStrdup(C.CString(name))
-	s := C.xmlGetProp(node.Ptr(), c)
+	s := C.xmlGetProp(node.ptr(), c)
 	return C.GoString((*C.char)(unsafe.Pointer(s)))
 }
 
 func (node *XmlNode) SetAttributeValue(name string, value string) {
 	c_name := C.xmlCharStrdup(C.CString(name))
 	c_value := C.xmlCharStrdup(C.CString(value))
-	C.xmlSetProp(node.Ptr(), c_name, c_value)
+	C.xmlSetProp(node.ptr(), c_name, c_value)
 }

@@ -38,7 +38,7 @@ type Doc struct {
 }
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
-	doc := NewNode((*C.xmlNode)(ptr), nil).(*Doc)
+	doc := NewNode(ptr, nil).(*Doc)
 	doc.DocPtr = (*C.xmlDoc)(ptr)
 	return doc
 }
@@ -60,5 +60,5 @@ func (doc *Doc) DumpHTML() string {
 }
 
 func (doc *Doc) RootNode() Node {
-	return NewNode(C.xmlDocGetRootElement(doc.DocPtr), doc)
+	return NewNode(unsafe.Pointer(C.xmlDocGetRootElement(doc.DocPtr)), doc)
 }
