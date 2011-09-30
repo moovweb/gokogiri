@@ -9,7 +9,7 @@ char* xmlChar2C(xmlChar* x) { return (char *) x; }
 xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
 */
 import "C"
-//import "unsafe"
+import "unsafe"
 
 func XmlCheckVersion() int {
 	var v C.int

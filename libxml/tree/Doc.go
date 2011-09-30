@@ -45,20 +45,6 @@ func NewDoc(ptr unsafe.Pointer) *Doc {
 	return doc
 }
 
-func ParseXmlString(content string, url string, encoding string, opts int) *Doc {
-	c := C.xmlCharStrdup(C.CString(content))
-	c_encoding := C.CString(encoding)
-	if encoding == "" {
-		c_encoding = nil
-	}
-	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), c_encoding, C.int(opts))
-	return NewDoc(unsafe.Pointer(xmlDocPtr))
-}
-
-func XmlParse(content string) *Doc {
-	return ParseXmlString(content, "", "", 0)
-}
-
 func (doc *Doc) Free() {
 	C.xmlFreeDoc(doc.DocPtr)
 }

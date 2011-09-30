@@ -1,13 +1,19 @@
 package test
 
-import "libxml/html"
+import "libxml"
 import(
 	"testing"
 )
 
 func TestSimpleParse(t *testing.T) {
-	doc := html.ParseString("<html />")
+	doc := libxml.HtmlParseString("<html><head /><body /></html>")
 	if doc.Size() != 1 {
-		t.Error("Should be 1 big!")
+		t.Error("Incorrect size")
 	}
+	htmlTag := doc.First()
+	if htmlTag.Size() != 2 {
+		t.Error(htmlTag.Name())
+		t.Error("Two tags are inside of <html>")
+	}
+	
 }
