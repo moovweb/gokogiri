@@ -9,7 +9,6 @@ char* xmlChar2C(xmlChar* x) { return (char *) x; }
 xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
 */
 import "C"
-import "unsafe"
 
 func XmlCheckVersion() int {
 	var v C.int
@@ -19,9 +18,4 @@ func XmlCheckVersion() int {
 
 func XmlCleanUpParser() {
 	C.xmlCleanupParser()
-}
-
-func XmlChar2String(s interface{}) string {
-	cString := C.xmlChar2C(s.(*C.xmlChar))
-	return C.GoString(cString)
 }

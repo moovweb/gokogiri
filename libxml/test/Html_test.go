@@ -10,9 +10,10 @@ func TestSimpleParse(t *testing.T) {
 	if doc.Size() != 1 {
 		t.Error("Incorrect size")
 	}
-	htmlTag := doc.First()
+	// Doctype gets returned as the first child!
+	htmlTag := doc.First().Next()
 	if htmlTag.Size() != 2 {
-		t.Error(htmlTag.Name())
+		print(htmlTag.Name())
 		t.Error("Two tags are inside of <html>")
 	}
 	

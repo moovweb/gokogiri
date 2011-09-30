@@ -9,29 +9,27 @@ package tree
 #include <libxml/xmlstring.h> 
 #include <libxml/xpath.h> 
 
-xmlChar *
-DumpToXmlChar(xmlDoc *doc) {
+char *
+DumpXmlToString(xmlDoc *doc) {
   xmlChar *buff;
   int buffersize;
   xmlDocDumpFormatMemory(doc, 
                          &buff,
                          &buffersize, 1);
-  return buff;
+  return (char *)buff;
 }
 
-xmlChar *
-DumpHTMLToXmlChar(xmlDoc *doc) {
+char *
+DumpHtmlToString(xmlDoc *doc) {
   xmlChar *buff;
   int buffersize;
   htmlDocDumpMemory(doc, &buff, &buffersize);
-  return buff;
+  return (char *)buff;
 }
 
 xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
 */
 import "C"
-
-import . "libxml/help"
 import "unsafe"
 
 type Doc struct {
@@ -50,16 +48,15 @@ func (doc *Doc) Free() {
 }
 
 func (doc *Doc) MetaEncoding() string {
-	s := C.htmlGetMetaEncoding(doc.DocPtr)
-	return XmlChar2String(s)
+	return C.GoString((*C.char)(unsafe.Pointer(C.htmlGetMetaEncoding(doc.DocPtr))))
 }
 
 func (doc *Doc) Dump() string {
-	return XmlChar2String(C.DumpToXmlChar(doc.DocPtr))
+	return C.GoString(C.DumpXmlToString(doc.DocPtr))
 }
 
 func (doc *Doc) DumpHTML() string {
-	return XmlChar2String(C.DumpHTMLToXmlChar(doc.DocPtr))
+	return C.GoString(C.DumpHtmlToString(doc.DocPtr))
 }
 
 func (doc *Doc) RootNode() Node {

@@ -15,18 +15,17 @@ xmlNode * GoNodeLast(xmlNode *node) { return node->last; }
 xmlNode * GoNodeParent(xmlNode *node) { return node->parent; } 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
-const xmlChar * GoNodeName(xmlNode *node) { return node->name; }
+char * GoNodeName(xmlNode *node) { return (char*)node->name; }
 
-xmlChar *
+char *
 DumpNodeToXmlChar(xmlNode *node, xmlDoc *doc) {
   xmlBuffer *buff = xmlBufferCreate();
   xmlNodeDump(buff, doc, node, 0, 0);
-  return buff->content;
+  return (char*)buff->content;
 }
 */
 import "C"
-
-import . "libxml/help"
+import "unsafe"
 
 func xmlNodeType(node *C.xmlNode) int {
 	return int(C.NodeType(node))
@@ -78,7 +77,7 @@ func (node *XmlNode) Remove() {
 }
 
 func (node *XmlNode) Name() string {
-	return XmlChar2String(C.GoNodeName(node.Ptr()))
+	return C.GoString(C.GoNodeName(node.Ptr()))
 }
 
 func (node *XmlNode) Size() int {
@@ -90,13 +89,13 @@ func (node *XmlNode) SetName(name string) {
 }
 
 func (node *XmlNode) Dump() string {
-	return XmlChar2String(C.DumpNodeToXmlChar(node.Ptr(), node.Doc().DocPtr))
+	return C.GoString(C.DumpNodeToXmlChar(node.Ptr(), node.Doc().DocPtr))
 }
 
 func (node *XmlNode) AttributeValue(name string) string {
 	c := C.xmlCharStrdup(C.CString(name))
 	s := C.xmlGetProp(node.Ptr(), c)
-	return XmlChar2String(s)
+	return C.GoString((*C.char)(unsafe.Pointer(s)))
 }
 
 func (node *XmlNode) SetAttributeValue(name string, value string) {
