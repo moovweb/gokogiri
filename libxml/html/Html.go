@@ -32,5 +32,5 @@ func ParseString(content string) *Doc {
 func ParseFile(url string, encoding string, opts int) *Doc {
 	htmlDocPtr := C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts))
 	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
-	return NewDoc(xmlDocPtr)
+	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }

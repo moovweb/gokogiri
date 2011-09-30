@@ -40,9 +40,8 @@ type Doc struct {
 }
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
-	//ptr := aPtr.(*C.xmlDoc)
-	doc := NewNode(C.GoXmlCastDocToNode(ptr), nil).(*Doc)
-	doc.DocPtr = ptr
+	doc := NewNode((*C.xmlNode)(ptr), nil).(*Doc)
+	doc.DocPtr = (*C.xmlDoc)(ptr)
 	return doc
 }
 
@@ -53,7 +52,7 @@ func ParseXmlString(content string, url string, encoding string, opts int) *Doc 
 		c_encoding = nil
 	}
 	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), c_encoding, C.int(opts))
-	return NewDoc(xmlDocPtr)
+	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
 func XmlParse(content string) *Doc {
