@@ -93,4 +93,8 @@ func TestSetContent(t *testing.T) {
 	if !strings.Contains(doc.String(), "<root>bye</root>") {
 		t.Fail()
 	}
+	root.SetContent("<")
+	if !strings.Contains(doc.String(), "&lt;") {
+		t.Fail()
+	}
 }

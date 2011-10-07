@@ -91,7 +91,9 @@ func (node *XmlNode) Content() string {
 }
 
 func (node *XmlNode) SetContent(content string) {
-	C.xmlNodeSetContent(node.ptr(), String2XmlChar(content))
+	docPtr := (*C.xmlDoc)(node.Doc().Ptr());
+	xmlChar := C.xmlEncodeSpecialChars(docPtr, String2XmlChar(content))
+	C.xmlNodeSetContent(node.ptr(), xmlChar)
 }
 
 func (node *XmlNode) String() string {
