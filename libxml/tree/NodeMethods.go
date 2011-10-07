@@ -9,8 +9,6 @@ package tree
 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
-char * GoNodeName(xmlNode *node) { return (char*)node->name; }
-
 char *
 DumpNodeToXmlChar(xmlNode *node, xmlDoc *doc) {
   xmlBuffer *buff = xmlBufferCreate();
@@ -81,11 +79,18 @@ func (node *XmlNode) Size() int {
 }
 
 func (node *XmlNode) Name() string {
-	return C.GoString(C.GoNodeName(node.ptr()))
+	return XmlChar2String(node.ptr().name)
 }
 
 func (node *XmlNode) SetName(name string) {
 	C.xmlNodeSetName(node.ptr(), C.xmlCharStrdup(C.CString(name)))
+}
+
+func (node *XmlNode) Content() string {
+	return XmlChar2String(node.ptr().content)
+}
+
+func (node *XmlNode) SetContent(content string) {
 }
 
 func (node *XmlNode) String() string {
@@ -102,4 +107,22 @@ func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
 	}
 	attribute := NewNode(unsafe.Pointer(xmlAttrPtr), node.Doc()).(*Attribute)
 	return attribute, didCreate;
+}
+
+func (node *XmlNode) AppendChildNode(child Node) {
+	C.xmlAddChild(node.ptr(), (*C.xmlNode)(child.Ptr()))
+}
+func (node *XmlNode) PrependChildNode(child Node) {
+	if node.Size() >= 1 {
+		node.First().AddNodeBefore(child)
+	} else {
+		node.AppendChildNode(child)
+	}
+}
+
+func (node *XmlNode) AddNodeAfter(sibling Node) {
+	C.xmlAddNextSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
+}
+func (node *XmlNode) AddNodeBefore(sibling Node) {
+	C.xmlAddPrevSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
 }

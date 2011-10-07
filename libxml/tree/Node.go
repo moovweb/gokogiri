@@ -15,7 +15,7 @@ type Node interface {
 	String() string
 	Remove() bool
 
-	// Traversal Methods
+	// Element Traversal Methods
 	Parent() Node // child->parent link
 	First()  Node // first child link
 	Last()   Node // last child link
@@ -29,9 +29,14 @@ type Node interface {
 	// Node Getters and Setters
 	Name() string
 	SetName(name string)
-	
-	//Content() string
-	//SetContent(content string)
+
+	Content() string
+	SetContent(content string)
+
+	AppendChildNode(child Node)
+	PrependChildNode(child Node)
+	AddNodeAfter(sibling Node)
+	AddNodeBefore(sibling Node)
 
 	Attribute(name string) (*Attribute, bool) // First, the attribute, then if it is new or not
 }

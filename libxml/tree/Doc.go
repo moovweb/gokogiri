@@ -37,6 +37,12 @@ type Doc struct {
 	*XmlNode
 }
 
+func Parse(input string) *Doc {
+	cInput := C.CString(input)
+	doc := C.xmlParseMemory(cInput, C.int(len(input)))
+	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
+}
+
 func NewDoc(ptr unsafe.Pointer) *Doc {
 	doc := NewNode(ptr, nil).(*Doc)
 	doc.DocPtr = (*C.xmlDoc)(ptr)
@@ -59,6 +65,6 @@ func (doc *Doc) DumpHTML() string {
 	return C.GoString(C.DumpHtmlToString(doc.DocPtr))
 }
 
-func (doc *Doc) RootNode() Node {
-	return NewNode(unsafe.Pointer(C.xmlDocGetRootElement(doc.DocPtr)), doc)
+func (doc *Doc) RootElement() *Element {
+	return NewNode(unsafe.Pointer(C.xmlDocGetRootElement(doc.DocPtr)), doc).(*Element)
 }
