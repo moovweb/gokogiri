@@ -31,8 +31,10 @@ int xmlElement_append(xmlNodePtr node, xmlDocPtr doc, const char* content, int c
     //printf("wrapped content: %s %d\n", wrapped_content, wrapped_content_length);
 
     new_doc = xmlReadMemory(wrapped_content, wrapped_content_length, "", encoding, 0);
-    if (new_doc == NULL)
+    if (new_doc == NULL) {
+        free(wrapped_content);
         return 0;
+    }
 
     root_element = xmlDocGetRootElement(new_doc);
     for (cur_node = root_element->children; cur_node; cur_node = next_node) {
@@ -69,8 +71,10 @@ int xmlElement_prepend(xmlNodePtr node, xmlDocPtr doc, const char* content, int 
     //printf("wrapped content: %s\n", wrapped_content);
 
     new_doc = xmlReadMemory(wrapped_content, wrapped_content_length, "", encoding, 0);
-    if (new_doc == NULL)
+    if (new_doc == NULL) {
+        free(wrapped_content);
         return 0;
+    }
 
     root_element = xmlDocGetRootElement(new_doc);
     first_child = node->children;
