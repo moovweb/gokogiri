@@ -7,11 +7,6 @@ package tree
 #include <libxml/tree.h> 
 #include <libxml/xmlstring.h> 
 
-xmlNode * GoNodeNext(xmlNode *node) { return node->next; } 
-xmlNode * GoNodePrev(xmlNode *node) { return node->prev; } 
-xmlNode * GoNodeChildren(xmlNode *node) { return node->children; }
-xmlNode * GoNodeLast(xmlNode *node) { return node->last; } 
-xmlNode * GoNodeParent(xmlNode *node) { return node->parent; } 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
 char * GoNodeName(xmlNode *node) { return (char*)node->name; }
