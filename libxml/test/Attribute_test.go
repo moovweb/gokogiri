@@ -23,7 +23,19 @@ func TestAttributeFetch(t *testing.T) {
 	if didCreate == false {
 		t.Error("Should be a new attribute")
 	}
-	if !(strings.Contains(doc.String(), "created")) {
+	if !(strings.Contains(doc.String(), "created=\"\"")) {
 		t.Error("Should have the 'created' attr in it")
 	}
+	attribute, _ = node.Attribute("existing")
+	if attribute.Name() != "existing" {
+		t.Error("Name isn't working with attributes")
+	}
+	attribute.SetName("worked")
+	if !(strings.Contains(doc.String(), "worked=\"true\"")) {
+		t.Error("Should have the 'worked' attr in it")
+	}
+	if strings.Contains(doc.String(), "existing") {
+		t.Error("Existing attribute should be gone now")
+	}
+	
 }
