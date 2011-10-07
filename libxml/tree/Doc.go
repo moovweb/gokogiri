@@ -58,11 +58,16 @@ func (doc *Doc) MetaEncoding() string {
 }
 
 func (doc *Doc) String() string {
+	// TODO: Decide what type of return to do HTML or XML
 	return C.GoString(C.DumpXmlToString(doc.DocPtr))
 }
 
 func (doc *Doc) DumpHTML() string {
 	return C.GoString(C.DumpHtmlToString(doc.DocPtr))
+}
+
+func (doc *Doc) DumpXML() string {
+	return C.GoString(C.DumpXmlToString(doc.DocPtr))
 }
 
 func (doc *Doc) RootElement() *Element {
