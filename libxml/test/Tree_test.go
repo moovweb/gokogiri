@@ -98,3 +98,24 @@ func TestSetContent(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestAppendContent(t *testing.T) {
+	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+    root := doc.RootElement()
+    root.AppendContent("<hello>world</hello>")
+	if !strings.Contains(doc.String(), "<hello>world</hello></root>") {
+		t.Error("Append failed")
+	}
+}
+
+func TestPrependContent(t *testing.T) {
+	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+    root := doc.RootElement()
+    root.PrependContent("<hello>world</hello>")
+	if !strings.Contains(doc.String(), "<root><hello>world</hello>") {
+		t.Error("Prepend failed")
+	}
+}
+
+
+
