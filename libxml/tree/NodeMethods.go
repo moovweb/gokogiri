@@ -97,15 +97,3 @@ func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
 	attribute := NewNode(unsafe.Pointer(xmlAttrPtr), node.Doc()).(*Attribute)
 	return attribute, didCreate;
 }
-
-func (node *XmlNode) AttributeValue(name string) string {
-	c := C.xmlCharStrdup(C.CString(name))
-	s := C.xmlGetProp(node.ptr(), c)
-	return C.GoString((*C.char)(unsafe.Pointer(s)))
-}
-
-func (node *XmlNode) SetAttributeValue(name string, value string) {
-	c_name := C.xmlCharStrdup(C.CString(name))
-	c_value := C.xmlCharStrdup(C.CString(value))
-	C.xmlSetProp(node.ptr(), c_name, c_value)
-}

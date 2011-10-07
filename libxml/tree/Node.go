@@ -29,8 +29,6 @@ type Node interface {
 	Name() string
 	SetName(name string)
 	Attribute(name string) (*Attribute, bool) // First, the attribute, then if it is new or not
-	AttributeValue(name string) string
-	SetAttributeValue(name string, value string)
 }
 
 type XmlNode struct {
