@@ -2,7 +2,7 @@ package tree
 /*
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
-#include <libxml/HTMLtree.h>
+#include <libxml/tree.h>
 */
 import "C"
 import "unsafe"
@@ -28,6 +28,7 @@ type Node interface {
 
 	Name() string
 	SetName(name string)
+	Attribute(name string) (*Attribute, bool) // First, the attribute, then if it is new or not
 	AttributeValue(name string) string
 	SetAttributeValue(name string, value string)
 }
@@ -49,8 +50,10 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
 		// If we are a doc, then we reference ourselves
 		doc.XmlNode.DocRef = doc
 		return doc
-	} else if node_type == XML_ELEMENT_NODE {
+	} else if node_type == C.XML_ELEMENT_NODE {
 		return &Element{XmlNode: xml_node}
+	} else if node_type == C.XML_ATTRIBUTE_NODE {
+		return &Attribute{XmlNode: xml_node}
 	}
 	return xml_node
 }

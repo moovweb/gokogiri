@@ -4,8 +4,7 @@ package tree
 #cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/xmlversion.h> 
 #include <libxml/parser.h> 
-#include <libxml/HTMLparser.h> 
-#include <libxml/HTMLtree.h> 
+#include <libxml/tree.h> 
 #include <libxml/xmlstring.h> 
 
 xmlNode * GoNodeNext(xmlNode *node) { return node->next; } 
@@ -85,6 +84,18 @@ func (node *XmlNode) SetName(name string) {
 
 func (node *XmlNode) String() string {
 	return C.GoString(C.DumpNodeToXmlChar(node.ptr(), node.Doc().DocPtr))
+}
+
+func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
+	cName := C.xmlCharStrdup(C.CString(name))
+	xmlAttrPtr := C.xmlHasProp(node.NodePtr, cName)
+	didCreate := false
+	if xmlAttrPtr == nil {
+		didCreate = true;
+		xmlAttrPtr = C.xmlNewProp(node.NodePtr, cName, C.xmlCharStrdup(C.CString("")))
+	}
+	attribute := NewNode(unsafe.Pointer(xmlAttrPtr), node.Doc()).(*Attribute)
+	return attribute, didCreate;
 }
 
 func (node *XmlNode) AttributeValue(name string) string {
