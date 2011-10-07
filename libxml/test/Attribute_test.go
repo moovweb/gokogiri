@@ -23,6 +23,7 @@ func TestAttributeFetch(t *testing.T) {
 	if didCreate == false {
 		t.Error("Should be a new attribute")
 	}
+	Equal(t, createdAttr.Content(), "")
 	if !(strings.Contains(doc.String(), "created=\"\"")) {
 		t.Error("Should have the 'created' attr in it")
 	}
