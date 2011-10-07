@@ -42,4 +42,5 @@ func TestAttributeFetch(t *testing.T) {
 	if strings.Contains(doc.String(), "created") {
 		t.Error("Created attribute should be deleted now")
 	}
+	print(doc.String())
 }
