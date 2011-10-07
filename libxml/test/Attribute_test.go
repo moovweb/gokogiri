@@ -9,8 +9,8 @@ import(
 func TestAttributeFetch(t *testing.T) {
 	doc := libxml.XmlParseString("<node existing='true' />")
 	node := doc.First()
-	exitingAttr, shouldntCreate := node.Attribute("existing")
-	if exitingAttr == nil {
+	existingAttr, shouldntCreate := node.Attribute("existing")
+	if existingAttr == nil {
 		t.Fail()
 	}
 	if shouldntCreate == true {
@@ -27,11 +27,11 @@ func TestAttributeFetch(t *testing.T) {
 		t.Error("Should have the 'created' attr in it")
 	}
 
-	if exitingAttr.Name() != "existing" {
+	if existingAttr.Name() != "existing" {
 		t.Error("Name isn't working with attributes")
 	}
 	
-	exitingAttr.SetName("worked") // <node worked="true" created=""/>
+	existingAttr.SetName("worked") // <node worked="true" created=""/>
 	
 	if !(strings.Contains(doc.String(), "worked=\"true\"")) {
 		t.Error("Should have the 'worked' attr in it")
@@ -43,7 +43,8 @@ func TestAttributeFetch(t *testing.T) {
 	// Remove the created attribute
 	createdAttr.Remove() 	//<node worked="true"/>
 	if strings.Contains(doc.String(), "created") {
-		t.Error("Created attribute should be deleted now")
+		t.Error("Created attribute have been deleted")
 	}
+
 	
 }
