@@ -23,3 +23,7 @@ func (attr *Attribute) Content() string {
 func (attr *Attribute) SetContent(value string) {
 	attr.First().SetContent(value)
 }
+
+func (attr *Attribute) String() string {
+	return attr.First().Content()
+}

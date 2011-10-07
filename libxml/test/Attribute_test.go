@@ -48,6 +48,7 @@ func TestAttributeFetch(t *testing.T) {
 	}
 	
 	Equal(t, existingAttr.Content(), "true")
+	Equal(t, existingAttr.String(), "true")
 	
 	existingAttr.SetContent("yes") //<node worked="yes"/>
 	
