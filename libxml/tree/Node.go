@@ -6,7 +6,6 @@ package tree
 */
 import "C"
 import "unsafe"
-//import . "libxml/help"
 
 type Node interface {
 	ptr() *C.xmlNode
@@ -14,20 +13,26 @@ type Node interface {
 	Doc() *Doc // reference to doc
 
 	String() string
-	Remove()
+	Remove() bool
 
-	// Standard libxml Node interface
-	//Children() []Node;
-	First() Node  // first child link
-	Last() Node   // last child link
+	// Traversal Methods
 	Parent() Node // child->parent link
-	Next() Node   // next sibling link
-	Prev() Node   // previous sibling link
+	First()  Node // first child link
+	Last()   Node // last child link
+	Next()   Node // next sibling link
+	Prev()   Node // previous sibling link
+
+	// Informational Methods
 	Size() int
 	Type() int
 
+	// Node Getters and Setters
 	Name() string
 	SetName(name string)
+	
+	//Content() string
+	//SetContent(content string)
+
 	Attribute(name string) (*Attribute, bool) // First, the attribute, then if it is new or not
 }
 

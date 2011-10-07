@@ -46,28 +46,39 @@ func (node *XmlNode) Type() int {
 	return int(C.NodeType(node.ptr()))
 }
 
+// Used internally to the XmlNode to quickly create nodes
+func (node *XmlNode) new(ptr *_Ctype_struct__xmlNode) Node {
+	if ptr == nil {
+		return nil
+	}
+	return NewNode(unsafe.Pointer(ptr), node.Doc())
+}
+
 func (node *XmlNode) Parent() Node {
-	return NewNode(unsafe.Pointer(C.GoNodeParent(node.ptr())), node.Doc())
+	return node.new(node.ptr().parent)
 }
 
 func (node *XmlNode) Next() Node {
-	return NewNode(unsafe.Pointer(C.GoNodeNext(node.ptr())), node.Doc())
+	return node.new(node.ptr().next)
 }
 
 func (node *XmlNode) Prev() Node {
-	return NewNode(unsafe.Pointer(C.GoNodePrev(node.ptr())), node.Doc())
+	return node.new(node.ptr().prev)
 }
 
 func (node *XmlNode) First() Node {
-	return NewNode(unsafe.Pointer(C.GoNodeChildren(node.ptr())), node.Doc())
+	// xmlNode->children actually points to the first 
+	// element in an array, so we can just use this as the ptr for first
+	return node.new(node.ptr().children) 
 }
 
 func (node *XmlNode) Last() Node {
-	return NewNode(unsafe.Pointer(C.GoNodeLast(node.ptr())), node.Doc())
+	return node.new(node.ptr().last) 
 }
 
-func (node *XmlNode) Remove() {
+func (node *XmlNode) Remove() bool {
 	C.xmlUnlinkNode(node.ptr())
+	return true // TODO: Return false if it was previously unlinked
 }
 
 func (node *XmlNode) Name() string {
