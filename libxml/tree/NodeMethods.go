@@ -81,12 +81,12 @@ func (node *XmlNode) Remove() bool {
 	return true // TODO: Return false if it was previously unlinked
 }
 
-func (node *XmlNode) Name() string {
-	return C.GoString(C.GoNodeName(node.ptr()))
-}
-
 func (node *XmlNode) Size() int {
 	return int(C.xmlChildElementCount(node.ptr()))
+}
+
+func (node *XmlNode) Name() string {
+	return C.GoString(C.GoNodeName(node.ptr()))
 }
 
 func (node *XmlNode) SetName(name string) {
