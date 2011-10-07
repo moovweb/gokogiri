@@ -82,3 +82,15 @@ func TestAddingAfter(t *testing.T) {
 		t.Error("Should have new sibling after")
 	}
 }
+
+func TestSetContent(t *testing.T) {
+	doc := libxml.XmlParseString("<root>hi</root>")
+	root := doc.RootElement()
+	text := root.First()
+	Equal(t, text.Content(), "hi")
+	text.SetContent("bye")
+	Equal(t, text.Content(), "bye")
+	if !strings.Contains(doc.String(), "<root>bye</root>") {
+		t.Fail()
+	}
+}

@@ -91,6 +91,7 @@ func (node *XmlNode) Content() string {
 }
 
 func (node *XmlNode) SetContent(content string) {
+	C.xmlNodeSetContent(node.ptr(), String2XmlChar(content))
 }
 
 func (node *XmlNode) String() string {
