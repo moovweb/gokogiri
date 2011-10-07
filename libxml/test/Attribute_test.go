@@ -45,6 +45,12 @@ func TestAttributeFetch(t *testing.T) {
 	if strings.Contains(doc.String(), "created") {
 		t.Error("Created attribute have been deleted")
 	}
-
 	
+	Equal(t, existingAttr.Content(), "true")
+	
+	existingAttr.SetContent("yes") //<node worked="yes"/>
+	
+	if !strings.Contains(doc.String(), "worked=\"yes\"") {
+		t.Error("Should contain yes now")
+	}
 }
