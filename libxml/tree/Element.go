@@ -3,7 +3,6 @@ package tree
 #cgo LDFLAGS: -lxml2
 #cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/tree.h>
-#include "Chelpers.h"
 */
 import "C"
 import "unsafe"
@@ -36,17 +35,17 @@ func (node *Element) LastElement() *Element {
 }
 
 func (node *Element) AppendContent(content string) {
-    docPtr := (*C.xmlDoc)(node.Doc().Ptr());
-    content_p := C.CString(content)
-    content_len := len(content)
-    C.xmlElement_append(node.ptr(), docPtr, content_p, C.int(content_len), nil) 
+	child := Parse(content).First()
+	for child != nil {
+		node.AppendChildNode(child)
+		child = child.Next();
+	}
 }
 
 func (node *Element) PrependContent(content string) {
-    docPtr := (*C.xmlDoc)(node.Doc().Ptr());
-    content_p := C.CString(content)
-    content_len := len(content)
-    //we should not encode any special charactors here because the tags would be messed up
-    //the content should itself be approriate or has been already encoded 
-    C.xmlElement_prepend(node.ptr(), docPtr, content_p, C.int(content_len), nil) 
+	child := Parse(content).Last()
+	for child != nil {
+		node.PrependChildNode(child)
+		child = child.Prev();
+	}
 }
