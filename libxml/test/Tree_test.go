@@ -5,7 +5,6 @@ import(
 	"testing"
 	"libxml/tree"
 	"strings"
-  //"fmt"
 )
 
 func TestTree(t *testing.T) {
@@ -94,31 +93,8 @@ func TestSetContent(t *testing.T) {
 	if !strings.Contains(doc.String(), "<root>bye</root>") {
 		t.Fail()
 	}
-	root.SetContent("<")
-	if !strings.Contains(doc.String(), "&lt;") {
+	root.SetContent("world")
+	if !strings.Contains(doc.String(), "world") {
 		t.Fail()
 	}
 }
-
-func TestAppendContent(t *testing.T) {
-	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
-    root := doc.RootElement()
-    root.AppendContent("<hello>world</hello>")
-	if !strings.Contains(doc.String(), "<hello>world</hello></root>") {
-		t.Error("Append failed")
-	}
-}
-
-func TestPrependContent(t *testing.T) {
-	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
-    root := doc.RootElement()
-    root.PrependContent("<hello>world</hello>")
-	if !strings.Contains(doc.String(), "<root><hello>world</hello>") {
-		t.Error("Prepend failed")
-	}
-}
-
-
-
-
-

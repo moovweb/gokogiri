@@ -1,7 +1,7 @@
 package test
 
-import "libxml"
 import(
+	"libxml"
 	"testing"
 )
 

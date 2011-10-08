@@ -43,6 +43,13 @@ func Parse(input string) *Doc {
 	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
 }
 
+// Returns the first element in the input string.
+// Use Next() to access siblings
+func ParseFragment(input string) Node {
+	res :=  Parse("<root>" + input + "</root>").First().First()
+	return res
+}
+
 func NewDoc(ptr unsafe.Pointer) *Doc {
 	doc := NewNode(ptr, nil).(*Doc)
 	doc.DocPtr = (*C.xmlDoc)(ptr)

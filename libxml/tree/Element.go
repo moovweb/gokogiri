@@ -34,18 +34,42 @@ func (node *Element) LastElement() *Element {
 	return node.new(C.xmlLastElementChild(node.NodePtr))
 }
 
+func (node *Element) Clear() {
+	// Remember, as we delete them, the last one moves to the front
+	child := node.First()
+	for child != nil {
+		child.Remove()
+		child = node.First()
+	}
+}
+
+func (node *Element) Content() string {
+	child := node.First()
+	output := ""
+	for child != nil {
+		output = output + child.String()
+		child = child.Next();
+	}
+	return output;
+}
+
+func (node *Element) SetContent(content string) {
+	node.Clear()
+	node.AppendContent(content)
+}
+
 func (node *Element) AppendContent(content string) {
-	child := Parse(content).First()
+	child := ParseFragment(content)
 	for child != nil {
 		node.AppendChildNode(child)
-		child = child.Next();
+		child = child.Next()
 	}
 }
 
 func (node *Element) PrependContent(content string) {
-	child := Parse(content).Last()
+	child := ParseFragment(content).Parent().Last()
 	for child != nil {
 		node.PrependChildNode(child)
-		child = child.Prev();
+		child = child.Prev()
 	}
 }
