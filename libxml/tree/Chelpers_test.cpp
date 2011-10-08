@@ -2,6 +2,7 @@
 #include <string.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <libxml/xmlstring.h>
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
@@ -37,18 +38,26 @@ class ChelpersTest : public CppUnit::TestCase  {
 };
 
 void ChelpersTest::setUp() {
+    xmlInitParser ();
     char *content = (char *)XML_STR;
-    doc = xmlReadMemory(content, strlen(content), "", NULL, 0);
+    doc = xmlReadMemory(content, strlen(content), "", "UTF-8", 0);
 }
 
 void ChelpersTest::tearDown() {
+    //printf("allocated: %d\n", xmlMemBlocks());
+    //xmlMemDisplay(stdout);
+    //printf("\n\n");
     if (xmlbuff != NULL)
         xmlFree(xmlbuff);
-    xmlMemoryDump();
     if (doc != NULL)
         xmlFreeDoc(doc);
-    xmlMemoryDump();
+    //xmlCleanupMemory();
+    xmlCleanupParser ();
+    //xmlMemoryDump();
+    //xmlMemDisplay(stdout);
+    printf("allocated: %d\n", xmlMemBlocks());
 }
+
 
 const char* ChelpersTest::next_line(const char *xml) {
     char* chr = strchr((char *) xmlbuff, '\n');
@@ -72,8 +81,8 @@ void ChelpersTest::test_xmlElement_append() {
     xmlElement_append(root_element, doc, insert_content.c_str(), insert_content.length(), NULL);
     int buffersize;
     xmlDocDumpFormatMemory(doc, &xmlbuff, &buffersize, 0);
-    printf("%s",  (char*) xmlbuff);
     const char* next = next_line((char *) xmlbuff);
+    //printf("%s",  (char*) next);
     string expected_xml = "<foo><bar>foo.bar</bar><div>div</div><moov>z</moov>hello<web>c</web></foo>";
     CPPUNIT_ASSERT(strncmp(next, expected_xml.c_str(), expected_xml.length()) == 0);
 }
@@ -84,8 +93,8 @@ void ChelpersTest::test_xmlElement_prepend() {
     xmlElement_prepend(root_element, doc, insert_content.c_str(), insert_content.length(), NULL);
     int buffersize;
     xmlDocDumpFormatMemory(doc, &xmlbuff, &buffersize, 0);
-    printf("%s",  (char*) xmlbuff);
     const char* next = next_line((char *) xmlbuff);
+    //printf("%s",  (char*) next);
     string expected_xml = "<foo><moov>z</moov>hello<web>c</web><bar>foo.bar</bar><div>div</div></foo>";
     CPPUNIT_ASSERT(strncmp(next, expected_xml.c_str(), expected_xml.length()) == 0);
 
