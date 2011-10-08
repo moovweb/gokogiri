@@ -46,5 +46,7 @@ func (node *Element) PrependContent(content string) {
     docPtr := (*C.xmlDoc)(node.Doc().Ptr());
     content_p := C.CString(content)
     content_len := len(content)
+    //we should not encode any special charactors here because the tags would be messed up
+    //the content should itself be approriate or has been already encoded 
     C.xmlElement_prepend(node.ptr(), docPtr, content_p, C.int(content_len), nil) 
 }

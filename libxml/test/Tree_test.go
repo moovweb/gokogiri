@@ -5,6 +5,7 @@ import(
 	"testing"
 	"libxml/tree"
 	"strings"
+  //"fmt"
 )
 
 func TestTree(t *testing.T) {
@@ -116,6 +117,17 @@ func TestPrependContent(t *testing.T) {
 		t.Error("Prepend failed")
 	}
 }
+
+func TestPrependContentUnicode(t *testing.T) {
+  doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+  root := doc.RootElement()
+  root.PrependContent("<hello>&#x4F60;&#x597D;</hello>")
+  //fmt.Printf("%q\n", doc.String());
+  if !strings.Contains(doc.String(), "<root><hello>&#x4F60;&#x597D;</hello>") {
+    t.Error("Prepend unicode content failed")
+  }
+}
+
 
 
 
