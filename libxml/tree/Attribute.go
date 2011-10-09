@@ -13,7 +13,7 @@ type Attribute struct {
 }
 
 func NewAttribute(ptr unsafe.Pointer, node Node) *Attribute {
-	return NewNode(ptr, node.Doc()).(*Attribute);
+	return NewNode(ptr, node.Doc()).(*Attribute)
 }
 
 func (attr *Attribute) Content() string {

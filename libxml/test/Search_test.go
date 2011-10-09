@@ -1,6 +1,6 @@
 package test
 
-import(
+import (
 	"libxml"
 	"libxml/xpath"
 	"testing"
@@ -13,11 +13,11 @@ func TestSearch(t *testing.T) {
 	if divs.Size() != 2 {
 		t.Error("Returned the two divs!")
 	}
-	div := divs.NodeAt(0);
+	div := divs.NodeAt(0)
 	if div.Size() != 1 {
 		t.Error("Only has one element in it!")
 	}
-	textChild := div.First();
+	textChild := div.First()
 	if textChild.Name() != "text" {
 		t.Error("Should return a text child")
 	}

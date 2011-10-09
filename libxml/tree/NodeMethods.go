@@ -62,11 +62,11 @@ func (node *XmlNode) Prev() Node {
 func (node *XmlNode) First() Node {
 	// xmlNode->children actually points to the first 
 	// element in an array, so we can just use this as the ptr for first
-	return node.new(node.ptr().children) 
+	return node.new(node.ptr().children)
 }
 
 func (node *XmlNode) Last() Node {
-	return node.new(node.ptr().last) 
+	return node.new(node.ptr().last)
 }
 
 func (node *XmlNode) Remove() bool {
@@ -91,7 +91,7 @@ func (node *XmlNode) Content() string {
 }
 
 func (node *XmlNode) SetContent(content string) {
-	docPtr := (*C.xmlDoc)(node.Doc().Ptr());
+	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
 	xmlChar := C.xmlEncodeSpecialChars(docPtr, String2XmlChar(content))
 	C.xmlNodeSetContent(node.ptr(), xmlChar)
 }
@@ -105,11 +105,11 @@ func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
 	xmlAttrPtr := C.xmlHasProp(node.NodePtr, cName)
 	didCreate := false
 	if xmlAttrPtr == nil {
-		didCreate = true;
+		didCreate = true
 		xmlAttrPtr = C.xmlNewProp(node.NodePtr, cName, C.xmlCharStrdup(C.CString("")))
 	}
 	attribute := NewNode(unsafe.Pointer(xmlAttrPtr), node.Doc()).(*Attribute)
-	return attribute, didCreate;
+	return attribute, didCreate
 }
 
 func (node *XmlNode) AppendChildNode(child Node) {

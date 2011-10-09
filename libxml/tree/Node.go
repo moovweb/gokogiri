@@ -10,17 +10,17 @@ import "unsafe"
 type Node interface {
 	ptr() *C.xmlNode
 	Ptr() unsafe.Pointer // Used to access the C.Ptr's externally
-	Doc() *Doc // reference to doc
+	Doc() *Doc           // reference to doc
 
 	String() string
 	Remove() bool
 
 	// Element Traversal Methods
 	Parent() Node // child->parent link
-	First()  Node // first child link
-	Last()   Node // last child link
-	Next()   Node // next sibling link
-	Prev()   Node // previous sibling link
+	First() Node  // first child link
+	Last() Node   // last child link
+	Next() Node   // next sibling link
+	Prev() Node   // previous sibling link
 
 	// Informational Methods
 	Size() int

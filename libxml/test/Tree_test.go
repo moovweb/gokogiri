@@ -1,6 +1,6 @@
 package test
 
-import(
+import (
 	"libxml"
 	"testing"
 	"libxml/tree"
@@ -9,15 +9,15 @@ import(
 
 func TestTree(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
-	Equal(t, doc.Size(), 1);
-	Equal(t, doc.Content(), "");
+	Equal(t, doc.Size(), 1)
+	Equal(t, doc.Content(), "")
 
 	root := doc.First().(*tree.Element)
 	if root.Name() != "root" {
 		t.Error("Should have returned root element")
 	}
 
-	Equal(t, root.Size(), 3);
+	Equal(t, root.Size(), 3)
 
 	// If we are on root, and we go "next", we should get
 	// nothing, as root has no siblings. Should return nil
@@ -26,10 +26,10 @@ func TestTree(t *testing.T) {
 	AssertNil(t, root.Prev(), "root prev")
 	AssertNil(t, doc.Parent(), "doc parent")
 	rootText := Assert(t, root.First(), "first is a text node").(tree.Node)
-	Equal(t, rootText.Content(), "hi");
+	Equal(t, rootText.Content(), "hi")
 	parent := Assert(t, root.FirstElement(), "first is a element").(*tree.Element)
 	Equal(t, parent.Name(), "parent")
-	
+
 	lastChild := Assert(t, parent.Last(), "parent last").(tree.Node)
 	childText := Assert(t, lastChild.First(), "lastChild's first").(tree.Node)
 	Equal(t, childText.Content(), "Text")

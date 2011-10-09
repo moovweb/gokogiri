@@ -1,6 +1,6 @@
 package test
 
-import(
+import (
 	"libxml"
 	"testing"
 )
@@ -16,5 +16,5 @@ func TestSimpleParse(t *testing.T) {
 		print(htmlTag.Name())
 		t.Error("Two tags are inside of <html>")
 	}
-	
+
 }

@@ -1,6 +1,6 @@
 package test
 
-import(
+import (
 	"libxml"
 	"testing"
 	"strings"
@@ -31,9 +31,9 @@ func TestAttributeFetch(t *testing.T) {
 	if existingAttr.Name() != "existing" {
 		t.Error("Name isn't working with attributes")
 	}
-	
+
 	existingAttr.SetName("worked") // <node worked="true" created=""/>
-	
+
 	if !(strings.Contains(doc.String(), "worked=\"true\"")) {
 		t.Error("Should have the 'worked' attr in it")
 	}
@@ -42,16 +42,16 @@ func TestAttributeFetch(t *testing.T) {
 	}
 
 	// Remove the created attribute
-	createdAttr.Remove() 	//<node worked="true"/>
+	createdAttr.Remove() //<node worked="true"/>
 	if strings.Contains(doc.String(), "created") {
 		t.Error("Created attribute have been deleted")
 	}
-	
+
 	Equal(t, existingAttr.Content(), "true")
 	Equal(t, existingAttr.String(), "true")
-	
+
 	existingAttr.SetContent("yes") //<node worked="yes"/>
-	
+
 	if !strings.Contains(doc.String(), "worked=\"yes\"") {
 		t.Error("Should contain yes now")
 	}

@@ -48,9 +48,9 @@ func (node *Element) Content() string {
 	output := ""
 	for child != nil {
 		output = output + child.String()
-		child = child.Next();
+		child = child.Next()
 	}
-	return output;
+	return output
 }
 
 func (node *Element) SetContent(content string) {
