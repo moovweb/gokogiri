@@ -17,6 +17,9 @@ func HtmlParseStringWithOptions(content string, url string, encoding string, opt
 	cString := C.CString(content)
 	cXmlChar := C.xmlCharStrdup(cString)
 	htmlDocPtr := C.htmlReadDoc(cXmlChar, C.CString(url), C.CString(encoding), C.int(opts))
+	if htmlDocPtr == nil {
+		return nil
+	}
 	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
@@ -32,6 +35,9 @@ func HtmlParseString(content string) *Doc {
 func HtmlParseFile(url string, encoding string, opts int) *Doc {
 	htmlDocPtr := C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts))
 	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
+	if xmlDocPtr == nil {
+		return nil
+	}
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
