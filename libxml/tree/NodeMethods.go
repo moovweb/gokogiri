@@ -74,6 +74,11 @@ func (node *XmlNode) Remove() bool {
 	return true // TODO: Return false if it was previously unlinked
 }
 
+func (node *XmlNode) Duplicate() Node {
+	copy := C.xmlCopyNode(node.ptr(), 1)
+	return NewNode(unsafe.Pointer(copy), node.Doc())
+}
+
 func (node *XmlNode) Size() int {
 	return int(C.xmlChildElementCount(node.ptr()))
 }

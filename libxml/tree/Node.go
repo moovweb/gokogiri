@@ -14,6 +14,7 @@ type Node interface {
 
 	String() string
 	Remove() bool
+	Duplicate() Node // Copy this node
 
 	// Element Traversal Methods
 	Parent() Node // child->parent link

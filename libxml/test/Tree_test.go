@@ -83,6 +83,21 @@ func TestAddingAfter(t *testing.T) {
 	}
 }
 
+func TestNodeDuplicate(t *testing.T) {
+	doc := libxml.XmlParseString("<root><parent><brother>hi</brother></parent></root>")
+	parent := doc.RootElement().FirstElement()
+	brother := parent.FirstElement()
+	dupBrother := brother.Duplicate()
+	dupBrother.First().SetContent("bye")
+	parent.AppendChildNode(dupBrother)
+	if !strings.Contains(doc.String(), "<brother>hi</brother>") {
+		t.Error("Should have original sibling")
+	}
+	if !strings.Contains(doc.String(), "<brother>bye</brother>") {
+		t.Error("Should have new sibling too!")
+	}
+}
+
 func TestSetContent(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
 	root := doc.RootElement()
