@@ -45,8 +45,9 @@ func Parse(input string) *Doc {
 
 // Returns the first element in the input string.
 // Use Next() to access siblings
-func ParseFragment(input string) Node {
+func (doc *Doc) ParseFragment(input string) Node {
 	res := Parse("<root>" + input + "</root>").First().First()
+	res.SetDoc(doc)
 	return res
 }
 

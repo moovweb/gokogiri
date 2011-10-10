@@ -59,7 +59,7 @@ func (node *Element) SetContent(content string) {
 }
 
 func (node *Element) AppendContent(content string) {
-	child := ParseFragment(content)
+	child := node.Doc().ParseFragment(content)
 	for child != nil {
 		node.AppendChildNode(child)
 		child = child.Next()
@@ -67,7 +67,7 @@ func (node *Element) AppendContent(content string) {
 }
 
 func (node *Element) PrependContent(content string) {
-	child := ParseFragment(content).Parent().Last()
+	child := node.Doc().ParseFragment(content).Parent().Last()
 	for child != nil {
 		node.PrependChildNode(child)
 		child = child.Prev()
