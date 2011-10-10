@@ -26,6 +26,9 @@ func xmlNodeType(node *C.xmlNode) int {
 func (node *XmlNode) Doc() *Doc {
 	return node.DocRef
 }
+func (node *XmlNode) SetDoc(doc *Doc) {
+	node.DocRef = doc
+}
 
 func (node *XmlNode) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(node.NodePtr)
