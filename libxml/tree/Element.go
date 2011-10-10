@@ -39,6 +39,7 @@ func (node *Element) Clear() {
 	child := node.First()
 	for child != nil {
 		child.Remove()
+		child.Free()
 		child = node.First()
 	}
 }

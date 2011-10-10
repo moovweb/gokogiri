@@ -16,6 +16,7 @@ type Node interface {
 	String() string
 	Remove() bool
 	Duplicate() Node // Copy this node
+	Free()           // free the libxml structs. BE CAREFUL!
 
 	// Element Traversal Methods
 	Parent() Node // child->parent link

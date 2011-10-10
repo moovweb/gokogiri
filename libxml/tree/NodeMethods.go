@@ -42,6 +42,10 @@ func (node *XmlNode) Type() int {
 	return int(C.NodeType(node.ptr()))
 }
 
+func (node *XmlNode) Free() {
+	C.xmlFreeNode(node.ptr())
+}
+
 // Used internally to the XmlNode to quickly create nodes
 func (node *XmlNode) new(ptr *_Ctype_struct__xmlNode) Node {
 	if ptr == nil {
