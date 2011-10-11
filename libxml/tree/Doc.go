@@ -59,6 +59,10 @@ func NewDoc(ptr unsafe.Pointer) *Doc {
 	return doc
 }
 
+func (doc *Doc) NewElement(named string) *Element {
+	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, String2XmlChar(named))), doc).(*Element)
+}
+
 func (doc *Doc) Free() {
 	C.xmlFreeDoc(doc.DocPtr)
 }
