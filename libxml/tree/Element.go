@@ -11,6 +11,11 @@ type Element struct {
 	*XmlNode
 }
 
+func (node *Element) ElementType() int {
+	elem := (*C.xmlElement)(unsafe.Pointer(node.ptr()))
+	return int(elem.etype)
+}
+
 func (node *Element) new(ptr *C.xmlNode) *Element {
 	if ptr == nil {
 		return nil
