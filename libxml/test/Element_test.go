@@ -49,3 +49,10 @@ func TestPrependContentUnicode(t *testing.T) {
 		t.Error("Prepend unicode content failed")
 	}
 }
+
+func TestNoAutoclose(t *testing.T) {
+	doc := libxml.XmlParseString("<root></root>")
+	if !strings.Contains((doc.RootElement().String()), "<root></root>") {
+		t.Error("Should NOT autoclose tags!")
+	}
+}
