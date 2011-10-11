@@ -53,7 +53,7 @@ func (node *Element) Content() string {
 	child := node.First()
 	output := ""
 	for child != nil {
-		output = output + child.String()
+		output = output + child.DumpHTML()
 		child = child.Next()
 	}
 	return output

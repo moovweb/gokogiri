@@ -6,6 +6,7 @@ package tree
 #include <libxml/parser.h> 
 #include <libxml/tree.h> 
 #include <libxml/xmlstring.h> 
+#include <libxml/HTMLtree.h>
 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
@@ -110,6 +111,14 @@ func (node *XmlNode) SetContent(content string) {
 
 func (node *XmlNode) String() string {
 	return C.GoString(C.DumpNodeToXmlChar(node.ptr(), node.Doc().DocPtr))
+}
+
+func (node *XmlNode) DumpHTML() string {
+	cBuffer := C.xmlBufferCreate()
+	C.htmlNodeDump(cBuffer, node.Doc().DocPtr, node.ptr())
+	cString := unsafe.Pointer(cBuffer.content)
+	defer C.free(cString)
+	return C.GoString((*C.char)(cString))
 }
 
 func (node *XmlNode) Attribute(name string) (*Attribute, bool) {

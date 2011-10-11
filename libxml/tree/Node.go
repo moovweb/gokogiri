@@ -14,6 +14,7 @@ type Node interface {
 	SetDoc(doc *Doc)	 // set the reference to the doc go object
 
 	String() string
+	DumpHTML() string
 	Remove() bool
 	Duplicate() Node // Copy this node
 	Free()           // free the libxml structs. BE CAREFUL!

@@ -37,10 +37,6 @@ type Doc struct {
 	*XmlNode
 }
 
-type FragmentDoc struct {
-	*Doc
-}
-
 func Parse(input string) *Doc {
 	cInput := C.CString(input)
 	doc := C.xmlParseMemory(cInput, C.int(len(input)))
@@ -73,17 +69,9 @@ func (doc *Doc) MetaEncoding() string {
 
 func (doc *Doc) String() string {
 	// TODO: Decide what type of return to do HTML or XML
-	return C.GoString(C.DumpXmlToString(doc.DocPtr))
-}
-
-func (doc *FragmentDoc) String() string {
-	result := ""
-	node := doc.First()
-	if node != nil {
-		result = result + node.String()
-		node = node.Next()
-	}
-	return result
+	cString := C.DumpXmlToString(doc.DocPtr)
+	defer C.free(unsafe.Pointer(cString))
+	return C.GoString(cString)
 }
 
 func (doc *Doc) DumpHTML() string {

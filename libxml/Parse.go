@@ -42,15 +42,18 @@ func HtmlParseFile(url string, encoding string, opts int) *Doc {
 }
 
 func XmlParseWithOption(content string, url string, encoding string, opts int) *Doc {
-	c := C.xmlCharStrdup(C.CString(content))
-	c_encoding := C.CString(encoding)
+	cContent := C.CString(content)
+	defer C.free(unsafe.Pointer(cContent))
+	c := C.xmlCharStrdup(cContent)
+	cEncoding := C.CString(encoding)
+	defer C.free(unsafe.Pointer(cEncoding))
 	if encoding == "" {
-		c_encoding = nil
+		cEncoding = nil
 	}
-	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), c_encoding, C.int(opts))
+	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), cEncoding, C.int(opts))
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
 func XmlParseString(content string) *Doc {
-	return XmlParseWithOption(content, "", "", 0)
+	return XmlParseWithOption(content, "", "", 1)
 }
