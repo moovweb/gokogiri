@@ -82,6 +82,10 @@ func (node *XmlNode) Remove() bool {
 	return true // TODO: Return false if it was previously unlinked
 }
 
+func (node *XmlNode) IsLinked() bool {
+	return node.ptr().parent != nil
+}
+
 func (node *XmlNode) Duplicate() Node {
 	copy := C.xmlCopyNode(node.ptr(), 1)
 	return NewNode(unsafe.Pointer(copy), node.Doc())
@@ -110,14 +114,20 @@ func (node *XmlNode) SetContent(content string) {
 }
 
 func (node *XmlNode) String() string {
+	if node.ptr() == nil {
+		return ""
+	}
 	return C.GoString(C.DumpNodeToXmlChar(node.ptr(), node.Doc().DocPtr))
 }
 
 func (node *XmlNode) DumpHTML() string {
 	cBuffer := C.xmlBufferCreate()
 	C.htmlNodeDump(cBuffer, node.Doc().DocPtr, node.ptr())
+	defer C.free(unsafe.Pointer(cBuffer))
+	if cBuffer.content == nil {
+		return ""
+	}
 	cString := unsafe.Pointer(cBuffer.content)
-	defer C.free(cString)
 	return C.GoString((*C.char)(cString))
 }
 

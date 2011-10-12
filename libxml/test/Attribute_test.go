@@ -28,6 +28,7 @@ func TestAttributeFetch(t *testing.T) {
 		t.Error("Should have the 'created' attr in it")
 	}
 
+	Equal(t, existingAttr.Content(), "true")
 	if existingAttr.Name() != "existing" {
 		t.Error("Name isn't working with attributes")
 	}
@@ -51,7 +52,8 @@ func TestAttributeFetch(t *testing.T) {
 	Equal(t, existingAttr.String(), "true")
 
 	existingAttr.SetContent("yes") //<node worked="yes"/>
-
+	Equal(t, existingAttr.Content(), "yes")
+	
 	if !strings.Contains(doc.String(), "worked=\"yes\"") {
 		t.Error("Should contain yes now")
 	}

@@ -113,3 +113,15 @@ func TestSetContent(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestNodeIsLinked(t *testing.T) {
+	doc := libxml.XmlParseString("<root><child /></root>")
+	child := doc.RootElement().FirstElement()
+	if child.IsLinked() != true {
+		t.Error("Children start off linked")
+	}
+	child.Remove()
+	if child.IsLinked() != false {
+		t.Error("Children should report being unlinked")
+	}
+}

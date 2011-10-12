@@ -22,3 +22,23 @@ func TestSearch(t *testing.T) {
 		t.Error("Should return a text child")
 	}
 }
+
+// What if we remove a node we will soon match?
+func TestSearchRemoval(t *testing.T) {
+	doc := libxml.XmlParseString("<root><parent><child /></parent></root>")
+	root := doc.RootElement()
+	nodes := xpath.Search(root, "//*").Slice()
+	parent := root.FirstElement()
+	parent.SetContent("empty")
+	if parent.IsLinked() != true {
+		t.Error("Parent starts off linked")
+	}
+	parent.Remove()
+	if parent.IsLinked() != false {
+		t.Error("Parent should report being unlinked")
+	}
+	for i := range nodes {
+		node := nodes[i]
+		Equal(t, node.Type(), 1)
+	}
+}

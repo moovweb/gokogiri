@@ -27,3 +27,8 @@ func (attr *Attribute) SetContent(value string) {
 func (attr *Attribute) String() string {
 	return attr.First().Content()
 }
+
+func (attr *Attribute) Remove() bool {
+	C.xmlRemoveProp((*C.xmlAttr)(unsafe.Pointer(attr.ptr())))
+	return true
+}

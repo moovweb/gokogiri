@@ -18,6 +18,7 @@ type Node interface {
 	Remove() bool
 	Duplicate() Node // Copy this node
 	Free()           // free the libxml structs. BE CAREFUL!
+	IsLinked() bool
 
 	// Element Traversal Methods
 	Parent() Node // child->parent link
