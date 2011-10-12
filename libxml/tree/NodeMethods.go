@@ -100,7 +100,7 @@ func (node *XmlNode) SetName(name string) {
 }
 
 func (node *XmlNode) Content() string {
-	return XmlChar2String(node.ptr().content)
+	return XmlChar2String(C.xmlNodeGetContent(node.ptr()))
 }
 
 func (node *XmlNode) SetContent(content string) {

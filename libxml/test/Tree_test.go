@@ -10,7 +10,7 @@ import (
 func TestTree(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
 	Equal(t, doc.Size(), 1)
-	Equal(t, doc.Content(), "")
+	Equal(t, doc.Content(), "hiText")
 
 	root := doc.First().(*tree.Element)
 	if root.Name() != "root" {
