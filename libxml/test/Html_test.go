@@ -19,7 +19,7 @@ func TestHtmlSimpleParse(t *testing.T) {
 
 }
 
-func TestHtmlScriptTag(t *testing.T) {
+func TestHtmlCDataTag(t *testing.T) {
 	doc := libxml.HtmlParseString(LoadFile("docs/script.html"))
 	if doc.Size() != 1 {
 		t.Error("Incorrect size")
@@ -28,5 +28,6 @@ func TestHtmlScriptTag(t *testing.T) {
 	if scriptTag.Name() != "script" {
 		t.Error("Should have selected the script tag")
 	}
-	scriptTag.SetContent(scriptTag.Content())
+	content := scriptTag.Content()
+	scriptTag.SetContent(content)
 }

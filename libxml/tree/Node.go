@@ -66,6 +66,8 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
 		return &Element{XmlNode: xml_node}
 	} else if node_type == C.XML_ATTRIBUTE_NODE {
 		return &Attribute{XmlNode: xml_node}
+	} else if node_type == C.XML_CDATA_SECTION_NODE {
+		return &CData{XmlNode: xml_node}
 	}
 	return xml_node
 }
