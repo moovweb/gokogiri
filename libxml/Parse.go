@@ -25,11 +25,15 @@ func HtmlParseStringWithOptions(content string, url string, encoding string, opt
 }
 
 func HtmlParseString(content string) *Doc {
-	return HtmlParseStringWithOptions(content, "", "",
+	doc := HtmlParseStringWithOptions(content, "", "",
 		HTML_PARSE_RECOVER|
 			HTML_PARSE_NONET|
 			HTML_PARSE_NOERROR|
 			HTML_PARSE_NOWARNING)
+	if doc == nil {
+		return HtmlParseString("<html />")
+	}
+	return doc
 }
 
 func HtmlParseFile(url string, encoding string, opts int) *Doc {

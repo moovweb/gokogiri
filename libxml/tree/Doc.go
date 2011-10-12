@@ -43,6 +43,11 @@ func Parse(input string) *Doc {
 	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
 }
 
+func CreateHtmlDoc() *Doc {
+	cDoc := C.htmlNewDoc(String2XmlChar(""), String2XmlChar(""))
+	return NewNode(unsafe.Pointer(cDoc), nil).(*Doc)
+}
+
 // Returns the first element in the input string.
 // Use Next() to access siblings
 func (doc *Doc) ParseFragment(input string) Node {

@@ -3,6 +3,7 @@ package test
 import (
 	"libxml"
 	"testing"
+	"strings"
 )
 
 func TestHtmlSimpleParse(t *testing.T) {
@@ -30,4 +31,11 @@ func TestHtmlCDataTag(t *testing.T) {
 	}
 	content := scriptTag.Content()
 	scriptTag.SetContent(content)
+}
+
+func TestHtmlEmptyDoc(t *testing.T) {
+	doc := libxml.HtmlParseString("")
+	if !strings.Contains(doc.DumpHTML(), "<!DOCTYPE") {
+		t.Error("Should have actually made a doc")
+	}
 }
