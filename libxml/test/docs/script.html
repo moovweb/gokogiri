@@ -1,0 +1,22 @@
+<html>
+<body>
+<script>
+
+// to get the param value in the url
+function getURLParam(strParamName){
+  for ( var iParam = 0; iParam < aQueryString.length; iParam++ ){
+    if (aQueryString[iParam].indexOf(strParamName + "=") > -1 ){
+      strReturn=aQueryString[iParam].substring(strParamName.length+1);
+      break;
+    }
+  }
+}
+
+function reloadPage(){
+  //alert(getURLParam("url"));
+  window.location.href="http://groceries.asda.com"+getURLParam("uri");
+}
+
+</script>
+</body>
+</html>

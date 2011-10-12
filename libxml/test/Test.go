@@ -1,6 +1,7 @@
 package test
 
 import "testing"
+import "io/ioutil"
 
 func AssertNil(t *testing.T, value interface{}, what string) {
 	if value != nil {
@@ -17,4 +18,12 @@ func Assert(t *testing.T, value interface{}, what string) interface{} {
 		t.Error("Assertion failed: ", what)
 	}
 	return value
+}
+
+func LoadFile(name string) string {
+	contents, err := ioutil.ReadFile(name);
+	if err != nil {
+		print(err.String())
+	}
+	return string(contents)
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSimpleParse(t *testing.T) {
+func TestHtmlSimpleParse(t *testing.T) {
 	doc := libxml.HtmlParseString("<html><head /><body /></html>")
 	if doc.Size() != 1 {
 		t.Error("Incorrect size")
@@ -17,4 +17,16 @@ func TestSimpleParse(t *testing.T) {
 		t.Error("Two tags are inside of <html>")
 	}
 
+}
+
+func TestHtmlScriptTag(t *testing.T) {
+	doc := libxml.HtmlParseString(LoadFile("docs/script.html"))
+	if doc.Size() != 1 {
+		t.Error("Incorrect size")
+	}
+	scriptTag := doc.RootElement().FirstElement().FirstElement()
+	if scriptTag.Name() != "script" {
+		t.Error("Should have selected the script tag")
+	}
+	scriptTag.SetContent(scriptTag.Content())
 }
