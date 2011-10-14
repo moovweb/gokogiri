@@ -9,6 +9,7 @@ import (
 
 func TestTree(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
+	defer doc.Free()
 	Equal(t, doc.Size(), 1)
 	Equal(t, doc.Content(), "hiText")
 
@@ -45,6 +46,7 @@ func TestTree(t *testing.T) {
 
 func TestAddingChildLast(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+	defer doc.Free()
 	childDoc := tree.Parse("<child/>")
 	child := childDoc.First()
 	doc.RootElement().FirstElement().AppendChildNode(child)
@@ -55,6 +57,7 @@ func TestAddingChildLast(t *testing.T) {
 
 func TestAddingChildFirst(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+	defer doc.Free()
 	childDoc := tree.Parse("<child/>")
 	child := childDoc.First()
 	doc.RootElement().FirstElement().PrependChildNode(child)
@@ -65,6 +68,7 @@ func TestAddingChildFirst(t *testing.T) {
 
 func TestAddingBefore(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+	defer doc.Free()
 	childDoc := tree.Parse("<child/>")
 	child := childDoc.First()
 	doc.RootElement().FirstElement().AddNodeBefore(child)
@@ -75,6 +79,7 @@ func TestAddingBefore(t *testing.T) {
 
 func TestAddingAfter(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+	defer doc.Free()
 	childDoc := tree.Parse("<child/>")
 	child := childDoc.First()
 	doc.RootElement().FirstElement().AddNodeAfter(child)
@@ -85,6 +90,7 @@ func TestAddingAfter(t *testing.T) {
 
 func TestNodeDuplicate(t *testing.T) {
 	doc := libxml.XmlParseString("<root><parent><brother>hi</brother></parent></root>")
+	defer doc.Free()
 	parent := doc.RootElement().FirstElement()
 	brother := parent.FirstElement()
 	dupBrother := brother.Duplicate()
@@ -112,6 +118,7 @@ func TestSetContent(t *testing.T) {
 	if !strings.Contains(doc.String(), "world") {
 		t.Fail()
 	}
+	doc.Free()
 }
 
 func TestNodeIsLinked(t *testing.T) {
@@ -124,4 +131,5 @@ func TestNodeIsLinked(t *testing.T) {
 	if child.IsLinked() != false {
 		t.Error("Children should report being unlinked")
 	}
+	doc.Free()
 }

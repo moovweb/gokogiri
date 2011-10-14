@@ -17,6 +17,7 @@ func TestHtmlSimpleParse(t *testing.T) {
 		print(htmlTag.Name())
 		t.Error("Two tags are inside of <html>")
 	}
+	doc.Free()
 
 }
 
@@ -31,6 +32,7 @@ func TestHtmlCDataTag(t *testing.T) {
 	}
 	content := scriptTag.Content()
 	scriptTag.SetContent(content)
+	doc.Free()
 }
 
 func TestHtmlEmptyDoc(t *testing.T) {
@@ -38,4 +40,5 @@ func TestHtmlEmptyDoc(t *testing.T) {
 	if !strings.Contains(doc.DumpHTML(), "<!DOCTYPE") {
 		t.Error("Should have actually made a doc")
 	}
+	doc.Free()
 }

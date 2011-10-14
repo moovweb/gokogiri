@@ -8,6 +8,7 @@ import (
 
 func TestSearch(t *testing.T) {
 	doc := libxml.HtmlParseString("<html><body><div>Hi<div>Mom</div></div></body></html>")
+	defer doc.Free()
 	divs := xpath.Search(doc, "//div")
 	// Doctype gets returned as the first child!
 	if divs.Size() != 2 {
@@ -41,4 +42,5 @@ func TestSearchRemoval(t *testing.T) {
 		node := nodes[i]
 		Equal(t, node.Type(), 1)
 	}
+	doc.Free()
 }

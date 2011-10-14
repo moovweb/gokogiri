@@ -13,4 +13,5 @@ func TestNewElement(t *testing.T) {
 	child := doc.NewElement("child")
 	root.AppendChildNode(child)
 	Equal(t, root.String(), "<root>hi<child/></root>")
+	doc.Free()
 }
