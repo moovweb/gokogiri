@@ -53,7 +53,7 @@ func TestAttributeFetch(t *testing.T) {
 
 	existingAttr.SetContent("yes") //<node worked="yes"/>
 	Equal(t, existingAttr.Content(), "yes")
-	
+
 	if !strings.Contains(doc.String(), "worked=\"yes\"") {
 		t.Error("Should contain yes now")
 	}

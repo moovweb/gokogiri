@@ -11,7 +11,7 @@ type Node interface {
 	ptr() *C.xmlNode
 	Ptr() unsafe.Pointer // Used to access the C.Ptr's externally
 	Doc() *Doc           // reference to doc
-	SetDoc(doc *Doc)	 // set the reference to the doc go object
+	SetDoc(doc *Doc)     // set the reference to the doc go object
 
 	String() string
 	DumpHTML() string

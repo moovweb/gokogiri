@@ -21,7 +21,7 @@ func Assert(t *testing.T, value interface{}, what string) interface{} {
 }
 
 func LoadFile(name string) string {
-	contents, err := ioutil.ReadFile(name);
+	contents, err := ioutil.ReadFile(name)
 	if err != nil {
 		print(err.String())
 	}

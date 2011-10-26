@@ -94,4 +94,3 @@ func (node *XmlNode) AddContentBefore(content string) {
 		child = child.Next()
 	}
 }
-
