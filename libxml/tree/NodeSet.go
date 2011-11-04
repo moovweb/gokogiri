@@ -32,13 +32,13 @@ type NodeSet struct {
 
 func NewNodeSet(ptr unsafe.Pointer, doc *Doc) *NodeSet {
 	cPtr := (*C.xmlNodeSet)(ptr)
-	if cPtr == nil {
-		return nil
-	}
 	return &NodeSet{Ptr: cPtr, Doc: doc}
 }
 
 func (nodeSet *NodeSet) Size() int {
+    if nodeSet.Ptr == nil {
+        return 0
+    }
 	return int(C.SizeOfSet(nodeSet.Ptr))
 }
 
