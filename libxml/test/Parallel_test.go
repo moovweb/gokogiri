@@ -6,6 +6,7 @@ import (
 	"libxml/tree"
 	"strings"
     "runtime"
+    //"log"
 )
 
 func runParallel(testFunc func(chan bool), concurrency int) {
@@ -25,7 +26,6 @@ func runParallel(testFunc func(chan bool), concurrency int) {
 func TestParallelTree(t *testing.T) {
     testFunc := func(done chan bool) {
     	doc := libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
-        
         done <- false
     	defer doc.Free()
         
