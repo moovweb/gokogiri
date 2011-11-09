@@ -8,11 +8,10 @@ package tree
 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
-char *
-DumpNodeToXmlChar(xmlNode *node, xmlDoc *doc) {
+xmlBufferPtr DumpNodeToXml(xmlNode *node, xmlDoc *doc) {
   xmlBuffer *buff = xmlBufferCreate();
   xmlNodeDump(buff, doc, node, 0, 0);
-  return (char*)buff->content;
+  return buff;
 }
 */
 import "C"
@@ -102,7 +101,10 @@ func (node *XmlNode) SetName(name string) {
 }
 
 func (node *XmlNode) Content() string {
-	return XmlChar2String(C.xmlNodeGetContent(node.ptr()))
+  content := C.xmlNodeGetContent(node.ptr())
+  contentPtr := (*C.char)(unsafe.Pointer(content))
+  defer XmlFreeChars(contentPtr)
+	return XmlChar2String(content)
 }
 
 func (node *XmlNode) SetContent(content string) {
@@ -115,7 +117,10 @@ func (node *XmlNode) String() string {
 	if node.ptr() == nil {
 		return ""
 	}
-	return C.GoString(C.DumpNodeToXmlChar(node.ptr(), node.Doc().DocPtr))
+  buffer := C.DumpNodeToXml(node.ptr(), node.Doc().DocPtr)
+  defer C.xmlBufferFree(buffer)
+  bufferPtr := (*C.char)(unsafe.Pointer(buffer.content))
+	return C.GoString(bufferPtr)
 }
 
 func (node *XmlNode) DumpHTML() string {

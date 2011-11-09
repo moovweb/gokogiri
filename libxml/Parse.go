@@ -5,7 +5,6 @@ package libxml
 
 xmlDoc* 
 htmlDocToXmlDoc(htmlDocPtr doc) { return (xmlDocPtr)doc; }
-
 */
 import "C"
 import "unsafe"
@@ -45,14 +44,14 @@ func HtmlParseFile(url string, encoding string, opts int) *Doc {
 
 func XmlParseWithOption(content string, url string, encoding string, opts int) *Doc {
 	cContent := C.CString(content)
-	defer C.free(unsafe.Pointer(cContent))
-	c := C.xmlCharStrdup(cContent)
+  cContentPtr := unsafe.Pointer(cContent) 
+	defer C.free(cContentPtr)
 	cEncoding := C.CString(encoding)
 	defer C.free(unsafe.Pointer(cEncoding))
 	if encoding == "" {
 		cEncoding = nil
 	}
-	xmlDocPtr := C.xmlReadDoc(c, C.CString(url), cEncoding, C.int(opts))
+	xmlDocPtr := C.xmlReadDoc((*C.xmlChar)(cContentPtr), C.CString(url), cEncoding, C.int(opts))
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 

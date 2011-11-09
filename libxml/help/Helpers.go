@@ -6,7 +6,6 @@ package help
 #include <libxml/xmlstring.h> 
 char* xmlChar2C(xmlChar* x) { return (char *) x; }
 xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
-void xmlFreeBuffer(char* buf) { xmlFree(buf); }
 */
 import "C"
 

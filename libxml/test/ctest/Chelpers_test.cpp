@@ -54,7 +54,7 @@ void ChelpersTest::tearDown() {
     //xmlCleanupMemory();
     xmlCleanupParser ();
     //xmlMemoryDump();
-    //xmlMemDisplay(stdout);
+    xmlMemDisplay(stdout);
     printf("allocated: %d\n", xmlMemBlocks());
 }
 
