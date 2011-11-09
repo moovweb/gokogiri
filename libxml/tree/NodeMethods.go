@@ -166,4 +166,15 @@ func (node *XmlNode) NewChild(elementName, content string) *Element {
 	return NewNode(unsafe.Pointer(newCNode), node.Doc()).(*Element)
 }
 
+func (node *XmlNode) Wrap(elementName string) (wrapperNode *Element) {
+	// Build the wrapper
+	wrapperNode = node.Parent().NewChild(elementName, "")
+	// Add it after me
+	node.AddNodeAfter(wrapperNode)
+	// Add me as its child
+	wrapperNode.AppendChildNode(node)
+	println("ABOUT TO SEGFAULT")
+	println(wrapperNode.String())
+	println("See, never made it!")
+	return
 }

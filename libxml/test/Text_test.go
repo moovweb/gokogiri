@@ -20,3 +20,18 @@ func TestTextNodeContent(t *testing.T) {
 		t.Error("Should be able to set text content")
 	}
 }
+
+func TestTextNodeWrap(t *testing.T) {
+	doc := libxml.XmlParseString("<html>hi</html>")
+	textNode, ok := doc.First().First().(*tree.Text)
+	if !ok {
+		t.Error("Should be a Text object")
+	}
+	wrapNode := textNode.Wrap("wrapper")
+	if wrapNode.Name() != "wrapper" {
+		t.Error("Should be <wrapper> node")
+	}
+	if doc.First().String() != "<html><wrapper>mom</wrapper></html>" {
+		t.Error("Should have wrapped")
+	}
+}

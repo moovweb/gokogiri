@@ -39,6 +39,7 @@ type Node interface {
 	SetContent(content string)
 	
 	NewChild(elementName, content string) *Element
+	Wrap(elementName string) *Element
 
 	AppendChildNode(child Node)
 	PrependChildNode(child Node)

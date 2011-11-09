@@ -74,3 +74,13 @@ func TestElementNewChild(t *testing.T) {
 	Equal(t, root.String(), "<root><child>text</child><cousin></cousin></root>")
 	doc.Free()
 }
+
+
+func TestElementWrap(t *testing.T) {
+	doc := libxml.XmlParseString("<one/>")
+	wrapperNode := doc.First().Wrap("two")
+	if wrapperNode.Name() != "two" {
+		t.Error("Should have returned a wrapper element")
+	}
+	Equal(t, doc.String(), "<two><one/></two>")
+}
