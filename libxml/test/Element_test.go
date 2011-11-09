@@ -67,12 +67,8 @@ func TestElementNewChild(t *testing.T) {
 	doc := libxml.XmlParseString("<root></root>")
 	root := doc.First()
 	root.NewChild("child", "text")
-	if root.DumpHTML() != "<root><child>text</child></root>" {
-		t.Error("Should have added a new child")
-	}
+	Equal(t, root.String(), "<root><child>text</child></root>")
 	root.NewChild("cousin", "")
-	if root.DumpHTML() != "<root><child>text</child><cousin></cousin></root>" {
-		t.Error("Should have added a second child but got", root.DumpHTML())
-	}
+	Equal(t, root.String(), "<root><child>text</child><cousin></cousin></root>")
 	doc.Free()
 }
