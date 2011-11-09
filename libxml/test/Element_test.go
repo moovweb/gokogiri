@@ -33,7 +33,7 @@ func TestElementContent(t *testing.T) {
 	doc.Free()
 }
 
-func TestAppendContentUnicode(t *testing.T) {
+func TestElementAppendContentUnicode(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 	root := doc.RootElement()
 	root.AppendContent("<hello>&#x4F60;&#x597D;</hello>")
@@ -44,7 +44,7 @@ func TestAppendContentUnicode(t *testing.T) {
 	doc.Free()
 }
 
-func TestPrependContentUnicode(t *testing.T) {
+func TestElementPrependContentUnicode(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 	root := doc.RootElement()
 	root.PrependContent("<hello>&#x4F60;&#x597D;</hello>")
@@ -55,7 +55,7 @@ func TestPrependContentUnicode(t *testing.T) {
 	doc.Free()
 }
 
-func TestNoAutocloseContentCall(t *testing.T) {
+func TestElementNoAutocloseContentCall(t *testing.T) {
 	doc := libxml.XmlParseString("<root></root>")
 	if strings.Contains(doc.Content(), "<root/>") {
 		t.Error("Should NOT autoclose tags when using Content!")
