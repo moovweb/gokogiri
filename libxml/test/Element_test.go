@@ -66,7 +66,9 @@ func TestElementNoAutocloseContentCall(t *testing.T) {
 func TestElementNewChild(t *testing.T) {
 	doc := libxml.XmlParseString("<root></root>")
 	root := doc.First()
-	root.NewChild("child", "text")
+	child := root.NewChild("child", "text")
+	Equal(t, child.Name(), "child")
+	Equal(t, child.Content(), "text")
 	Equal(t, root.String(), "<root><child>text</child></root>")
 	root.NewChild("cousin", "")
 	Equal(t, root.String(), "<root><child>text</child><cousin></cousin></root>")

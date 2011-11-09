@@ -161,6 +161,9 @@ func (node *XmlNode) AddNodeBefore(sibling Node) {
 	C.xmlAddPrevSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
 }
 
-func (node *XmlNode) NewChild(elementName, content string) {
-	C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), String2XmlChar(content))
+func (node *XmlNode) NewChild(elementName, content string) *Element {
+	newCNode := C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), String2XmlChar(content))
+	return NewNode(unsafe.Pointer(newCNode), node.Doc()).(*Element)
+}
+
 }
