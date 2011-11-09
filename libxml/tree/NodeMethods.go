@@ -132,7 +132,7 @@ func (node *XmlNode) DumpHTML() string {
 }
 
 func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
-	cName := C.xmlCharStrdup(C.CString(name))
+	cName := String2XmlChar(name)
 	xmlAttrPtr := C.xmlHasProp(node.NodePtr, cName)
 	didCreate := false
 	if xmlAttrPtr == nil {
