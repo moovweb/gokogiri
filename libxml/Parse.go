@@ -1,7 +1,5 @@
 package libxml
 /*
-#cgo LDFLAGS: -lxml2
-#cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/HTMLparser.h> 
 #include <libxml/HTMLtree.h>
 

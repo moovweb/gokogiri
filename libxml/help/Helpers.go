@@ -1,7 +1,5 @@
 package help
 /* 
-#cgo LDFLAGS: -lxml2
-#cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/xmlversion.h> 
 #include <libxml/parser.h> 
 #include <libxml/xmlstring.h> 
@@ -18,4 +16,8 @@ func XmlCheckVersion() int {
 
 func XmlCleanUpParser() {
 	C.xmlCleanupParser()
+}
+
+func XmlMemoryAllocation() int {
+    return (int)(C.xmlMemBlocks())
 }

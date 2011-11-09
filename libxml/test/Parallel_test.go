@@ -4,9 +4,10 @@ import (
 	"libxml"
 	"testing"
 	"libxml/tree"
+    "libxml/help"
 	"strings"
     "runtime"
-    //"log"
+    "log"
 )
 
 func runParallel(testFunc func(chan bool), concurrency int) {
@@ -23,11 +24,16 @@ func runParallel(testFunc func(chan bool), concurrency int) {
 }
 
 
+func TestMem(t *testing.T) {
+    libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
+    log.Printf("XmlMemoryAllocation = %d\n", help.XmlMemoryAllocation())
+}
+
 func TestParallelTree(t *testing.T) {
     testFunc := func(done chan bool) {
     	doc := libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
         done <- false
-    	defer doc.Free()
+    	//defer doc.Free()
         
     	Equal(t, doc.Size(), 1)
     	Equal(t, doc.Content(), "hiText")
@@ -85,6 +91,7 @@ func TestParallelAddingChildLast(t *testing.T) {
     done <- true
     }
     runParallel(testFunc, 100)
+    log.Printf("XmlMemoryAllocation = %d\n", help.XmlMemoryAllocation())
 }
 
 
