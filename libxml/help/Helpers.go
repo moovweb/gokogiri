@@ -1,10 +1,12 @@
 package help
 /* 
+#include <stdio.h>
 #include <libxml/xmlversion.h> 
 #include <libxml/parser.h> 
 #include <libxml/xmlstring.h> 
 char* xmlChar2C(xmlChar* x) { return (char *) x; }
 xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
+void xmlFreeBuffer(char* buf) { xmlFree(buf); }
 */
 import "C"
 
@@ -20,4 +22,8 @@ func XmlCleanUpParser() {
 
 func XmlMemoryAllocation() int {
     return (int)(C.xmlMemBlocks())
+}
+
+func XmlMemoryLeakReport() {
+    C.xmlMemDisplay(C.stdout)
 }

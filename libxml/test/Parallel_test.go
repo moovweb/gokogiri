@@ -25,8 +25,12 @@ func runParallel(testFunc func(chan bool), concurrency int) {
 
 
 func TestMem(t *testing.T) {
-    libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
+    doc := libxml.XmlParseString("<root>hi<parent><child /><child>Text</child></parent><aunt /><catlady/></root>")
+    doc.Free()
+    help.XmlCleanUpParser()
     log.Printf("XmlMemoryAllocation = %d\n", help.XmlMemoryAllocation())
+    help.XmlMemoryLeakReport()
+    
 }
 
 func TestParallelTree(t *testing.T) {
@@ -91,7 +95,7 @@ func TestParallelAddingChildLast(t *testing.T) {
     done <- true
     }
     runParallel(testFunc, 100)
-    log.Printf("XmlMemoryAllocation = %d\n", help.XmlMemoryAllocation())
+    //log.Printf("XmlMemoryAllocation = %d\n", help.XmlMemoryAllocation())
 }
 
 

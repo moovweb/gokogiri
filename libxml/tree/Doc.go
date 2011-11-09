@@ -77,7 +77,7 @@ func (doc *Doc) MetaEncoding() string {
 func (doc *Doc) String() string {
 	// TODO: Decide what type of return to do HTML or XML
 	cString := C.DumpXmlToString(doc.DocPtr)
-	defer C.free(unsafe.Pointer(cString))
+	defer C.xmlFreeBuffer(cString)
 	return C.GoString(cString)
 }
 
