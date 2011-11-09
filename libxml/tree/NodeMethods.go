@@ -160,3 +160,7 @@ func (node *XmlNode) AddNodeAfter(sibling Node) {
 func (node *XmlNode) AddNodeBefore(sibling Node) {
 	C.xmlAddPrevSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
 }
+
+func (node *XmlNode) NewChild(elementName, content string) {
+	C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), String2XmlChar(content))
+}

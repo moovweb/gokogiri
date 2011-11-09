@@ -37,6 +37,8 @@ type Node interface {
 
 	Content() string
 	SetContent(content string)
+	
+	NewChild(elementName, content string)
 
 	AppendChildNode(child Node)
 	PrependChildNode(child Node)
