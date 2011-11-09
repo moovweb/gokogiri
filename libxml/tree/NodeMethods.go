@@ -107,10 +107,18 @@ func (node *XmlNode) Content() string {
 	return XmlChar2String(C.xmlNodeGetContent(node.ptr()))
 }
 
-func (node *XmlNode) SetContent(content string) {
+func (node *XmlNode) encodeSpecialChars(content string) *C.xmlChar {
 	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
-	xmlChar := C.xmlEncodeSpecialChars(docPtr, String2XmlChar(content))
-	C.xmlNodeSetContent(node.ptr(), xmlChar)
+	return C.xmlEncodeSpecialChars(docPtr, String2XmlChar(content))
+}
+
+func (node *XmlNode) SetCDataContent(content string) {
+	C.xmlNodeSetContent(node.ptr(), node.encodeSpecialChars(content))
+}
+
+// This is overriden in some subclasses... by default use the CData content method
+func (node *XmlNode) SetContent(content string) {
+	node.SetCDataContent(content)
 }
 
 func (node *XmlNode) String() string {
@@ -161,8 +169,16 @@ func (node *XmlNode) AddNodeBefore(sibling Node) {
 	C.xmlAddPrevSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
 }
 
+// If you get nil back from NewChild, make sure that the element type can have children
 func (node *XmlNode) NewChild(elementName, content string) *Element {
-	newCNode := C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), String2XmlChar(content))
+	var cContent *C.xmlChar
+	if content != "" {
+		cContent = node.encodeSpecialChars(content)
+	}
+	newCNode := C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), cContent)
+	if newCNode == nil {
+		return nil
+	}
 	return NewNode(unsafe.Pointer(newCNode), node.Doc()).(*Element)
 }
 

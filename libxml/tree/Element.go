@@ -80,14 +80,14 @@ func (node *Element) PrependContent(content string) {
 	}
 }
 
-func (node *XmlNode) AddContentAfter(content string) {
+func (node *Element) AddContentAfter(content string) {
 	child := node.Doc().ParseFragment(content).Parent().Last()
 	for child != nil {
 		node.AddNodeAfter(child)
 		child = child.Prev()
 	}
 }
-func (node *XmlNode) AddContentBefore(content string) {
+func (node *Element) AddContentBefore(content string) {
 	child := node.Doc().ParseFragment(content).Parent().First()
 	for child != nil {
 		node.AddNodeBefore(child)

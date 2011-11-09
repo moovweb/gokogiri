@@ -37,6 +37,7 @@ type Node interface {
 
 	Content() string
 	SetContent(content string)
+	SetCDataContent(content string)
 	
 	NewChild(elementName, content string) *Element
 	Wrap(elementName string) *Element

@@ -71,7 +71,7 @@ func TestElementNewChild(t *testing.T) {
 	Equal(t, child.Content(), "text")
 	Equal(t, root.String(), "<root><child>text</child></root>")
 	root.NewChild("cousin", "")
-	Equal(t, root.String(), "<root><child>text</child><cousin></cousin></root>")
+	Equal(t, root.String(), "<root><child>text</child><cousin/></root>")
 	doc.Free()
 }
 

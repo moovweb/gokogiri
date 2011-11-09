@@ -94,3 +94,9 @@ func (doc *Doc) DumpXML() string {
 func (doc *Doc) RootElement() *Element {
 	return NewNode(unsafe.Pointer(C.xmlDocGetRootElement(doc.DocPtr)), doc).(*Element)
 }
+
+func (doc *Doc) NewCData(content string) *CData {
+	length := C.int(len([]byte(content)))
+	cData := C.xmlNewCDataBlock(doc.DocPtr, String2XmlChar(content), length)
+	return NewNode(unsafe.Pointer(cData), doc).(*CData)
+}
