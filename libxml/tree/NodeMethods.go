@@ -170,11 +170,9 @@ func (node *XmlNode) Wrap(elementName string) (wrapperNode *Element) {
 	// Build the wrapper
 	wrapperNode = node.Parent().NewChild(elementName, "")
 	// Add it after me
-	node.AddNodeAfter(wrapperNode)
+	node.AddNodeBefore(wrapperNode)
 	// Add me as its child
+	node.Remove()
 	wrapperNode.AppendChildNode(node)
-	println("ABOUT TO SEGFAULT")
-	println(wrapperNode.String())
-	println("See, never made it!")
 	return
 }

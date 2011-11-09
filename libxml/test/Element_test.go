@@ -82,5 +82,5 @@ func TestElementWrap(t *testing.T) {
 	if wrapperNode.Name() != "two" {
 		t.Error("Should have returned a wrapper element")
 	}
-	Equal(t, doc.String(), "<two><one/></two>")
+	Equal(t, doc.First().String(), "<two><one/></two>")
 }

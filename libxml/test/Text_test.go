@@ -28,10 +28,6 @@ func TestTextNodeWrap(t *testing.T) {
 		t.Error("Should be a Text object")
 	}
 	wrapNode := textNode.Wrap("wrapper")
-	if wrapNode.Name() != "wrapper" {
-		t.Error("Should be <wrapper> node")
-	}
-	if doc.First().String() != "<html><wrapper>mom</wrapper></html>" {
-		t.Error("Should have wrapped")
-	}
+	Equal(t, wrapNode.Name(), "wrapper")
+	Equal(t, doc.First().String(), "<html><wrapper>hi</wrapper></html>")
 }
