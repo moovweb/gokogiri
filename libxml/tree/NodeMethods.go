@@ -135,7 +135,7 @@ func (node *XmlNode) DumpHTML() string {
 }
 
 func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
-	cName := C.xmlCharStrdup(C.CString(name))
+	cName := String2XmlChar(name)
 	xmlAttrPtr := C.xmlHasProp(node.NodePtr, cName)
 	didCreate := false
 	if xmlAttrPtr == nil {
@@ -162,4 +162,22 @@ func (node *XmlNode) AddNodeAfter(sibling Node) {
 }
 func (node *XmlNode) AddNodeBefore(sibling Node) {
 	C.xmlAddPrevSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
+}
+
+func (node *XmlNode) NewChild(elementName, content string) *Element {
+	newCNode := C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), String2XmlChar(content))
+	return NewNode(unsafe.Pointer(newCNode), node.Doc()).(*Element)
+}
+
+func (node *XmlNode) Wrap(elementName string) (wrapperNode *Element) {
+	// Build the wrapper
+	wrapperNode = node.Parent().NewChild(elementName, "")
+	// Add it after me
+	node.AddNodeAfter(wrapperNode)
+	// Add me as its child
+	wrapperNode.AppendChildNode(node)
+	println("ABOUT TO SEGFAULT")
+	println(wrapperNode.String())
+	println("See, never made it!")
+	return
 }

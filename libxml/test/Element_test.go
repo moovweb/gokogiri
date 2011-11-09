@@ -33,7 +33,7 @@ func TestElementContent(t *testing.T) {
 	doc.Free()
 }
 
-func TestAppendContentUnicode(t *testing.T) {
+func TestElementAppendContentUnicode(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 	root := doc.RootElement()
 	root.AppendContent("<hello>&#x4F60;&#x597D;</hello>")
@@ -44,7 +44,7 @@ func TestAppendContentUnicode(t *testing.T) {
 	doc.Free()
 }
 
-func TestPrependContentUnicode(t *testing.T) {
+func TestElementPrependContentUnicode(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 	root := doc.RootElement()
 	root.PrependContent("<hello>&#x4F60;&#x597D;</hello>")
@@ -55,10 +55,32 @@ func TestPrependContentUnicode(t *testing.T) {
 	doc.Free()
 }
 
-func TestNoAutocloseContentCall(t *testing.T) {
+func TestElementNoAutocloseContentCall(t *testing.T) {
 	doc := libxml.XmlParseString("<root></root>")
 	if strings.Contains(doc.Content(), "<root/>") {
 		t.Error("Should NOT autoclose tags when using Content!")
 	}
 	doc.Free()
+}
+
+func TestElementNewChild(t *testing.T) {
+	doc := libxml.XmlParseString("<root></root>")
+	root := doc.First()
+	child := root.NewChild("child", "text")
+	Equal(t, child.Name(), "child")
+	Equal(t, child.Content(), "text")
+	Equal(t, root.String(), "<root><child>text</child></root>")
+	root.NewChild("cousin", "")
+	Equal(t, root.String(), "<root><child>text</child><cousin></cousin></root>")
+	doc.Free()
+}
+
+
+func TestElementWrap(t *testing.T) {
+	doc := libxml.XmlParseString("<one/>")
+	wrapperNode := doc.First().Wrap("two")
+	if wrapperNode.Name() != "two" {
+		t.Error("Should have returned a wrapper element")
+	}
+	Equal(t, doc.String(), "<two><one/></two>")
 }
