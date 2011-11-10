@@ -56,25 +56,33 @@ func (node *Element) Content() string {
 	}
 	return output
 }
-
+/*
 func (node *Element) SetContent(content string) {
 	node.Clear()
 	node.AppendContent(content)
 }
-
+*/
 func (node *Element) AppendContent(content string) {
-	child := node.Doc().ParseFragment(content)
+	newDoc := node.Doc().ParseFragment(content)
+  defer newDoc.Free()
+  child := newDoc.RootElement().First()
 	for child != nil {
+    //need to save the next sibling before appending it,
+    //because once it loses its link to the next sibling in its original tree once appended to the new doc
+    nextChild := child.Next() 
 		node.AppendChildNode(child)
-		child = child.Next()
+		child = nextChild
 	}
 }
 
 func (node *Element) PrependContent(content string) {
-	child := node.Doc().ParseFragment(content).Parent().Last()
+	newDoc := node.Doc().ParseFragment(content)
+  defer newDoc.Free()
+  child := newDoc.RootElement().Last()
 	for child != nil {
+    prevChild := child.Prev()
 		node.PrependChildNode(child)
-		child = child.Prev()
+		child = prevChild
 	}
 }
 
@@ -92,3 +100,4 @@ func (node *XmlNode) AddContentBefore(content string) {
 		child = child.Next()
 	}
 }
+

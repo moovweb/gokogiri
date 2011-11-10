@@ -77,7 +77,7 @@ func TestParallelTree(t *testing.T) {
 
     help.XmlCleanUpParser()
     if help.XmlMemoryAllocation() != 0 {
-      t.Fatalf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
       help.XmlMemoryLeakReport()
     }
 }
@@ -88,18 +88,19 @@ func TestParallelAddingChildLast(t *testing.T) {
     	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
       done <- false
 
-  	  defer doc.Free()
     	childDoc := tree.Parse("<child/>")
-      defer childDoc.Free()
-      /*
 	    child := childDoc.First()
     	doc.RootElement().FirstElement().AppendChildNode(child)
 	    if !strings.Contains(doc.String(), "<brother/><child/>") {
 		    t.Error("Should have new last child")
-    	}*/
+        t.Error("%q\n", child.String())
+    	}
+
+      childDoc.Free()
+  	  doc.Free()
       done <- true
     }
-    runParallel(testFunc, 1)
+    runParallel(testFunc, 100)
     
     help.XmlCleanUpParser()
     if help.XmlMemoryAllocation() != 0 {
@@ -109,119 +110,156 @@ func TestParallelAddingChildLast(t *testing.T) {
     
 }
 
-
 func TestParallelAddingChildFirst(t *testing.T) {
     testFunc := func(done chan bool) {
-	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
-    done <- false
+  	  doc := libxml.XmlParseString("<root>hi<parent><foo/><bar/></parent></root>")
+      done <- false
 
-	defer doc.Free()
-	childDoc := tree.Parse("<child/>")
-	child := childDoc.First()
-	doc.RootElement().FirstElement().PrependChildNode(child)
-	if !strings.Contains(doc.String(), "<child/><brother/>") {
-		t.Fail()
-	}
-    done <- true
+	    childDoc := tree.Parse("<child/>")
+	    child := childDoc.First()
+  	  doc.RootElement().FirstElement().PrependChildNode(child)
+	    if !strings.Contains(doc.String(), "<child/><foo/>") {
+        t.Error("Should have new first child: %q\n", doc.String())
+    	}
+      childDoc.Free()
+      doc.Free()
+      done <- true
     }
     runParallel(testFunc, 100)
 
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
+ 
 }
 
-/*
 func TestParallelAddingBefore(t *testing.T) {
     testFunc := func(done chan bool) {
-
-	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
-    done <- false
-	defer doc.Free()
-	childDoc := tree.Parse("<child/>")
-	child := childDoc.First()
-	doc.RootElement().FirstElement().AddNodeBefore(child)
-	if !strings.Contains(doc.String(), "<child/><parent") {
-		t.Error("Should have new sibling before")
-	}
-    done <- true
+  	  doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+      done <- false
+	    childDoc := tree.Parse("<child/>")
+    	child := childDoc.First()
+    	doc.RootElement().FirstElement().AddNodeBefore(child)
+    	if !strings.Contains(doc.String(), "<child/><parent") {
+		    t.Error("Should have new sibling before")
+    	}
+      childDoc.Free()
+      doc.Free()
+      done <- true
     }
+
     runParallel(testFunc, 100)
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
+ 
 }
+
 
 func TestParallelAddingAfter(t *testing.T) {
     testFunc := func(done chan bool) {
-	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
-    done <- false
-	defer doc.Free()
-	childDoc := tree.Parse("<child/>")
-	child := childDoc.First()
-	doc.RootElement().FirstElement().AddNodeAfter(child)
-	if !strings.Contains(doc.String(), "</parent><child/></root>") {
-		t.Error("Should have new sibling after")
-	}
-    done <- true
+	    doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
+      done <- false
+	    childDoc := tree.Parse("<child/>")
+    	child := childDoc.First()
+    	doc.RootElement().FirstElement().AddNodeAfter(child)
+    	if !strings.Contains(doc.String(), "</parent><child/></root>") {
+		    t.Error("Should have new sibling after")
+    	}
+      childDoc.Free()
+      doc.Free()
+      done <- true
     }
     runParallel(testFunc, 100)
-
+    
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
 }
+
 
 func TestParallelNodeDuplicate(t *testing.T) {
     testFunc := func(done chan bool) {
-	doc := libxml.XmlParseString("<root><parent><brother>hi</brother></parent></root>")
-    done <- false
-	defer doc.Free()
-	parent := doc.RootElement().FirstElement()
-	brother := parent.FirstElement()
-	dupBrother := brother.Duplicate()
-	dupBrother.First().SetContent("bye")
-	parent.AppendChildNode(dupBrother)
-	if !strings.Contains(doc.String(), "<brother>hi</brother>") {
-		t.Error("Should have original sibling")
-	}
-	if !strings.Contains(doc.String(), "<brother>bye</brother>") {
-		t.Error("Should have new sibling too!")
-	}
-    done <- true
+    	doc := libxml.XmlParseString("<root><parent><brother>hi</brother></parent></root>")
+      done <- false
+	    parent := doc.RootElement().FirstElement()
+    	brother := parent.FirstElement()
+    	dupBrother := brother.Duplicate()
+    	dupBrother.First().SetContent("bye")
+    	parent.AppendChildNode(dupBrother)
+    	if !strings.Contains(doc.String(), "<brother>hi</brother>") {
+		    t.Error("Should have original sibling")
+    	}
+    	if !strings.Contains(doc.String(), "<brother>bye</brother>") {
+		    t.Error("Should have new sibling too!")
+    	}
+      doc.Free()
+      done <- true
     }
     runParallel(testFunc, 100)
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
 
 }
+
 
 func TestParallelSetContent(t *testing.T) {
     testFunc := func(done chan bool) {
-	doc := libxml.XmlParseString("<root>hi</root>")
-    done <- false
-	root := doc.RootElement()
-	text := root.First()
-	Equal(t, text.Content(), "hi")
-	text.SetContent("bye")
-	Equal(t, text.Content(), "bye")
-	if !strings.Contains(doc.String(), "<root>bye</root>") {
-		t.Fail()
-	}
-	root.SetContent("world")
-	if !strings.Contains(doc.String(), "world") {
-		t.Fail()
-	}
-	doc.Free()
-    done <- true
-    }
-    runParallel(testFunc, 1)
-}
-/*
-func TestParallelNodeIsLinked(t *testing.T) {
-    testFunc := func(done chan bool) {
-	doc := libxml.XmlParseString("<root><child /></root>")
-    done <- false
-	child := doc.RootElement().FirstElement()
-	if child.IsLinked() != true {
-		t.Error("Children start off linked")
-	}
-	child.Remove()
-	if child.IsLinked() != false {
-		t.Error("Children should report being unlinked")
-	}
-	doc.Free()
-    done <- true
+    	doc := libxml.XmlParseString("<root>hi</root>")
+      done <- false
+    	root := doc.RootElement()
+    	text := root.First()
+    	Equal(t, text.Content(), "hi")
+    	text.SetContent("bye")
+    	Equal(t, text.Content(), "bye")
+    	if !strings.Contains(doc.String(), "<root>bye</root>") {
+		    t.Fail()
+    	}
+    	root.SetContent("world")
+    	if !strings.Contains(doc.String(), "world") {
+		    t.Fail()
+    	}
+    	doc.Free()
+      done <- true
     }
     runParallel(testFunc, 100)
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
 }
-*/
+
+func TestParallelNodeIsLinked(t *testing.T) {
+    testFunc := func(done chan bool) {
+    	doc := libxml.XmlParseString("<root><child /></root>")
+      done <- false
+    	child := doc.RootElement().FirstElement()
+    	if child.IsLinked() != true {
+		    t.Error("Children start off linked")
+    	}
+    	child.Remove()
+    	if child.IsLinked() != false {
+		    t.Error("Children should report being unlinked")
+    	}
+      child.Free()
+    	doc.Free()
+      done <- true
+    }
+    runParallel(testFunc, 100)
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
+
+}

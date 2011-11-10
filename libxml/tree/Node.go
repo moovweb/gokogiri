@@ -56,11 +56,13 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
 	}
 	node_type := xmlNodeType(cPtr)
 	xml_node := &XmlNode{NodePtr: cPtr, DocRef: doc}
-	if doc == nil {
-		doc := &Doc{XmlNode: xml_node}
+  if node_type == C.XML_DOCUMENT_NODE || node_type == C.XML_HTML_DOCUMENT_NODE {
+		newDoc := &Doc{XmlNode: xml_node}
 		// If we are a doc, then we reference ourselves
-		doc.XmlNode.DocRef = doc
-		return doc
+		newDoc.XmlNode.DocRef = newDoc
+    newDoc.DocRef = newDoc
+    newDoc.DocPtr = (*C.xmlDoc)(ptr)
+		return newDoc
 	} else if node_type == C.XML_ELEMENT_NODE {
 		return &Element{XmlNode: xml_node}
 	} else if node_type == C.XML_ATTRIBUTE_NODE {

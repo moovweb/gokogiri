@@ -39,8 +39,7 @@ func Parse(input string) *Doc {
 	cInput := C.CString(input)
   defer C.free(unsafe.Pointer(cInput))
 	doc := C.xmlParseMemory(cInput, C.int(len(input)))
-  return NewDoc(unsafe.Pointer(doc))
-	//return NewNode(unsafe.Pointer(doc), nil).(*Doc)
+	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
 }
 
 func CreateHtmlDoc() *Doc {
@@ -50,12 +49,9 @@ func CreateHtmlDoc() *Doc {
 
 // Returns the first element in the input string.
 // Use Next() to access siblings
-func (doc *Doc) ParseFragment(input string) Node {
+func (doc *Doc) ParseFragment(input string) *Doc {
 	newDoc := Parse("<root>" + input + "</root>")
-	defer newDoc.Free()
-	res := newDoc.First().First()
-	res.SetDoc(doc)
-	return res
+	return newDoc
 }
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
@@ -79,7 +75,7 @@ func (doc *Doc) MetaEncoding() string {
 func (doc *Doc) String() string {
 	// TODO: Decide what type of return to do HTML or XML
 	cString := C.DumpXmlToString(doc.DocPtr)
-	//defer XmlFreeChars(cString)
+	defer XmlFreeChars(cString)
 	return C.GoString(cString)
 }
 

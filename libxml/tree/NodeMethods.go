@@ -109,7 +109,10 @@ func (node *XmlNode) Content() string {
 
 func (node *XmlNode) SetContent(content string) {
 	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
-	xmlChar := C.xmlEncodeSpecialChars(docPtr, String2XmlChar(content))
+  contentXmlChar := String2XmlChar(content)
+  defer XmlFreeXmlChars(contentXmlChar)
+	xmlChar := C.xmlEncodeSpecialChars(docPtr, contentXmlChar)
+  defer XmlFreeXmlChars(xmlChar)
 	C.xmlNodeSetContent(node.ptr(), xmlChar)
 }
 
@@ -147,7 +150,11 @@ func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
 }
 
 func (node *XmlNode) AppendChildNode(child Node) {
-	C.xmlAddChild(node.ptr(), (*C.xmlNode)(child.Ptr()))
+  childPtr := (*C.xmlNode)(child.Ptr())
+  C.xmlUnlinkNode(childPtr);
+  copiedChild := C.xmlDocCopyNode(childPtr, node.Doc().DocPtr, 1);
+  C.xmlAddChild(node.ptr(), copiedChild);
+  C.xmlFreeNode(childPtr); //this is a must; otherwise it would leak memory on text nodes
 }
 func (node *XmlNode) PrependChildNode(child Node) {
 	if node.Size() >= 1 {
@@ -158,8 +165,17 @@ func (node *XmlNode) PrependChildNode(child Node) {
 }
 
 func (node *XmlNode) AddNodeAfter(sibling Node) {
-	C.xmlAddNextSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
+  siblingPtr := (*C.xmlNode)(sibling.Ptr())
+  C.xmlUnlinkNode(siblingPtr);
+  copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1);
+	C.xmlAddNextSibling(node.ptr(), copiedSibling)
+  C.xmlFreeNode(siblingPtr)
 }
+
 func (node *XmlNode) AddNodeBefore(sibling Node) {
-	C.xmlAddPrevSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
+  siblingPtr := (*C.xmlNode)(sibling.Ptr())
+  C.xmlUnlinkNode(siblingPtr);
+  copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1);
+	C.xmlAddPrevSibling(node.ptr(), copiedSibling)
+  C.xmlFreeNode(siblingPtr)
 }
