@@ -131,7 +131,7 @@ func (node *XmlNode) String() string {
 func (node *XmlNode) DumpHTML() string {
 	cBuffer := C.xmlBufferCreate()
 	C.htmlNodeDump(cBuffer, node.Doc().DocPtr, node.ptr())
-	defer C.free(unsafe.Pointer(cBuffer))
+  defer C.xmlBufferFree(cBuffer)
 	if cBuffer.content == nil {
 		return ""
 	}

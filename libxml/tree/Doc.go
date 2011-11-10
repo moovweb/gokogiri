@@ -82,7 +82,9 @@ func (doc *Doc) String() string {
 }
 
 func (doc *Doc) DumpHTML() string {
-	return C.GoString(C.DumpHtmlToString(doc.DocPtr))
+  strPtr := C.DumpHtmlToString(doc.DocPtr)
+  defer XmlFreeChars(strPtr)
+	return C.GoString(strPtr)
 }
 
 func (doc *Doc) DumpXML() string {
