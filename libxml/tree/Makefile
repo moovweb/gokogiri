@@ -21,7 +21,7 @@ CGOFILES=\
 	Node.go\
 	NodeMethods.go\
 	NodeSet.go\
-	TextNode.go\
+	Text.go\
 
 
 # gb: this is the local install

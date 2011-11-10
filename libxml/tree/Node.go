@@ -35,6 +35,9 @@ type Node interface {
 
 	Content() string
 	SetContent(content string)
+	
+	NewChild(elementName, content string) *Element
+	Wrap(elementName string) *Element
 
 	AppendChildNode(child Node)
 	PrependChildNode(child Node)
@@ -69,6 +72,8 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
 		return &Attribute{XmlNode: xml_node}
 	} else if node_type == C.XML_CDATA_SECTION_NODE {
 		return &CData{XmlNode: xml_node}
+	} else if node_type == C.XML_TEXT_NODE {
+		return &Text{XmlNode: xml_node}
 	}
 	return xml_node
 }
