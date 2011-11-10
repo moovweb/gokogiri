@@ -33,7 +33,7 @@ func ContextNew(node Node) *XPathContext {
 	return ctx
 }
 
-func Search(node Node, xpath_expression string) *NodeSet {
+func Search(node Node, xpath_expression string) (*NodeSet, *XPathObject) {
 	if node.Doc() == nil {
 		println("Must define document in node")
 	}
@@ -62,9 +62,9 @@ func (context *XPathContext) Eval(expression string) *XPathObject {
 	return &XPathObject{Ptr: object_pointer, Doc: context.Doc}
 }
 
-func (context *XPathContext) EvalToNodes(expression string) *NodeSet {
+func (context *XPathContext) EvalToNodes(expression string) (*NodeSet, *XPathObject) {
 	obj := context.Eval(expression)
-	return obj.NodeSet()
+	return obj.NodeSet(), obj
 }
 
 func (context *XPathContext) Free() {
@@ -72,6 +72,9 @@ func (context *XPathContext) Free() {
 }
 
 func (obj *XPathObject) NodeSet() *NodeSet {
-  defer C.xmlXPathFreeObject(obj.Ptr)
 	return NewNodeSet(unsafe.Pointer(C.FetchNodeSet(obj.Ptr)), obj.Doc)
+}
+
+func (obj *XPathObject) Free() {
+  C.xmlXPathFreeObject(obj.Ptr)
 }
