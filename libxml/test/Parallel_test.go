@@ -5,9 +5,8 @@ import (
 	"testing"
 	"libxml/tree"
   "libxml/help"
-	//"strings"
+	"strings"
   "runtime"
-  "log"
 )
 
 const num = 1
@@ -48,8 +47,6 @@ func TestParallelTree(t *testing.T) {
     		t.Error("Should have returned root element")
     	}
     	Equal(t, root.Size(), 3)
-      log.Printf("root' last %q\n", root.Last().String())
-        
       
     	// If we are on root, and we go "next", we should get
     	// nothing, as root has no siblings. Should return nil
@@ -67,13 +64,11 @@ func TestParallelTree(t *testing.T) {
     	Equal(t, childText.Content(), "Text")
       
     	catLady := Assert(t, root.Last(), "root last node exists").(tree.Node)
-      log.Printf("root: %q\n", root.String())
-      log.Printf("root last %q\n", root.Last().String())
     	AssertNil(t, catLady.First(), "catlady first")
     	AssertNil(t, catLady.Next(), "catlady has no siblings")
     	// See if we get <aunt /> for both of these
     	// TODO: implement it so that they are ACTUALLY equal to each other.
-    	//Equal(t, parent.Next().String(), catLady.Prev().String())
+    	Equal(t, parent.Next().String(), catLady.Prev().String())
 
     	doc.Free()
       done <- true
@@ -88,7 +83,7 @@ func TestParallelTree(t *testing.T) {
     }
 }
 
-/*
+
 func TestParallelAddingChildLast(t *testing.T) {
     testFunc := func(done chan bool) {
     	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
@@ -269,4 +264,3 @@ func TestParallelNodeIsLinked(t *testing.T) {
     }
 
 }
-*/
