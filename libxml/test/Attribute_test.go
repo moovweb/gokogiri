@@ -2,21 +2,23 @@ package test
 
 import (
 	"libxml"
+  "libxml/help"
 	"testing"
 	"strings"
 )
 
 func TestAttributeFetch(t *testing.T) {
 	doc := libxml.XmlParseString("<node existing='true'/>")
-    defer doc.Free()
 	node := doc.First()
 	existingAttr, shouldntCreate := node.Attribute("existing")
 	if existingAttr == nil {
 		t.Fail()
 	}
+  
 	if shouldntCreate == true {
 		t.Error("Should be an existing attribute")
 	}
+  
 	createdAttr, didCreate := node.Attribute("created")
 	if createdAttr == nil {
 		t.Fail()
@@ -24,6 +26,7 @@ func TestAttributeFetch(t *testing.T) {
 	if didCreate == false {
 		t.Error("Should be a new attribute")
 	}
+  
 	Equal(t, createdAttr.Content(), "")
 	if !(strings.Contains(doc.String(), "created=\"\"")) {
 		t.Error("Should have the 'created' attr in it")
@@ -64,4 +67,11 @@ func TestAttributeFetch(t *testing.T) {
 	if !strings.Contains(doc.String(), "worked=\"yes\"") {
 		t.Error("Should contain yes now")
 	}
+    
+  doc.Free()
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
 }

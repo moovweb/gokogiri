@@ -97,7 +97,9 @@ func (node *XmlNode) Name() string {
 }
 
 func (node *XmlNode) SetName(name string) {
-	C.xmlNodeSetName(node.ptr(), C.xmlCharStrdup(C.CString(name)))
+  namePtr := C.xmlCharStrdup(C.CString(name))
+  defer XmlFreeXmlChars(namePtr)
+	C.xmlNodeSetName(node.ptr(), namePtr)
 }
 
 func (node *XmlNode) Content() string {
@@ -139,11 +141,14 @@ func (node *XmlNode) DumpHTML() string {
 
 func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
 	cName := String2XmlChar(name)
+  defer XmlFreeXmlChars(cName)
 	xmlAttrPtr := C.xmlHasProp(node.NodePtr, cName)
 	didCreate := false
 	if xmlAttrPtr == nil {
 		didCreate = true
-		xmlAttrPtr = C.xmlNewProp(node.NodePtr, cName, C.xmlCharStrdup(C.CString("")))
+    valuePtr := C.xmlCharStrdup(C.CString(""))
+    defer XmlFreeXmlChars(valuePtr)
+		xmlAttrPtr = C.xmlNewProp(node.NodePtr, cName, valuePtr)
 	}
 	attribute := NewNode(unsafe.Pointer(xmlAttrPtr), node.Doc()).(*Attribute)
 	return attribute, didCreate
@@ -181,7 +186,11 @@ func (node *XmlNode) AddNodeBefore(sibling Node) {
 }
 
 func (node *XmlNode) NewChild(elementName, content string) *Element {
-	newCNode := C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), String2XmlChar(content))
+  elementNamePtr := String2XmlChar(elementName)
+  defer XmlFreeXmlChars(elementNamePtr)
+  contentPtr := String2XmlChar(content)
+  defer XmlFreeXmlChars(contentPtr)
+	newCNode := C.xmlNewChild(node.ptr(), nil, elementNamePtr, contentPtr)
 	return NewNode(unsafe.Pointer(newCNode), node.Doc()).(*Element)
 }
 

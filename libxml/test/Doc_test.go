@@ -4,8 +4,6 @@ import (
 	"libxml"
   "libxml/help"
 	"testing"
-	//"strings"
-	//"fmt"
 )
 
 func TestNewElement(t *testing.T) {
