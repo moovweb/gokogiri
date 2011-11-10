@@ -9,6 +9,7 @@ xmlXPathContextSetNode(xmlXPathContext *ctx, xmlNode *new_node) {
 xmlNodeSet * 
 FetchNodeSet(xmlXPathObject *obj) {
   return obj->nodesetval; }
+void xmlFreeXmlChars3(xmlChar* buf) { xmlFree(buf); }
 */
 import "C"
 import "unsafe"
@@ -37,12 +38,15 @@ func Search(node Node, xpath_expression string) *NodeSet {
 		println("Must define document in node")
 	}
 	ctx := ContextNew(node)
+  defer ctx.Free()
 	return ctx.EvalToNodes(xpath_expression)
 }
 
 func (context *XPathContext) RegisterNamespace(prefix, href string) bool {
 	cPrefix := C.xmlCharStrdup(C.CString(prefix))
+  defer C.xmlFreeXmlChars3(cPrefix)
 	cHref := C.xmlCharStrdup(C.CString(href))
+  defer C.xmlFreeXmlChars3(cHref)
 	result := C.xmlXPathRegisterNs(context.Ptr, cPrefix, cHref)
 	return result == 0
 }
@@ -53,6 +57,7 @@ func (context *XPathContext) SetNode(node Node) {
 
 func (context *XPathContext) Eval(expression string) *XPathObject {
 	cExpression := C.xmlCharStrdup(C.CString(expression))
+  defer C.xmlFreeXmlChars3(cExpression)
 	object_pointer := C.xmlXPathEvalExpression(cExpression, context.Ptr)
 	return &XPathObject{Ptr: object_pointer, Doc: context.Doc}
 }
@@ -67,5 +72,6 @@ func (context *XPathContext) Free() {
 }
 
 func (obj *XPathObject) NodeSet() *NodeSet {
+  defer C.xmlXPathFreeObject(obj.Ptr)
 	return NewNodeSet(unsafe.Pointer(C.FetchNodeSet(obj.Ptr)), obj.Doc)
 }

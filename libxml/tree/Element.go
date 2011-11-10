@@ -42,7 +42,7 @@ func (node *Element) Clear() {
 	child := node.First()
 	for child != nil {
 		child.Remove()
-		//child.Free()
+		child.Free()
 		child = node.First()
 	}
 }
@@ -56,12 +56,12 @@ func (node *Element) Content() string {
 	}
 	return output
 }
-/*
+
 func (node *Element) SetContent(content string) {
 	node.Clear()
 	node.AppendContent(content)
 }
-*/
+
 func (node *Element) AppendContent(content string) {
 	newDoc := node.Doc().ParseFragment(content)
   defer newDoc.Free()
