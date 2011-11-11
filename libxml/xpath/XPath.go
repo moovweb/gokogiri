@@ -54,6 +54,10 @@ func (xpath *XPath) SearchByCompiledXPath(node Node, xpathExp C.xmlXPathCompExpr
     panic("this node's document does NOT match the document of the XPath context")
 	}
   xpath.SetNode(node)
+  if xpath.result != nil {
+    //free the previous result if the XPath objecy is being reused.
+    C.xmlXPathFreeObject(xpath.result)
+  }
   xpath.result = C.xmlXPathCompiledEval(xpathExp, xpath.context)
   return NewNodeSet(unsafe.Pointer(C.FetchNodeSet(xpath.result)), xpath.Doc)  
 }
