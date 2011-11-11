@@ -15,6 +15,10 @@ func XmlCheckVersion() int {
 	return int(v)
 }
 
+func XmlInitParser() {
+    C.xmlInitParser()
+}
+
 func XmlCleanUpParser() {
 	C.xmlCleanupParser()
 }
