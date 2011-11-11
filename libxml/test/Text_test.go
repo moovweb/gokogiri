@@ -4,6 +4,8 @@ import (
 	"libxml"
 	"libxml/tree"
 	"testing"
+  "strings"
+  "libxml/help"
 )
 
 func TestTextNodeContent(t *testing.T) {
@@ -19,6 +21,13 @@ func TestTextNodeContent(t *testing.T) {
 	if doc.First().String() != "<html>mom</html>" {
 		t.Error("Should be able to set text content")
 	}
+  doc.Free()
+
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
 }
 
 func TestTextNodeWrap(t *testing.T) {
@@ -31,7 +40,14 @@ func TestTextNodeWrap(t *testing.T) {
 	if wrapNode.Name() != "wrapper" {
 		t.Error("Should be <wrapper> node")
 	}
-	if doc.First().String() != "<html><wrapper>mom</wrapper></html>" {
+  if !strings.Contains(doc.String(), "<wrapper>hi</wrapper>") {
 		t.Error("Should have wrapped")
 	}
+  doc.Free()
+
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+      help.XmlMemoryLeakReport()
+    }
 }

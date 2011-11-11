@@ -157,10 +157,15 @@ func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
 func (node *XmlNode) AppendChildNode(child Node) {
   childPtr := (*C.xmlNode)(child.Ptr())
   C.xmlUnlinkNode(childPtr);
-  copiedChild := C.xmlDocCopyNode(childPtr, node.Doc().DocPtr, 1);
-  C.xmlAddChild(node.ptr(), copiedChild);
-  C.xmlFreeNode(childPtr); //this is a must; otherwise it would leak memory on text nodes
+  if node.Doc().DocPtr != child.Doc().DocPtr {
+    copiedChildPtr := C.xmlDocCopyNode(childPtr, node.Doc().DocPtr, 1);
+    C.xmlAddChild(node.ptr(), copiedChildPtr);
+    C.xmlFreeNode(childPtr); //this is a must; otherwise it would leak memory on text nodes
+  } else {
+    C.xmlAddChild(node.ptr(), childPtr)
+  }
 }
+
 func (node *XmlNode) PrependChildNode(child Node) {
 	if node.Size() >= 1 {
 		node.First().AddNodeBefore(child)
@@ -172,17 +177,25 @@ func (node *XmlNode) PrependChildNode(child Node) {
 func (node *XmlNode) AddNodeAfter(sibling Node) {
   siblingPtr := (*C.xmlNode)(sibling.Ptr())
   C.xmlUnlinkNode(siblingPtr);
-  copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1);
-	C.xmlAddNextSibling(node.ptr(), copiedSibling)
-  C.xmlFreeNode(siblingPtr)
+  if node.Doc().DocPtr != sibling.Doc().DocPtr {
+    copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1);
+	  C.xmlAddNextSibling(node.ptr(), copiedSibling)
+    C.xmlFreeNode(siblingPtr)
+  } else {
+    C.xmlAddNextSibling(node.ptr(), siblingPtr)
+  }
 }
 
 func (node *XmlNode) AddNodeBefore(sibling Node) {
   siblingPtr := (*C.xmlNode)(sibling.Ptr())
   C.xmlUnlinkNode(siblingPtr);
-  copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1);
-	C.xmlAddPrevSibling(node.ptr(), copiedSibling)
-  C.xmlFreeNode(siblingPtr)
+  if node.Doc().DocPtr != sibling.Doc().DocPtr {
+    copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1);
+	  C.xmlAddPrevSibling(node.ptr(), copiedSibling)
+    C.xmlFreeNode(siblingPtr)
+  } else {
+    C.xmlAddPrevSibling(node.ptr(), siblingPtr)
+  }
 }
 
 func (node *XmlNode) NewChild(elementName, content string) *Element {
@@ -201,8 +214,5 @@ func (node *XmlNode) Wrap(elementName string) (wrapperNode *Element) {
 	node.AddNodeAfter(wrapperNode)
 	// Add me as its child
 	wrapperNode.AppendChildNode(node)
-	println("ABOUT TO SEGFAULT")
-	println(wrapperNode.String())
-	println("See, never made it!")
 	return
 }
