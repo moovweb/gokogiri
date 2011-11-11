@@ -34,9 +34,9 @@ func NewNodeSet(ptr unsafe.Pointer, doc *Doc) *NodeSet {
 }
 
 func (nodeSet *NodeSet) Size() int {
-    if nodeSet.Ptr == nil {
-        return 0
-    }
+	if nodeSet.Ptr == nil {
+		return 0
+	}
 	return int(C.SizeOfSet(nodeSet.Ptr))
 }
 

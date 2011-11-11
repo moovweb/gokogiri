@@ -64,12 +64,12 @@ func (node *Element) SetContent(content string) {
 
 func (node *Element) AppendContent(content string) {
 	newDoc := node.Doc().ParseFragment(content)
-  defer newDoc.Free()
-  child := newDoc.RootElement().First()
+	defer newDoc.Free()
+	child := newDoc.RootElement().First()
 	for child != nil {
-    //need to save the next sibling before appending it,
-    //because once it loses its link to the next sibling in its original tree once appended to the new doc
-    nextChild := child.Next() 
+		//need to save the next sibling before appending it,
+		//because once it loses its link to the next sibling in its original tree once appended to the new doc
+		nextChild := child.Next()
 		node.AppendChildNode(child)
 		child = nextChild
 	}
@@ -77,10 +77,10 @@ func (node *Element) AppendContent(content string) {
 
 func (node *Element) PrependContent(content string) {
 	newDoc := node.Doc().ParseFragment(content)
-  defer newDoc.Free()
-  child := newDoc.RootElement().Last()
+	defer newDoc.Free()
+	child := newDoc.RootElement().Last()
 	for child != nil {
-    prevChild := child.Prev()
+		prevChild := child.Prev()
 		node.PrependChildNode(child)
 		child = prevChild
 	}
@@ -100,4 +100,3 @@ func (node *XmlNode) AddContentBefore(content string) {
 		child = child.Next()
 	}
 }
-

@@ -2,7 +2,7 @@ package test
 
 import (
 	"libxml"
-  "libxml/help"
+	"libxml/help"
 	"testing"
 )
 
@@ -14,9 +14,9 @@ func TestNewElement(t *testing.T) {
 	Equal(t, root.String(), "<root>hi<child/></root>")
 	doc.Free()
 
-    help.XmlCleanUpParser()
-    if help.XmlMemoryAllocation() != 0 {
-      t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
-      help.XmlMemoryLeakReport()
-    }
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }

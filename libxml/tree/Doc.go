@@ -37,7 +37,7 @@ type Doc struct {
 
 func Parse(input string) *Doc {
 	cCharInput := C.CString(input)
-  defer C.free(unsafe.Pointer(cCharInput))
+	defer C.free(unsafe.Pointer(cCharInput))
 	doc := C.xmlParseMemory(cCharInput, C.int(len(input)))
 	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
 }
@@ -61,8 +61,8 @@ func NewDoc(ptr unsafe.Pointer) *Doc {
 }
 
 func (doc *Doc) NewElement(name string) *Element {
-  nameXmlCharPtr := String2XmlChar(name)
-  defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	nameXmlCharPtr := String2XmlChar(name)
+	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
 	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, nameXmlCharPtr)), doc).(*Element)
 }
 
@@ -71,7 +71,7 @@ func (doc *Doc) Free() {
 }
 
 func (doc *Doc) MetaEncoding() string {
-  metaEncodingXmlCharPtr := C.htmlGetMetaEncoding(doc.DocPtr)
+	metaEncodingXmlCharPtr := C.htmlGetMetaEncoding(doc.DocPtr)
 	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
@@ -83,14 +83,14 @@ func (doc *Doc) String() string {
 }
 
 func (doc *Doc) DumpHTML() string {
-  dumpCharPtr := C.DumpHtmlToString(doc.DocPtr)
-  defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	dumpCharPtr := C.DumpHtmlToString(doc.DocPtr)
+	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
 	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) DumpXML() string {
-  dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
-  defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
+	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
 	return C.GoString(dumpCharPtr)
 }
 

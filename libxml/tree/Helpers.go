@@ -8,7 +8,7 @@ import "C"
 import "unsafe"
 
 func XmlChar2String(xmlCharPtr *C.xmlChar) string {
-  cCharPtr := (*C.char)(unsafe.Pointer(xmlCharPtr))
+	cCharPtr := (*C.char)(unsafe.Pointer(xmlCharPtr))
 	return C.GoString(cCharPtr)
 }
 
@@ -19,6 +19,5 @@ func String2XmlChar(str string) *C.xmlChar {
 }
 
 func XmlFreeChars(chars unsafe.Pointer) {
-  C.xmlFreeChars(chars)
+	C.xmlFreeChars(chars)
 }
-

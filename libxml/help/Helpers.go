@@ -16,7 +16,7 @@ func XmlCheckVersion() int {
 }
 
 func XmlInitParser() {
-    C.xmlInitParser()
+	C.xmlInitParser()
 }
 
 func XmlCleanUpParser() {
@@ -24,9 +24,9 @@ func XmlCleanUpParser() {
 }
 
 func XmlMemoryAllocation() int {
-    return (int)(C.xmlMemBlocks())
+	return (int)(C.xmlMemBlocks())
 }
 
 func XmlMemoryLeakReport() {
-    C.xmlMemDisplay(C.stdout)
+	C.xmlMemDisplay(C.stdout)
 }

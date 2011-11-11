@@ -11,18 +11,18 @@ import "unsafe"
 import . "libxml/tree"
 
 func HtmlParseStringWithOptions(content string, url string, encoding string, opts int) *Doc {
-  contentCharPtr := C.CString(content)
-  defer C.free(unsafe.Pointer(contentCharPtr))
-  contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
-  defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
-  urlCharPtr := C.CString(url)
-  defer C.free(unsafe.Pointer(urlCharPtr))
+	contentCharPtr := C.CString(content)
+	defer C.free(unsafe.Pointer(contentCharPtr))
+	contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	urlCharPtr := C.CString(url)
+	defer C.free(unsafe.Pointer(urlCharPtr))
 
-  var encodingCharPtr *C.char = nil
-  if encoding != "" {
-    encodingCharPtr = C.CString(encoding)
-    defer C.free(unsafe.Pointer(encodingCharPtr))
-  }
+	var encodingCharPtr *C.char = nil
+	if encoding != "" {
+		encodingCharPtr = C.CString(encoding)
+		defer C.free(unsafe.Pointer(encodingCharPtr))
+	}
 	htmlDocPtr := C.htmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
 	if htmlDocPtr == nil {
 		return nil
@@ -53,18 +53,18 @@ func HtmlParseFile(url string, encoding string, opts int) *Doc {
 }
 
 func XmlParseWithOption(content string, url string, encoding string, opts int) *Doc {
-  contentCharPtr := C.CString(content)
-  defer C.free(unsafe.Pointer(contentCharPtr))
-  contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
-  defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
-  urlCharPtr := C.CString(url)
-  defer C.free(unsafe.Pointer(urlCharPtr))
-  
-  var encodingCharPtr *C.char = nil
-  if encoding != "" {
-    encodingCharPtr = C.CString(encoding)
-    defer C.free(unsafe.Pointer(encodingCharPtr))
-  }
+	contentCharPtr := C.CString(content)
+	defer C.free(unsafe.Pointer(contentCharPtr))
+	contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	urlCharPtr := C.CString(url)
+	defer C.free(unsafe.Pointer(urlCharPtr))
+
+	var encodingCharPtr *C.char = nil
+	if encoding != "" {
+		encodingCharPtr = C.CString(encoding)
+		defer C.free(unsafe.Pointer(encodingCharPtr))
+	}
 	xmlDocPtr := C.xmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }

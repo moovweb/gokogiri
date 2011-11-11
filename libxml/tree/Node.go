@@ -35,7 +35,7 @@ type Node interface {
 
 	Content() string
 	SetContent(content string)
-	
+
 	NewChild(elementName, content string) *Element
 	Wrap(elementName string) *Element
 
@@ -59,12 +59,12 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
 	}
 	node_type := xmlNodeType(cPtr)
 	xml_node := &XmlNode{NodePtr: cPtr, DocRef: doc}
-  if node_type == C.XML_DOCUMENT_NODE || node_type == C.XML_HTML_DOCUMENT_NODE {
+	if node_type == C.XML_DOCUMENT_NODE || node_type == C.XML_HTML_DOCUMENT_NODE {
 		newDoc := &Doc{XmlNode: xml_node}
 		// If we are a doc, then we reference ourselves
 		newDoc.XmlNode.DocRef = newDoc
-    newDoc.DocRef = newDoc
-    newDoc.DocPtr = (*C.xmlDoc)(ptr)
+		newDoc.DocRef = newDoc
+		newDoc.DocPtr = (*C.xmlDoc)(ptr)
 		return newDoc
 	} else if node_type == C.XML_ELEMENT_NODE {
 		return &Element{XmlNode: xml_node}
