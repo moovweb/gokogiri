@@ -12,7 +12,7 @@ GOFILES=\
 
 
 CGOFILES=\
-	XPathContext.go\
+	XPath.go\
 
 
 # gb: this is the local install

@@ -9,7 +9,8 @@ import (
 
 func TestSearch(t *testing.T) {
 	doc := libxml.HtmlParseString("<html><body><div>Hi<div>Mom</div></div></body></html>")
-	divs, xpathObj := xpath.Search(doc, "//div")
+  xp := xpath.NewXPath(doc)
+	divs := xp.Search(doc, "//div")
   
 	// Doctype gets returned as the first child!
 	if divs.Size() != 2 {
@@ -25,7 +26,7 @@ func TestSearch(t *testing.T) {
 		t.Error("Should return a text child")
 	}
   
-    xpathObj.Free()
+    xp.Free()
     doc.Free()
     
     help.XmlCleanUpParser()
@@ -38,8 +39,9 @@ func TestSearch(t *testing.T) {
 // What if we remove a node we will soon match?
 func TestSearchRemoval(t *testing.T) {
 	doc := libxml.XmlParseString("<root><parent><child /></parent></root>")
+  xp := xpath.NewXPath(doc)
 	root := doc.RootElement()
-	nodeSet, xpathObj := xpath.Search(root, "//*")
+	nodeSet := xp.Search(root, "//*")
   nodes := nodeSet.Slice()
 	for i := range nodes {
 		node := nodes[i]
@@ -57,7 +59,7 @@ func TestSearchRemoval(t *testing.T) {
 	}
   
   parent.Free()
-  xpathObj.Free()
+  xp.Free()
 	doc.Free()
 
     help.XmlCleanUpParser()
@@ -70,12 +72,13 @@ func TestSearchRemoval(t *testing.T) {
 //what if a search returns a nil pointer?
 func TestNilSearch(t *testing.T) {
     doc := libxml.XmlParseString("<root id=\"foo\"><h1></h1></root>")
-    nodeSet, xpathObj := xpath.Search(doc, "//*[@id = 'foo1']//*")
+    xp := xpath.NewXPath(doc)
+    nodeSet := xp.Search(doc, "//*[@id = 'foo1']//*")
     nodes := nodeSet.Slice()
     if len(nodes) != 0 {
         t.Error("Should return zero size node set")
     }
-    xpathObj.Free()
+    xp.Free()
     doc.Free()
 
     help.XmlCleanUpParser()
