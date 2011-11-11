@@ -97,25 +97,24 @@ func (node *XmlNode) Name() string {
 }
 
 func (node *XmlNode) SetName(name string) {
-  namePtr := C.xmlCharStrdup(C.CString(name))
-  defer XmlFreeXmlChars(namePtr)
-	C.xmlNodeSetName(node.ptr(), namePtr)
+  nameXmlCharPtr := String2XmlChar(name)
+  defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	C.xmlNodeSetName(node.ptr(), nameXmlCharPtr)
 }
 
 func (node *XmlNode) Content() string {
-  content := C.xmlNodeGetContent(node.ptr())
-  contentPtr := (*C.char)(unsafe.Pointer(content))
-  defer XmlFreeChars(contentPtr)
-	return XmlChar2String(content)
+  contentXmlCharPtr := C.xmlNodeGetContent(node.ptr())
+  defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	return XmlChar2String(contentXmlCharPtr)
 }
 
 func (node *XmlNode) SetContent(content string) {
+  contentXmlCharPtr := String2XmlChar(content)
+  defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
 	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
-  contentXmlChar := String2XmlChar(content)
-  defer XmlFreeXmlChars(contentXmlChar)
-	xmlChar := C.xmlEncodeSpecialChars(docPtr, contentXmlChar)
-  defer XmlFreeXmlChars(xmlChar)
-	C.xmlNodeSetContent(node.ptr(), xmlChar)
+	encodedXmlCharPtr := C.xmlEncodeSpecialChars(docPtr, contentXmlCharPtr)
+  defer XmlFreeChars(unsafe.Pointer(encodedXmlCharPtr))
+	C.xmlNodeSetContent(node.ptr(), encodedXmlCharPtr)
 }
 
 func (node *XmlNode) String() string {
@@ -124,31 +123,30 @@ func (node *XmlNode) String() string {
 	}
   buffer := C.DumpNodeToXml(node.ptr(), node.Doc().DocPtr)
   defer C.xmlBufferFree(buffer)
-  bufferPtr := (*C.char)(unsafe.Pointer(buffer.content))
-	return C.GoString(bufferPtr)
+  contentCharPtr := (*C.char)(unsafe.Pointer(buffer.content))
+	return C.GoString(contentCharPtr)
 }
 
 func (node *XmlNode) DumpHTML() string {
-	cBuffer := C.xmlBufferCreate()
-	C.htmlNodeDump(cBuffer, node.Doc().DocPtr, node.ptr())
-  defer C.xmlBufferFree(cBuffer)
-	if cBuffer.content == nil {
-		return ""
-	}
-	cString := unsafe.Pointer(cBuffer.content)
-	return C.GoString((*C.char)(cString))
+	buffer := C.xmlBufferCreate()
+	C.htmlNodeDump(buffer, node.Doc().DocPtr, node.ptr())
+  defer C.xmlBufferFree(buffer)
+  contentCharPtr := (*C.char)(unsafe.Pointer(buffer.content))
+	return C.GoString(contentCharPtr)
 }
 
 func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
-	cName := String2XmlChar(name)
-  defer XmlFreeXmlChars(cName)
-	xmlAttrPtr := C.xmlHasProp(node.NodePtr, cName)
+	nameXmlCharPtr := String2XmlChar(name)
+  defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	xmlAttrPtr := C.xmlHasProp(node.NodePtr, nameXmlCharPtr)
 	didCreate := false
 	if xmlAttrPtr == nil {
 		didCreate = true
-    valuePtr := C.xmlCharStrdup(C.CString(""))
-    defer XmlFreeXmlChars(valuePtr)
-		xmlAttrPtr = C.xmlNewProp(node.NodePtr, cName, valuePtr)
+    emptyCharPtr := C.CString("")
+    defer C.free(unsafe.Pointer(emptyCharPtr))
+    emptyXmlCharPtr := C.xmlCharStrdup(emptyCharPtr)
+    defer XmlFreeChars(unsafe.Pointer(emptyXmlCharPtr))
+		xmlAttrPtr = C.xmlNewProp(node.NodePtr, nameXmlCharPtr, emptyXmlCharPtr)
 	}
 	attribute := NewNode(unsafe.Pointer(xmlAttrPtr), node.Doc()).(*Attribute)
 	return attribute, didCreate
@@ -199,11 +197,11 @@ func (node *XmlNode) AddNodeBefore(sibling Node) {
 }
 
 func (node *XmlNode) NewChild(elementName, content string) *Element {
-  elementNamePtr := String2XmlChar(elementName)
-  defer XmlFreeXmlChars(elementNamePtr)
-  contentPtr := String2XmlChar(content)
-  defer XmlFreeXmlChars(contentPtr)
-	newCNode := C.xmlNewChild(node.ptr(), nil, elementNamePtr, contentPtr)
+  nameXmlCharPtr := String2XmlChar(elementName)
+  defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+  contentXmlCharPtr := String2XmlChar(content)
+  defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	newCNode := C.xmlNewChild(node.ptr(), nil, nameXmlCharPtr, contentXmlCharPtr)
 	return NewNode(unsafe.Pointer(newCNode), node.Doc()).(*Element)
 }
 

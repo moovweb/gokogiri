@@ -9,7 +9,6 @@ xmlXPathContextSetNode(xmlXPathContext *ctx, xmlNode *new_node) {
 xmlNodeSet * 
 FetchNodeSet(xmlXPathObject *obj) {
   return obj->nodesetval; }
-void xmlFreeXmlChars3(xmlChar* buf) { xmlFree(buf); }
 */
 import "C"
 import "unsafe"
@@ -43,11 +42,17 @@ func Search(node Node, xpath_expression string) (*NodeSet, *XPathObject) {
 }
 
 func (context *XPathContext) RegisterNamespace(prefix, href string) bool {
-	cPrefix := C.xmlCharStrdup(C.CString(prefix))
-  defer C.xmlFreeXmlChars3(cPrefix)
-	cHref := C.xmlCharStrdup(C.CString(href))
-  defer C.xmlFreeXmlChars3(cHref)
-	result := C.xmlXPathRegisterNs(context.Ptr, cPrefix, cHref)
+  prefixCharPtr := C.CString(prefix)
+  defer C.free(unsafe.Pointer(prefixCharPtr))
+  prefixXmlCharPtr := C.xmlCharStrdup(prefixCharPtr)
+  defer XmlFreeChars(unsafe.Pointer(prefixXmlCharPtr))
+
+  hrefCharPtr := C.CString(href)
+  defer C.free(unsafe.Pointer(hrefCharPtr))
+  hrefXmlCharPtr := C.xmlCharStrdup(hrefCharPtr)
+  defer XmlFreeChars(unsafe.Pointer(hrefXmlCharPtr))
+
+	result := C.xmlXPathRegisterNs(context.Ptr, prefixXmlCharPtr, hrefXmlCharPtr)
 	return result == 0
 }
 
@@ -56,9 +61,12 @@ func (context *XPathContext) SetNode(node Node) {
 }
 
 func (context *XPathContext) Eval(expression string) *XPathObject {
-	cExpression := C.xmlCharStrdup(C.CString(expression))
-  defer C.xmlFreeXmlChars3(cExpression)
-	object_pointer := C.xmlXPathEvalExpression(cExpression, context.Ptr)
+  expressionCharPtr := C.CString(expression)
+  defer C.free(unsafe.Pointer(expressionCharPtr))
+  expressionXmlCharPtr := C.xmlCharStrdup(expressionCharPtr)
+  defer XmlFreeChars(unsafe.Pointer(expressionXmlCharPtr))
+
+	object_pointer := C.xmlXPathEvalExpression(expressionXmlCharPtr, context.Ptr)
 	return &XPathObject{Ptr: object_pointer, Doc: context.Doc}
 }
 

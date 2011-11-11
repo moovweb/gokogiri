@@ -36,9 +36,9 @@ type Doc struct {
 }
 
 func Parse(input string) *Doc {
-	cInput := C.CString(input)
-  defer C.free(unsafe.Pointer(cInput))
-	doc := C.xmlParseMemory(cInput, C.int(len(input)))
+	cCharInput := C.CString(input)
+  defer C.free(unsafe.Pointer(cCharInput))
+	doc := C.xmlParseMemory(cCharInput, C.int(len(input)))
 	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
 }
 
@@ -60,10 +60,10 @@ func NewDoc(ptr unsafe.Pointer) *Doc {
 	return doc
 }
 
-func (doc *Doc) NewElement(named string) *Element {
-  namedXmlChar := String2XmlChar(named)
-  defer XmlFreeXmlChars(namedXmlChar)
-	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, namedXmlChar)), doc).(*Element)
+func (doc *Doc) NewElement(name string) *Element {
+  nameXmlCharPtr := String2XmlChar(name)
+  defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, nameXmlCharPtr)), doc).(*Element)
 }
 
 func (doc *Doc) Free() {
@@ -71,24 +71,27 @@ func (doc *Doc) Free() {
 }
 
 func (doc *Doc) MetaEncoding() string {
-	return C.GoString((*C.char)(unsafe.Pointer(C.htmlGetMetaEncoding(doc.DocPtr))))
+  metaEncodingXmlCharPtr := C.htmlGetMetaEncoding(doc.DocPtr)
+	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
 func (doc *Doc) String() string {
 	// TODO: Decide what type of return to do HTML or XML
-	cString := C.DumpXmlToString(doc.DocPtr)
-	defer XmlFreeChars(cString)
-	return C.GoString(cString)
+	dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
+	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) DumpHTML() string {
-  strPtr := C.DumpHtmlToString(doc.DocPtr)
-  defer XmlFreeChars(strPtr)
-	return C.GoString(strPtr)
+  dumpCharPtr := C.DumpHtmlToString(doc.DocPtr)
+  defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) DumpXML() string {
-	return C.GoString(C.DumpXmlToString(doc.DocPtr))
+  dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
+  defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) RootElement() *Element {

@@ -5,17 +5,25 @@ package libxml
 
 xmlDoc* 
 htmlDocToXmlDoc(htmlDocPtr doc) { return (xmlDocPtr)doc; }
-void xmlFreeXmlChars2(xmlChar* buf) { xmlFree(buf); }
 */
 import "C"
 import "unsafe"
 import . "libxml/tree"
 
 func HtmlParseStringWithOptions(content string, url string, encoding string, opts int) *Doc {
-	cString := C.CString(content)
-	cXmlChar := C.xmlCharStrdup(cString)
-  defer C.xmlFreeXmlChars2(cXmlChar)
-	htmlDocPtr := C.htmlReadDoc(cXmlChar, C.CString(url), C.CString(encoding), C.int(opts))
+  contentCharPtr := C.CString(content)
+  defer C.free(unsafe.Pointer(contentCharPtr))
+  contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
+  defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+  urlCharPtr := C.CString(url)
+  defer C.free(unsafe.Pointer(urlCharPtr))
+
+  var encodingCharPtr *C.char = nil
+  if encoding != "" {
+    encodingCharPtr = C.CString(encoding)
+    defer C.free(unsafe.Pointer(encodingCharPtr))
+  }
+	htmlDocPtr := C.htmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
 	if htmlDocPtr == nil {
 		return nil
 	}
@@ -45,15 +53,19 @@ func HtmlParseFile(url string, encoding string, opts int) *Doc {
 }
 
 func XmlParseWithOption(content string, url string, encoding string, opts int) *Doc {
-	cContent := C.CString(content)
-  cContentPtr := unsafe.Pointer(cContent) 
-	defer C.free(cContentPtr)
-	cEncoding := C.CString(encoding)
-	defer C.free(unsafe.Pointer(cEncoding))
-	if encoding == "" {
-		cEncoding = nil
-	}
-	xmlDocPtr := C.xmlReadDoc((*C.xmlChar)(cContentPtr), C.CString(url), cEncoding, C.int(opts))
+  contentCharPtr := C.CString(content)
+  defer C.free(unsafe.Pointer(contentCharPtr))
+  contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
+  defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+  urlCharPtr := C.CString(url)
+  defer C.free(unsafe.Pointer(urlCharPtr))
+  
+  var encodingCharPtr *C.char = nil
+  if encoding != "" {
+    encodingCharPtr = C.CString(encoding)
+    defer C.free(unsafe.Pointer(encodingCharPtr))
+  }
+	xmlDocPtr := C.xmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
