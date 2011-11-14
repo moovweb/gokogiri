@@ -63,7 +63,12 @@ func (node *Element) SetContent(content string) {
 }
 
 func (node *Element) AppendContent(content string) {
-	newDoc := node.Doc().ParseFragment(content)
+	newDoc := XmlParseFragmentWithOptions(content, "", "", 
+        XML_PARSE_RECOVER | 
+        XML_PARSE_NONET|
+        XML_PARSE_NOERROR|
+        XML_PARSE_NOWARNING)
+
 	defer newDoc.Free()
 	child := newDoc.RootElement().First()
 	for child != nil {
@@ -76,7 +81,12 @@ func (node *Element) AppendContent(content string) {
 }
 
 func (node *Element) PrependContent(content string) {
-	newDoc := node.Doc().ParseFragment(content)
+	newDoc := XmlParseFragmentWithOptions(content, "", "", 
+        XML_PARSE_RECOVER | 
+        XML_PARSE_NONET|
+        XML_PARSE_NOERROR|
+        XML_PARSE_NOWARNING)
+
 	defer newDoc.Free()
 	child := newDoc.RootElement().Last()
 	for child != nil {
@@ -87,14 +97,27 @@ func (node *Element) PrependContent(content string) {
 }
 
 func (node *Element) AddContentAfter(content string) {
-	child := node.Doc().ParseFragment(content).Parent().Last()
+    newDoc := XmlParseFragmentWithOptions(content, "", "", 
+        XML_PARSE_RECOVER | 
+        XML_PARSE_NONET|
+        XML_PARSE_NOERROR|
+        XML_PARSE_NOWARNING)
+    defer newDoc.Free()
+	child := newDoc.Parent().Last()
 	for child != nil {
 		node.AddNodeAfter(child)
 		child = child.Prev()
 	}
 }
 func (node *Element) AddContentBefore(content string) {
-	child := node.Doc().ParseFragment(content).Parent().First()
+    newDoc := XmlParseFragmentWithOptions(content, "", "", 
+        XML_PARSE_RECOVER | 
+        XML_PARSE_NONET|
+        XML_PARSE_NOERROR|
+        XML_PARSE_NOWARNING)
+    defer newDoc.Free()
+
+	child := newDoc.Parent().First()
 	for child != nil {
 		node.AddNodeBefore(child)
 		child = child.Next()

@@ -14,10 +14,21 @@ func HtmlParseString(content string) *Doc {
 }
 
 func XmlParseString(content string) *Doc {
-	return XmlParseWithOption(content, "", "", 
+	return XmlParseWithOptions(content, "", "", 
         XML_PARSE_RECOVER | 
         XML_PARSE_NONET|
         XML_PARSE_NOERROR|
         XML_PARSE_NOWARNING)
 
 }
+
+func XmlParseFragment(content string) *Doc {
+	return XmlParseFragmentWithOptions(content, "", "", 
+        XML_PARSE_RECOVER | 
+        XML_PARSE_NONET|
+        XML_PARSE_NOERROR|
+        XML_PARSE_NOWARNING)
+
+}
+
+

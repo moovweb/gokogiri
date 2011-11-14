@@ -23,4 +23,9 @@ const (
 	XML_XINCLUDE_START     = 19
 	XML_XINCLUDE_END       = 20
 	XML_DOCB_DOCUMENT_NODE = 21
+
+    XML_PARSE_RECOVER    = 1 << 0 //relaxed parsing
+    XML_PARSE_NOERROR   = 1 << 5  //suppress error reports 
+    XML_PARSE_NOWARNING = 1 << 6  //suppress warning reports 
+    XML_PARSE_NONET     = 1 << 11 //forbid network access
 )

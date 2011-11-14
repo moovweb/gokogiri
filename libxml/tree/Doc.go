@@ -43,7 +43,7 @@ func Parse(input string) *Doc {
 	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
 }
 
-func XmlParseWithOption(content string, url string, encoding string, opts int) *Doc {
+func XmlParseWithOptions(content string, url string, encoding string, opts int) *Doc {
 	contentCharPtr := C.CString(content)
 	defer C.free(unsafe.Pointer(contentCharPtr))
 	contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
@@ -60,6 +60,12 @@ func XmlParseWithOption(content string, url string, encoding string, opts int) *
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
+
+// Returns the first element in the input string.
+// Use Next() to access siblings
+func XmlParseFragmentWithOptions(input string, url string, encoding string, opts int) *Doc {
+	return XmlParseWithOptions("<root>" + input + "</root>", url, encoding, opts)
+}
 
 func HtmlParseStringWithOptions(content string, url string, encoding string, opts int) *Doc {
 	contentCharPtr := C.CString(content)
@@ -95,13 +101,6 @@ func HtmlParseFile(url string, encoding string, opts int) *Doc {
 func CreateHtmlDoc() *Doc {
 	cDoc := C.htmlNewDoc(String2XmlChar(""), String2XmlChar(""))
 	return NewNode(unsafe.Pointer(cDoc), nil).(*Doc)
-}
-
-// Returns the first element in the input string.
-// Use Next() to access siblings
-func (doc *Doc) ParseFragment(input string) *Doc {
-	newDoc := Parse("<root>" + input + "</root>")
-	return newDoc
 }
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
