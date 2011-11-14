@@ -2,7 +2,7 @@ package test
 
 import (
 	"libxml"
-	//"libxml/tree"
+    "libxml/help"
 	"testing"
 	"strings"
 )
@@ -16,4 +16,11 @@ func TestCDataNodeSetContent(t *testing.T) {
 	if !strings.Contains(doc.DumpHTML(), "<script>//<![CDATA[") {
 		t.Error("Should have actually made a CDATA tag")
 	}
+    doc.Free()
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+        t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+        help.XmlMemoryLeakReport()
+    }
+
 }

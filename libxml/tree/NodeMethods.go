@@ -109,22 +109,30 @@ func (node *XmlNode) Content() string {
 }
 
 func (node *XmlNode) encodeSpecialChars(content string) *C.xmlChar {
+	contentXmlCharPtr := String2XmlChar(content)
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
 	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
-	return C.xmlEncodeSpecialChars(docPtr, String2XmlChar(content))
+	encodedXmlCharPtr := C.xmlEncodeSpecialChars(docPtr, contentXmlCharPtr)
+	return encodedXmlCharPtr
 }
 
 func (node *XmlNode) SetCDataContent(content string) {
-	C.xmlNodeSetContent(node.ptr(), node.encodeSpecialChars(content))
+    encodedXmlCharPtr := node.encodeSpecialChars(content)
+    defer XmlFreeChars(unsafe.Pointer(encodedXmlCharPtr))
+	C.xmlNodeSetContent(node.ptr(), encodedXmlCharPtr)
 }
 
 // This is overriden in some subclasses... by default use the CData content method
 func (node *XmlNode) SetContent(content string) {
+    /*
 	contentXmlCharPtr := String2XmlChar(content)
 	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
 	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
 	encodedXmlCharPtr := C.xmlEncodeSpecialChars(docPtr, contentXmlCharPtr)
 	defer XmlFreeChars(unsafe.Pointer(encodedXmlCharPtr))
 	C.xmlNodeSetContent(node.ptr(), encodedXmlCharPtr)
+    */
+    node.SetCDataContent(content)
 }
 
 func (node *XmlNode) String() string {
