@@ -1,8 +1,6 @@
 package tree
 /* 
 #include <libxml/xmlversion.h> 
-#include <libxml/parser.h> 
-#include <libxml/HTMLparser.h> 
 #include <libxml/HTMLtree.h> 
 #include <libxml/xmlstring.h> 
 #include <libxml/xpath.h> 
@@ -25,8 +23,6 @@ DumpHtmlToString(xmlDoc *doc) {
   return (char *)buff;
 }
 
-xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
-xmlDoc * htmlDocToXmlDoc(htmlDocPtr doc) { return (xmlDocPtr)doc; }
 */
 import "C"
 import "unsafe"
@@ -36,77 +32,16 @@ type Doc struct {
 	*XmlNode
 }
 
-func Parse(input string) *Doc {
-	cCharInput := C.CString(input)
-	defer C.free(unsafe.Pointer(cCharInput))
-	doc := C.xmlParseMemory(cCharInput, C.int(len(input)))
-	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
-}
-
-func XmlParseWithOptions(content string, url string, encoding string, opts int) *Doc {
-	contentCharPtr := C.CString(content)
-	defer C.free(unsafe.Pointer(contentCharPtr))
-	contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
-	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
-	urlCharPtr := C.CString(url)
-	defer C.free(unsafe.Pointer(urlCharPtr))
-
-	var encodingCharPtr *C.char = nil
-	if encoding != "" {
-		encodingCharPtr = C.CString(encoding)
-		defer C.free(unsafe.Pointer(encodingCharPtr))
-	}
-	xmlDocPtr := C.xmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
-	return NewDoc(unsafe.Pointer(xmlDocPtr))
-}
-
-
-// Returns the first element in the input string.
-// Use Next() to access siblings
-func XmlParseFragmentWithOptions(input string, url string, encoding string, opts int) *Doc {
-	return XmlParseWithOptions("<root>" + input + "</root>", url, encoding, opts)
-}
-
-func HtmlParseStringWithOptions(content string, url string, encoding string, opts int) *Doc {
-	contentCharPtr := C.CString(content)
-	defer C.free(unsafe.Pointer(contentCharPtr))
-	contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
-	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
-	urlCharPtr := C.CString(url)
-	defer C.free(unsafe.Pointer(urlCharPtr))
-
-	var encodingCharPtr *C.char = nil
-	if encoding != "" {
-		encodingCharPtr = C.CString(encoding)
-		defer C.free(unsafe.Pointer(encodingCharPtr))
-	}
-	htmlDocPtr := C.htmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
-	if htmlDocPtr == nil {
-		return nil
-	}
-	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
-	return NewDoc(unsafe.Pointer(xmlDocPtr))
-}
-
-
-func HtmlParseFile(url string, encoding string, opts int) *Doc {
-	htmlDocPtr := C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts))
-	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
-	if xmlDocPtr == nil {
-		return nil
-	}
-	return NewDoc(unsafe.Pointer(xmlDocPtr))
-}
-
-func CreateHtmlDoc() *Doc {
-	cDoc := C.htmlNewDoc(String2XmlChar(""), String2XmlChar(""))
-	return NewNode(unsafe.Pointer(cDoc), nil).(*Doc)
-}
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
 	doc := NewNode(ptr, nil).(*Doc)
 	doc.DocPtr = (*C.xmlDoc)(ptr)
 	return doc
+}
+
+func CreateHtmlDoc() *Doc {
+	cDoc := C.htmlNewDoc(String2XmlChar(""), String2XmlChar(""))
+	return NewNode(unsafe.Pointer(cDoc), nil).(*Doc)
 }
 
 func (doc *Doc) NewElement(name string) *Element {

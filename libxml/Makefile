@@ -5,8 +5,7 @@ include $(GOROOT)/src/Make.inc
 
 TARG=libxml
 GOFILES=\
-	Constants.go\
-    Parse.go\
+	lib.go\
 
 
 # gb: this is the local install

@@ -11,7 +11,6 @@ TARG=libxml/tree
 GOFILES=\
 	Constants.go\
 
-
 CGOFILES=\
 	Attribute.go\
 	CData.go\
@@ -22,6 +21,7 @@ CGOFILES=\
 	NodeMethods.go\
 	NodeSet.go\
 	Text.go\
+	Parse.go\
 
 
 # gb: this is the local install
