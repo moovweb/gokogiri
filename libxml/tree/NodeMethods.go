@@ -124,14 +124,6 @@ func (node *XmlNode) SetCDataContent(content string) {
 
 // This is overriden in some subclasses... by default use the CData content method
 func (node *XmlNode) SetContent(content string) {
-    /*
-	contentXmlCharPtr := String2XmlChar(content)
-	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
-	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
-	encodedXmlCharPtr := C.xmlEncodeSpecialChars(docPtr, contentXmlCharPtr)
-	defer XmlFreeChars(unsafe.Pointer(encodedXmlCharPtr))
-	C.xmlNodeSetContent(node.ptr(), encodedXmlCharPtr)
-    */
     node.SetCDataContent(content)
 }
 
