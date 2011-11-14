@@ -109,7 +109,7 @@ func TestElementNewChild(t *testing.T) {
 	Equal(t, child.Content(), "text")
 	Equal(t, root.String(), "<root><child>text</child></root>")
 	root.NewChild("cousin", "")
-	Equal(t, root.String(), "<root><child>text</child><cousin/></root>")
+	Equal(t, root.String(), "<root><child>text</child><cousin></cousin></root>")
 	doc.Free()
 
 	help.XmlCleanUpParser()
@@ -125,7 +125,7 @@ func TestElementWrap(t *testing.T) {
 	if wrapperNode.Name() != "two" {
 		t.Error("Should have returned a wrapper element")
 	}
-	Equal(t, doc.String(), "<two><one/></two>")
+	Equal(t, doc.RootElement().String(), "<two><one/></two>")
 	doc.Free()
 
 	help.XmlCleanUpParser()
