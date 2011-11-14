@@ -192,3 +192,12 @@ func (node *XmlNode) Wrap(elementName string) (wrapperNode *Element) {
 	wrapperNode.AppendChildNode(node)
 	return
 }
+/*
+func (node *XmlNode) Children() (children []Node) {
+	children = make([]*XmlNode, node.Size())
+	currentNode := node.First()
+	for i := 0; currentNode != nil; i++ {
+		children[i] = currentNode
+		currentNode = currentNode.Next()
+	}
+}*/
