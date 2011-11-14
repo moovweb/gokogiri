@@ -14,5 +14,10 @@ func HtmlParseString(content string) *Doc {
 }
 
 func XmlParseString(content string) *Doc {
-	return XmlParseWithOption(content, "", "", 1)
+	return XmlParseWithOption(content, "", "", 
+        XML_PARSE_RECOVER | 
+        XML_PARSE_NONET|
+        XML_PARSE_NOERROR|
+        XML_PARSE_NOWARNING)
+
 }
