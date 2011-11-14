@@ -2,17 +2,25 @@ package test
 
 import (
 	"libxml"
+	"libxml/help"
 	"testing"
 	"strings"
-	//"fmt"
 )
 
 func TestElementRemove(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 	root := doc.RootElement()
-	root.Last().First().Remove()
+	node := root.Last().First()
+	node.Remove()
+	node.Free()
 	Equal(t, root.String(), "<root>hi<parent/></root>")
 	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestElementClear(t *testing.T) {
@@ -21,6 +29,12 @@ func TestElementClear(t *testing.T) {
 	root.Clear()
 	Equal(t, root.String(), "<root/>")
 	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestElementContent(t *testing.T) {
@@ -31,6 +45,12 @@ func TestElementContent(t *testing.T) {
 	root.SetContent("<lonely/>")
 	Equal(t, root.First().Name(), "lonely")
 	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestElementAppendContentUnicode(t *testing.T) {
@@ -42,6 +62,12 @@ func TestElementAppendContentUnicode(t *testing.T) {
 		t.Error("Append unicode content failed")
 	}
 	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestElementPrependContentUnicode(t *testing.T) {
@@ -53,6 +79,12 @@ func TestElementPrependContentUnicode(t *testing.T) {
 		t.Error("Prepend unicode content failed")
 	}
 	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestElementNoAutocloseContentCall(t *testing.T) {
@@ -61,6 +93,12 @@ func TestElementNoAutocloseContentCall(t *testing.T) {
 		t.Error("Should NOT autoclose tags when using Content!")
 	}
 	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestElementNewChild(t *testing.T) {
@@ -73,8 +111,13 @@ func TestElementNewChild(t *testing.T) {
 	root.NewChild("cousin", "")
 	Equal(t, root.String(), "<root><child>text</child><cousin/></root>")
 	doc.Free()
-}
 
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
 
 func TestElementWrap(t *testing.T) {
 	doc := libxml.XmlParseString("<one/>")
@@ -82,5 +125,12 @@ func TestElementWrap(t *testing.T) {
 	if wrapperNode.Name() != "two" {
 		t.Error("Should have returned a wrapper element")
 	}
-	Equal(t, doc.First().String(), "<two><one/></two>")
+	Equal(t, doc.String(), "<two><one/></two>")
+	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }

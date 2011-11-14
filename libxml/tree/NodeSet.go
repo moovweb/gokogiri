@@ -1,7 +1,5 @@
 package tree
 /* 
-#cgo LDFLAGS: -lxml2
-#cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
 #include <stdlib.h> 
@@ -36,9 +34,9 @@ func NewNodeSet(ptr unsafe.Pointer, doc *Doc) *NodeSet {
 }
 
 func (nodeSet *NodeSet) Size() int {
-    if nodeSet.Ptr == nil {
-        return 0
-    }
+	if nodeSet.Ptr == nil {
+		return 0
+	}
 	return int(C.SizeOfSet(nodeSet.Ptr))
 }
 

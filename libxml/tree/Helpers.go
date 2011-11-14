@@ -1,19 +1,23 @@
 package tree
 /* 
-#cgo LDFLAGS: -lxml2
-#cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/tree.h>
+//xmlFree is not really a function but a macro in libxml2, so we have to define a function like the following and thus cgo can use it
+void xmlFreeChars(void* buf) { xmlFree((xmlChar*)buf); } 
 */
 import "C"
 import "unsafe"
 
-func XmlChar2String(chars *C.xmlChar) string {
-	return C.GoString((*C.char)(unsafe.Pointer(chars)))
+func XmlChar2String(xmlCharPtr *C.xmlChar) string {
+	cCharPtr := (*C.char)(unsafe.Pointer(xmlCharPtr))
+	return C.GoString(cCharPtr)
 }
 
-func String2XmlChar(input string) *C.xmlChar {
-	cString := C.CString(input)
+func String2XmlChar(str string) *C.xmlChar {
+	cCharPtr := C.CString(str)
+	defer C.free(unsafe.Pointer(cCharPtr))
+	return C.xmlCharStrdup(cCharPtr)
+}
 
-	defer C.free(unsafe.Pointer(cString))
-	return C.xmlCharStrdup(cString)
+func XmlFreeChars(chars unsafe.Pointer) {
+	C.xmlFreeChars(chars)
 }

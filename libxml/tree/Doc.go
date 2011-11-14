@@ -1,7 +1,5 @@
 package tree
 /* 
-#cgo LDFLAGS: -lxml2
-#cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/xmlversion.h> 
 #include <libxml/parser.h> 
 #include <libxml/HTMLparser.h> 
@@ -28,6 +26,7 @@ DumpHtmlToString(xmlDoc *doc) {
 }
 
 xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
+xmlDoc * htmlDocToXmlDoc(htmlDocPtr doc) { return (xmlDocPtr)doc; }
 */
 import "C"
 import "unsafe"
@@ -38,9 +37,59 @@ type Doc struct {
 }
 
 func Parse(input string) *Doc {
-	cInput := C.CString(input)
-	doc := C.xmlParseMemory(cInput, C.int(len(input)))
+	cCharInput := C.CString(input)
+	defer C.free(unsafe.Pointer(cCharInput))
+	doc := C.xmlParseMemory(cCharInput, C.int(len(input)))
 	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
+}
+
+func XmlParseWithOption(content string, url string, encoding string, opts int) *Doc {
+	contentCharPtr := C.CString(content)
+	defer C.free(unsafe.Pointer(contentCharPtr))
+	contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	urlCharPtr := C.CString(url)
+	defer C.free(unsafe.Pointer(urlCharPtr))
+
+	var encodingCharPtr *C.char = nil
+	if encoding != "" {
+		encodingCharPtr = C.CString(encoding)
+		defer C.free(unsafe.Pointer(encodingCharPtr))
+	}
+	xmlDocPtr := C.xmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
+	return NewDoc(unsafe.Pointer(xmlDocPtr))
+}
+
+
+func HtmlParseStringWithOptions(content string, url string, encoding string, opts int) *Doc {
+	contentCharPtr := C.CString(content)
+	defer C.free(unsafe.Pointer(contentCharPtr))
+	contentXmlCharPtr := C.xmlCharStrdup(contentCharPtr)
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	urlCharPtr := C.CString(url)
+	defer C.free(unsafe.Pointer(urlCharPtr))
+
+	var encodingCharPtr *C.char = nil
+	if encoding != "" {
+		encodingCharPtr = C.CString(encoding)
+		defer C.free(unsafe.Pointer(encodingCharPtr))
+	}
+	htmlDocPtr := C.htmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
+	if htmlDocPtr == nil {
+		return nil
+	}
+	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
+	return NewDoc(unsafe.Pointer(xmlDocPtr))
+}
+
+
+func HtmlParseFile(url string, encoding string, opts int) *Doc {
+	htmlDocPtr := C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts))
+	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
+	if xmlDocPtr == nil {
+		return nil
+	}
+	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
 func CreateHtmlDoc() *Doc {
@@ -50,12 +99,9 @@ func CreateHtmlDoc() *Doc {
 
 // Returns the first element in the input string.
 // Use Next() to access siblings
-func (doc *Doc) ParseFragment(input string) Node {
+func (doc *Doc) ParseFragment(input string) *Doc {
 	newDoc := Parse("<root>" + input + "</root>")
-	defer newDoc.Free()
-	res := newDoc.First().First()
-	res.SetDoc(doc)
-	return res
+	return newDoc
 }
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
@@ -64,8 +110,10 @@ func NewDoc(ptr unsafe.Pointer) *Doc {
 	return doc
 }
 
-func (doc *Doc) NewElement(named string) *Element {
-	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, String2XmlChar(named))), doc).(*Element)
+func (doc *Doc) NewElement(name string) *Element {
+	nameXmlCharPtr := String2XmlChar(name)
+	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, nameXmlCharPtr)), doc).(*Element)
 }
 
 func (doc *Doc) Free() {
@@ -73,22 +121,27 @@ func (doc *Doc) Free() {
 }
 
 func (doc *Doc) MetaEncoding() string {
-	return C.GoString((*C.char)(unsafe.Pointer(C.htmlGetMetaEncoding(doc.DocPtr))))
+	metaEncodingXmlCharPtr := C.htmlGetMetaEncoding(doc.DocPtr)
+	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
 func (doc *Doc) String() string {
 	// TODO: Decide what type of return to do HTML or XML
-	cString := C.DumpXmlToString(doc.DocPtr)
-	defer C.free(unsafe.Pointer(cString))
-	return C.GoString(cString)
+	dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
+	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) DumpHTML() string {
-	return C.GoString(C.DumpHtmlToString(doc.DocPtr))
+	dumpCharPtr := C.DumpHtmlToString(doc.DocPtr)
+	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) DumpXML() string {
-	return C.GoString(C.DumpXmlToString(doc.DocPtr))
+	dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
+	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
+	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) RootElement() *Element {

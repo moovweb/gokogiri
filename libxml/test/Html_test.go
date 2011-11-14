@@ -2,6 +2,7 @@ package test
 
 import (
 	"libxml"
+	"libxml/help"
 	"testing"
 	"strings"
 )
@@ -18,7 +19,11 @@ func TestHtmlSimpleParse(t *testing.T) {
 		t.Error("Two tags are inside of <html>")
 	}
 	doc.Free()
-
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestHtmlCDataTag(t *testing.T) {
@@ -33,6 +38,11 @@ func TestHtmlCDataTag(t *testing.T) {
 	content := scriptTag.Content()
 	scriptTag.SetContent(content)
 	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestHtmlEmptyDoc(t *testing.T) {
@@ -41,4 +51,9 @@ func TestHtmlEmptyDoc(t *testing.T) {
 		t.Error("Should have actually made a doc")
 	}
 	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }

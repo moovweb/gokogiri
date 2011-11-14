@@ -3,12 +3,16 @@
 
 include $(GOROOT)/src/Make.inc
 
+XML_CONFIG=$(shell which xml2-config)
+CGO_LDFLAGS=$(shell $(XML_CONFIG) --libs)
+CGO_CFLAGS=$(shell $(XML_CONFIG) --cflags)
+
 TARG=libxml/xpath
 GOFILES=\
 
 
 CGOFILES=\
-	XPathContext.go\
+	XPath.go\
 
 
 # gb: this is the local install

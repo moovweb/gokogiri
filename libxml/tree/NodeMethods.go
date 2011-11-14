@@ -1,7 +1,5 @@
 package tree
 /*
-#cgo LDFLAGS: -lxml2
-#cgo CFLAGS: -I/usr/include/libxml2
 #include <libxml/xmlversion.h> 
 #include <libxml/parser.h> 
 #include <libxml/tree.h> 
@@ -10,11 +8,10 @@ package tree
 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
-char *
-DumpNodeToXmlChar(xmlNode *node, xmlDoc *doc) {
+xmlBufferPtr DumpNodeToXml(xmlNode *node, xmlDoc *doc) {
   xmlBuffer *buff = xmlBufferCreate();
   xmlNodeDump(buff, doc, node, 0, 0);
-  return (char*)buff->content;
+  return buff;
 }
 */
 import "C"
@@ -100,11 +97,15 @@ func (node *XmlNode) Name() string {
 }
 
 func (node *XmlNode) SetName(name string) {
-	C.xmlNodeSetName(node.ptr(), C.xmlCharStrdup(C.CString(name)))
+	nameXmlCharPtr := String2XmlChar(name)
+	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	C.xmlNodeSetName(node.ptr(), nameXmlCharPtr)
 }
 
 func (node *XmlNode) Content() string {
-	return XmlChar2String(C.xmlNodeGetContent(node.ptr()))
+	contentXmlCharPtr := C.xmlNodeGetContent(node.ptr())
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	return XmlChar2String(contentXmlCharPtr)
 }
 
 func (node *XmlNode) encodeSpecialChars(content string) *C.xmlChar {
@@ -118,42 +119,61 @@ func (node *XmlNode) SetCDataContent(content string) {
 
 // This is overriden in some subclasses... by default use the CData content method
 func (node *XmlNode) SetContent(content string) {
-	node.SetCDataContent(content)
+	contentXmlCharPtr := String2XmlChar(content)
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	docPtr := (*C.xmlDoc)(node.Doc().Ptr())
+	encodedXmlCharPtr := C.xmlEncodeSpecialChars(docPtr, contentXmlCharPtr)
+	defer XmlFreeChars(unsafe.Pointer(encodedXmlCharPtr))
+	C.xmlNodeSetContent(node.ptr(), encodedXmlCharPtr)
 }
 
 func (node *XmlNode) String() string {
 	if node.ptr() == nil {
 		return ""
 	}
-	return C.GoString(C.DumpNodeToXmlChar(node.ptr(), node.Doc().DocPtr))
+	buffer := C.DumpNodeToXml(node.ptr(), node.Doc().DocPtr)
+	defer C.xmlBufferFree(buffer)
+	contentCharPtr := (*C.char)(unsafe.Pointer(buffer.content))
+	return C.GoString(contentCharPtr)
 }
 
 func (node *XmlNode) DumpHTML() string {
-	cBuffer := C.xmlBufferCreate()
-	C.htmlNodeDump(cBuffer, node.Doc().DocPtr, node.ptr())
-	defer C.free(unsafe.Pointer(cBuffer))
-	if cBuffer.content == nil {
-		return ""
-	}
-	cString := unsafe.Pointer(cBuffer.content)
-	return C.GoString((*C.char)(cString))
+	buffer := C.xmlBufferCreate()
+	C.htmlNodeDump(buffer, node.Doc().DocPtr, node.ptr())
+	defer C.xmlBufferFree(buffer)
+	contentCharPtr := (*C.char)(unsafe.Pointer(buffer.content))
+	return C.GoString(contentCharPtr)
 }
 
 func (node *XmlNode) Attribute(name string) (*Attribute, bool) {
-	cName := String2XmlChar(name)
-	xmlAttrPtr := C.xmlHasProp(node.NodePtr, cName)
+	nameXmlCharPtr := String2XmlChar(name)
+	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	xmlAttrPtr := C.xmlHasProp(node.NodePtr, nameXmlCharPtr)
 	didCreate := false
 	if xmlAttrPtr == nil {
 		didCreate = true
-		xmlAttrPtr = C.xmlNewProp(node.NodePtr, cName, C.xmlCharStrdup(C.CString("")))
+		emptyCharPtr := C.CString("")
+		defer C.free(unsafe.Pointer(emptyCharPtr))
+		emptyXmlCharPtr := C.xmlCharStrdup(emptyCharPtr)
+		defer XmlFreeChars(unsafe.Pointer(emptyXmlCharPtr))
+		xmlAttrPtr = C.xmlNewProp(node.NodePtr, nameXmlCharPtr, emptyXmlCharPtr)
 	}
 	attribute := NewNode(unsafe.Pointer(xmlAttrPtr), node.Doc()).(*Attribute)
 	return attribute, didCreate
 }
 
 func (node *XmlNode) AppendChildNode(child Node) {
-	C.xmlAddChild(node.ptr(), (*C.xmlNode)(child.Ptr()))
+	childPtr := (*C.xmlNode)(child.Ptr())
+	C.xmlUnlinkNode(childPtr)
+	if node.Doc().DocPtr != child.Doc().DocPtr {
+		copiedChildPtr := C.xmlDocCopyNode(childPtr, node.Doc().DocPtr, 1)
+		C.xmlAddChild(node.ptr(), copiedChildPtr)
+		C.xmlFreeNode(childPtr) //this is a must; otherwise it would leak memory on text nodes
+	} else {
+		C.xmlAddChild(node.ptr(), childPtr)
+	}
 }
+
 func (node *XmlNode) PrependChildNode(child Node) {
 	if node.Size() >= 1 {
 		node.First().AddNodeBefore(child)
@@ -163,22 +183,36 @@ func (node *XmlNode) PrependChildNode(child Node) {
 }
 
 func (node *XmlNode) AddNodeAfter(sibling Node) {
-	C.xmlAddNextSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
+	siblingPtr := (*C.xmlNode)(sibling.Ptr())
+	C.xmlUnlinkNode(siblingPtr)
+	if node.Doc().DocPtr != sibling.Doc().DocPtr {
+		copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1)
+		C.xmlAddNextSibling(node.ptr(), copiedSibling)
+		C.xmlFreeNode(siblingPtr)
+	} else {
+		C.xmlAddNextSibling(node.ptr(), siblingPtr)
+	}
 }
+
 func (node *XmlNode) AddNodeBefore(sibling Node) {
-	C.xmlAddPrevSibling(node.ptr(), (*C.xmlNode)(sibling.Ptr()))
+	siblingPtr := (*C.xmlNode)(sibling.Ptr())
+	C.xmlUnlinkNode(siblingPtr)
+	if node.Doc().DocPtr != sibling.Doc().DocPtr {
+		copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1)
+		C.xmlAddPrevSibling(node.ptr(), copiedSibling)
+		C.xmlFreeNode(siblingPtr)
+	} else {
+		C.xmlAddPrevSibling(node.ptr(), siblingPtr)
+	}
 }
 
 // If you get nil back from NewChild, make sure that the element type can have children
 func (node *XmlNode) NewChild(elementName, content string) *Element {
-	var cContent *C.xmlChar
-	if content != "" {
-		cContent = node.encodeSpecialChars(content)
-	}
-	newCNode := C.xmlNewChild(node.ptr(), nil, String2XmlChar(elementName), cContent)
-	if newCNode == nil {
-		return nil
-	}
+	nameXmlCharPtr := String2XmlChar(elementName)
+	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
+	contentXmlCharPtr := String2XmlChar(content)
+	defer XmlFreeChars(unsafe.Pointer(contentXmlCharPtr))
+	newCNode := C.xmlNewChild(node.ptr(), nil, nameXmlCharPtr, contentXmlCharPtr)
 	return NewNode(unsafe.Pointer(newCNode), node.Doc()).(*Element)
 }
 

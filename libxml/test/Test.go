@@ -2,6 +2,8 @@ package test
 
 import "testing"
 import "io/ioutil"
+import "runtime"
+import "libxml/help"
 
 func AssertNil(t *testing.T, value interface{}, what string) {
 	if value != nil {
@@ -27,3 +29,22 @@ func LoadFile(name string) string {
 	}
 	return string(contents)
 }
+
+func runParallel(testFunc func(chan bool), concurrency int) {
+	help.XmlInitParser()
+
+	runtime.GOMAXPROCS(4)
+	done := make(chan bool, concurrency)
+	for i := 0; i < concurrency; i++ {
+		go testFunc(done)
+	}
+	for i := 0; i < concurrency; i++ {
+		<-done
+		<-done
+	}
+	runtime.GOMAXPROCS(1)
+
+	help.XmlCleanUpParser()
+}
+
+const numConcurrentRuns = 1000
