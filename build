@@ -9,8 +9,8 @@ else
 echo Building \
 && echo "(in libxml/tree)" gomake $1 && cd libxml/tree && gomake $1 && cd - > /dev/null \
 && echo "(in libxml)" gomake $1 && cd libxml && gomake $1 && cd - > /dev/null \
-&& echo "(in libxml/test)" gomake $1 && cd libxml/test && gomake $1 && cd - > /dev/null \
 && echo "(in libxml/help)" gomake $1 && cd libxml/help && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/test)" gomake $1 && cd libxml/test && gomake $1 && cd - > /dev/null \
 && echo "(in libxml/xpath)" gomake $1 && cd libxml/xpath && gomake $1 && cd - > /dev/null \
 
 fi
