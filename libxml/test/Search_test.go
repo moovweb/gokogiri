@@ -62,10 +62,9 @@ func TestMultiSearch(t *testing.T) {
 			t.Error("Should return a text child")
 		}
 
-		body := xp.Search(doc, "//body")
-		if body.Size() != 1 {
-			t.Errorf("Returned the one body!: %d", body.Size())
-		}
+		body := xp.Search(textChild, "//body")
+		Equal(t, body.Size(), 1)
+		Equal(t, body.NodeAt(0).Name(), "body")
 
 		xp.Free()
 		doc.Free()
