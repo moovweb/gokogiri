@@ -42,6 +42,7 @@ func (node *Element) Clear() {
 	child := node.First()
 	for child != nil {
 		child.Remove()
+    child.Free()
 		child = node.First()
 	}
 }
@@ -92,8 +93,9 @@ func (node *Element) AddContentAfter(content string) {
     defer newDoc.Free()
 	child := newDoc.Parent().Last()
 	for child != nil {
+    prevChild := child.Prev()
 		node.AddNodeAfter(child)
-		child = child.Prev()
+		child = prevChild
 	}
 }
 func (node *Element) AddContentBefore(content string) {
@@ -102,7 +104,29 @@ func (node *Element) AddContentBefore(content string) {
 
 	child := newDoc.Parent().First()
 	for child != nil {
+    nextChild := child.Next()
 		node.AddNodeBefore(child)
-		child = child.Next()
+		child = nextChild
 	}
 }
+
+func (node *Element) SetHtmlContent(content string) {
+	node.Clear()
+	node.AppendHtmlContent(content)
+}
+
+func (node *Element) AppendHtmlContent(content string) {
+	newDoc := HtmlParseFragment(content)
+	defer newDoc.Free()
+
+	child := newDoc.RootElement().First()
+	for child != nil {
+		//need to save the next sibling before appending it,
+		//because once it loses its link to the next sibling in its original tree once appended to the new doc
+		nextChild := child.Next()
+		node.AppendChildNode(child)
+		child = nextChild
+	}
+}
+
+

@@ -9,3 +9,8 @@ func HtmlParseString(input string) *tree.Doc {
 func XmlParseString(input string) *tree.Doc {
 	return tree.XmlParseString(input)
 }
+
+func HtmlParseFragment(input string) *tree.Doc {
+  return tree.HtmlParseFragment(input)
+}
+

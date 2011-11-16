@@ -7,8 +7,9 @@ package tree
 xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
 xmlDoc * htmlDocToXmlDoc(htmlDocPtr doc) { return (xmlDocPtr)doc; }
 */
-import("C")
-import("unsafe")
+import "C"
+import "unsafe"
+import "strings"
 
 func Parse(input string) *Doc {
 	cCharInput := C.CString(input)
@@ -87,3 +88,26 @@ func XmlParseString(content string) *Doc {
 func XmlParseFragment(content string) *Doc {
 	return XmlParseFragmentWithOptions(content, "", "", DefaultXmlParseOptions())
 }
+
+func HtmlParseFragment(content string) *Doc {
+  doc := XmlParseString("<root></root>")
+	tmpDoc := HtmlParseStringWithOptions(content, "", "", DefaultHtmlParseOptions())
+  defer tmpDoc.Free()
+
+  tmpNode := tmpDoc.RootElement().First()
+  if strings.Index(strings.ToLower(content), "<body") < 0 {
+    tmpNode = tmpNode.First()
+  }
+  
+  //append all children of tmpRoot to root.
+  root := doc.RootElement()
+  child := tmpNode
+  for child != nil {
+    nextChild := child.Next()
+    root.AppendChildNode(child)
+    child = nextChild
+  }
+	return doc
+}
+
+
