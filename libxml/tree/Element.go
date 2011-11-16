@@ -109,3 +109,24 @@ func (node *Element) AddContentBefore(content string) {
 		child = nextChild
 	}
 }
+
+func (node *Element) SetHtmlContent(content string) {
+	node.Clear()
+	node.AppendHtmlContent(content)
+}
+
+func (node *Element) AppendHtmlContent(content string) {
+	newDoc := HtmlParseFragment(content)
+	defer newDoc.Free()
+
+	child := newDoc.RootElement().First()
+	for child != nil {
+		//need to save the next sibling before appending it,
+		//because once it loses its link to the next sibling in its original tree once appended to the new doc
+		nextChild := child.Next()
+		node.AppendChildNode(child)
+		child = nextChild
+	}
+}
+
+
