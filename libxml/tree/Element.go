@@ -42,6 +42,7 @@ func (node *Element) Clear() {
 	child := node.First()
 	for child != nil {
 		child.Remove()
+    child.Free()
 		child = node.First()
 	}
 }
@@ -92,8 +93,9 @@ func (node *Element) AddContentAfter(content string) {
     defer newDoc.Free()
 	child := newDoc.Parent().Last()
 	for child != nil {
+    prevChild := child.Prev()
 		node.AddNodeAfter(child)
-		child = child.Prev()
+		child = prevChild
 	}
 }
 func (node *Element) AddContentBefore(content string) {
@@ -102,7 +104,8 @@ func (node *Element) AddContentBefore(content string) {
 
 	child := newDoc.Parent().First()
 	for child != nil {
+    nextChild := child.Next()
 		node.AddNodeBefore(child)
-		child = child.Next()
+		child = nextChild
 	}
 }
