@@ -23,30 +23,30 @@ func TestHtmlFragment(t *testing.T) {
 
 func TestHtmlFragment2(t *testing.T) {
 	doc := libxml.HtmlParseFragment("<body><div/></body>")
-  f := doc.RootElement().First()
+	f := doc.RootElement().First()
 	Equal(t, f.Name(), "body")
 	Equal(t, f.First().Name(), "div")
 	Equal(t, f.String(), "<body><div/></body>")
-  doc.Free()
-
-  help.XmlCleanUpParser()
-  if help.XmlMemoryAllocation() != 0 {
-    t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
-    help.XmlMemoryLeakReport()
-  }
+	doc.Free()
+	
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestHtmlFragment3(t *testing.T) {
 	doc := libxml.HtmlParseFragment("<h1><div/></h1>")
-  f := doc.RootElement().First()
+	f := doc.RootElement().First()
 	Equal(t, f.Name(), "h1")
 	Equal(t, f.First().Name(), "div")
 	Equal(t, f.String(), "<h1><div/></h1>")
-  doc.Free()
+	doc.Free()
 
-  help.XmlCleanUpParser()
-  if help.XmlMemoryAllocation() != 0 {
-    t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
-    help.XmlMemoryLeakReport()
-  }
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }

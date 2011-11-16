@@ -134,3 +134,11 @@ func TestElementWrap(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
+
+func TestElementClearChildNodeRemoval(t *testing.T) {
+	doc := libxml.XmlParseString("<root><child /></root>")
+	root := doc.FirstElement()
+	child := root.First().(*tree.Element)
+	root.Clear()
+	child.SetContent("hey!")
+}
