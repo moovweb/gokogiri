@@ -4,6 +4,7 @@ package tree
 */
 import "C"
 import "unsafe"
+import "log"
 
 type Node interface {
 	ptr() *C.xmlNode
@@ -61,6 +62,7 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 	if cPtr == nil {
 		return nil
 	}
+	
 	if doc == nil {
 		doc = &Doc{}
 		doc.InitDocNodeMap()
@@ -69,6 +71,7 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 	if node == nil {
 		xmlNode := &XmlNode{NodePtr: cPtr, DocRef: doc}
 		nodeType := xmlNodeType(cPtr)
+		log.Printf("creating a node: %d type %d", ptr, nodeType)
 		if nodeType == C.XML_DOCUMENT_NODE || nodeType == C.XML_HTML_DOCUMENT_NODE {
 			doc.XmlNode = xmlNode
 			// If we are a doc, then we reference ourselves

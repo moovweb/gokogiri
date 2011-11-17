@@ -11,6 +11,9 @@ TARG=libxml/tree
 GOFILES=\
 	Constants.go\
 
+CGO_OFILES=\
+	XmlMemFree.o\
+
 CGOFILES=\
 	Attribute.go\
 	CData.go\

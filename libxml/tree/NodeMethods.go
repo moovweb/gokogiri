@@ -5,6 +5,7 @@ package tree
 #include <libxml/tree.h> 
 #include <libxml/xmlstring.h> 
 #include <libxml/HTMLtree.h>
+#include "XmlMemFree.h"
 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
@@ -16,6 +17,11 @@ xmlBufferPtr DumpNodeToXml(xmlNode *node, xmlDoc *doc) {
 */
 import "C"
 import "unsafe"
+import "log"
+
+func InitMemFreeCallback() {
+	C.initMemFreeCallback()
+}
 
 func xmlNodeType(node *C.xmlNode) int {
 	return int(C.NodeType(node))
@@ -54,6 +60,11 @@ func (node *XmlNode) Free() {
 		C.xmlFreeNode(node.ptr())
 		node.NodePtr = nil
 	}
+}
+
+//export XmlNodeFreedByLibXml
+func XmlNodeFreedByLibXml(ptr unsafe.Pointer) {
+	log.Printf("XmlNodeFreedByLibXml called %d", ptr)
 }
 
 func (node *XmlNode) IsValid() bool {

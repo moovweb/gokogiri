@@ -4,9 +4,11 @@ import (
 	"libxml"
 	"testing"
 	"libxml/help"
+  "libxml/tree"
 )
 
 func TestHtmlFragment(t *testing.T) {
+  tree.InitMemFreeCallback()
 	doc := libxml.XmlParseString("<meta name=\"format-detection\" content=\"telephone=no\">")
 	root := doc.RootElement()
 	child := doc.NewElement("child")
@@ -22,6 +24,7 @@ func TestHtmlFragment(t *testing.T) {
 }
 
 func TestHtmlFragment2(t *testing.T) {
+  tree.InitMemFreeCallback()
 	doc := libxml.HtmlParseFragment("<body><div/></body>")
 	f := doc.RootElement().First()
 	Equal(t, f.Name(), "body")
@@ -37,6 +40,7 @@ func TestHtmlFragment2(t *testing.T) {
 }
 
 func TestHtmlFragment3(t *testing.T) {
+  tree.InitMemFreeCallback()
 	doc := libxml.HtmlParseFragment("<h1><div/></h1>")
 	f := doc.RootElement().First()
 	Equal(t, f.Name(), "h1")
