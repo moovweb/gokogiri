@@ -45,6 +45,12 @@ func (node *XmlNode) Type() int {
 
 func (node *XmlNode) Free() {
 	if node.IsValid() {
+		child := node.First()
+		for child != nil {
+			child.Free()
+			child = node.First()
+		}
+		node.Remove()
 		C.xmlFreeNode(node.ptr())
 		node.NodePtr = nil
 	}

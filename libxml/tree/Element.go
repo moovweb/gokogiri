@@ -54,11 +54,6 @@ func (node *Element) Clear() {
 		// Remember, as we delete them, the last one moves to the front
 		child := node.First()
 		for child != nil {
-			if child.Type() == XML_ELEMENT_NODE {
-				childElement := child.(*Element)
-				childElement.Clear()
-			}
-			child.Remove()
 	    	child.Free()
 			child = node.First()
 		}
