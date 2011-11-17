@@ -30,7 +30,7 @@ import "fmt"
 type Doc struct {
 	DocPtr *C.xmlDoc
 	*XmlNode
-	nodeMap map[string]*XmlNode
+	nodeMap map[string]Node
 }
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
@@ -53,18 +53,19 @@ func (doc *Doc) NewElement(name string) *Element {
 
 func (doc *Doc) InitDocNodeMap() {
 	if doc.nodeMap == nil {
-		doc.nodeMap = make(map[string]*XmlNode)
+		doc.nodeMap = make(map[string]Node)
 	}
 }
 
-func (doc *Doc) LookupNode(nodePtr *C.xmlNode) (node *XmlNode) {
+func (doc *Doc) LookupNode(nodePtr *C.xmlNode) (node Node) {
 	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
 	node = doc.nodeMap[id]
-	if node == nil {
-		node = &XmlNode{NodePtr: nodePtr, DocRef: doc}
-		doc.nodeMap[id] = node
-	}
 	return
+}
+
+func (doc *Doc) BookkeepNode(nodePtr *C.xmlNode, node Node) {
+	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
+	doc.nodeMap[id] = node
 }
 
 func (doc *Doc) Free() {

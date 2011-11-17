@@ -56,7 +56,7 @@ type XmlNode struct {
 	DocRef  *Doc
 }
 
-func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
+func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 	cPtr := (*C.xmlNode)(ptr)
 	if cPtr == nil {
 		return nil
@@ -65,23 +65,29 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) Node {
 		doc = &Doc{}
 		doc.InitDocNodeMap()
 	}
-	xml_node := doc.LookupNode(cPtr)
-	node_type := xml_node.Type()
-	if node_type == C.XML_DOCUMENT_NODE || node_type == C.XML_HTML_DOCUMENT_NODE {
-		doc.XmlNode = xml_node
-		// If we are a doc, then we reference ourselves
-		doc.XmlNode.DocRef = doc
-		doc.DocRef = doc
-		doc.DocPtr = (*C.xmlDoc)(ptr)
-		return doc
-	} else if node_type == C.XML_ELEMENT_NODE {
-		return &Element{XmlNode: xml_node}
-	} else if node_type == C.XML_ATTRIBUTE_NODE {
-		return &Attribute{XmlNode: xml_node}
-	} else if node_type == C.XML_CDATA_SECTION_NODE {
-		return &CData{XmlNode: xml_node}
-	} else if node_type == C.XML_TEXT_NODE {
-		return &Text{XmlNode: xml_node}
+	node = doc.LookupNode(cPtr)
+	if node == nil {
+		xmlNode := &XmlNode{NodePtr: cPtr, DocRef: doc}
+		nodeType := xmlNodeType(cPtr)
+		if nodeType == C.XML_DOCUMENT_NODE || nodeType == C.XML_HTML_DOCUMENT_NODE {
+			doc.XmlNode = xmlNode
+			// If we are a doc, then we reference ourselves
+			doc.XmlNode.DocRef = doc
+			doc.DocRef = doc
+			doc.DocPtr = (*C.xmlDoc)(ptr)
+			node = doc
+		} else if nodeType == C.XML_ELEMENT_NODE {
+			node = &Element{XmlNode: xmlNode}
+		} else if nodeType == C.XML_ATTRIBUTE_NODE {
+			node = &Attribute{XmlNode: xmlNode}
+		} else if nodeType == C.XML_CDATA_SECTION_NODE {
+			node = &CData{XmlNode: xmlNode}
+		} else if nodeType == C.XML_TEXT_NODE {
+			node = &Text{XmlNode: xmlNode}
+		} else {
+			node = xmlNode
+		}
+		doc.BookkeepNode(cPtr, node)
 	}
-	return xml_node
+	return
 }
