@@ -3,6 +3,7 @@ package test
 import (
 	"libxml"
 	"libxml/help"
+	"libxml/tree"
 	"testing"
 	"strings"
 )
@@ -128,6 +129,20 @@ func TestElementWrap(t *testing.T) {
 	Equal(t, doc.RootElement().String(), "<two><one/></two>")
 	doc.Free()
 
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+
+func TestElementClearChildNodeRemoval(t *testing.T) {
+	doc := libxml.XmlParseString("<root><child /></root>")
+	root := doc.RootElement()
+	child := root.First().(*tree.Element)
+	root.Clear()
+	child.SetContent("hey!")
+	doc.Free()
 	help.XmlCleanUpParser()
 	if help.XmlMemoryAllocation() != 0 {
 		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
