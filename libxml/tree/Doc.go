@@ -22,20 +22,21 @@ DumpHtmlToString(xmlDoc *doc) {
   htmlDocDumpMemory(doc, &buff, &buffersize);
   return (char *)buff;
 }
-
 */
 import "C"
 import "unsafe"
+import "fmt"
 
 type Doc struct {
 	DocPtr *C.xmlDoc
 	*XmlNode
+	nodeMap map[string]*XmlNode
 }
-
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
 	doc := NewNode(ptr, nil).(*Doc)
 	doc.DocPtr = (*C.xmlDoc)(ptr)
+	doc.InitDocNodeMap()
 	return doc
 }
 
@@ -48,6 +49,22 @@ func (doc *Doc) NewElement(name string) *Element {
 	nameXmlCharPtr := String2XmlChar(name)
 	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
 	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, nameXmlCharPtr)), doc).(*Element)
+}
+
+func (doc *Doc) InitDocNodeMap() {
+	if doc.nodeMap == nil {
+		doc.nodeMap = make(map[string]*XmlNode)
+	}
+}
+
+func (doc *Doc) LookupNode(nodePtr *C.xmlNode) (node *XmlNode) {
+	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
+	node = doc.nodeMap[id]
+	if node == nil {
+		node = &XmlNode{NodePtr: nodePtr, DocRef: doc}
+		doc.nodeMap[id] = node
+	}
+	return
 }
 
 func (doc *Doc) Free() {
