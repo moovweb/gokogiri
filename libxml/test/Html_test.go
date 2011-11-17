@@ -82,3 +82,23 @@ func TestSetHtmlContent(t *testing.T) {
     }
 }
 
+func TestAppendHtmlContent(t *testing.T) {
+  doc := libxml.XmlParseString("<root><parent><child /></parent></root>")
+  root := doc.RootElement()
+  parent := root.FirstElement()
+  Equal(t, parent.Size(), 1)
+  parent.AppendHtmlContent(" and <sibling/>")
+  Equal(t, parent.Size(), 2)
+  Equal(t, parent.First().Name(), "child")
+  Equal(t, parent.First().Next().Name(), "p")
+  Equal(t, parent.First().Next().First().Next().Name(), "sibling")
+  Equal(t, parent.First().Next().First().Content(), "and ")
+  doc.Free()
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+        t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+        help.XmlMemoryLeakReport()
+    }
+}
+
+
