@@ -103,7 +103,6 @@ func TestSearchRemoval(t *testing.T) {
 		if parent.IsLinked() != false {
 			t.Error("Parent should report being unlinked")
 		}
-
 		parent.Free()
 		xp.Free()
 		doc.Free()
@@ -116,6 +115,36 @@ func TestSearchRemoval(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
+/*
+// What if we remove a node that may have been removed
+func TestSearchRemoval2(t *testing.T) {
+	testFunc := func(done chan bool) {
+		done <- false
+		doc := libxml.XmlParseString("<root><div class=\"a\"><div class=\"b\"><div class=\"c\"/></div></div></root>")
+		xp := xpath.NewXPath(doc)
+		root := doc.RootElement()
+		nodeSet := xp.Search(root, "//div")
+		nodes := nodeSet.Slice()
+		for i := range nodes {
+			node := nodes[i]
+			t.Logf("node: %q\n", node.String())
+			node.SetContent("")
+			//node.Free()
+		}
+
+		xp.Free()
+		doc.Free()
+		done <- true
+	}
+	runParallel(testFunc, numConcurrentRuns)
+
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+
+*/
 
 //what if a search returns a nil pointer?
 func TestNilSearch(t *testing.T) {

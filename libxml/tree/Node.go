@@ -33,6 +33,9 @@ type Node interface {
 	Name() string
 	SetName(name string)
 
+	//IsValid checks if the node has been freed with libxml
+	IsValid() bool
+
 	Content() string
 	SetContent(content string)
 	SetCDataContent(content string)

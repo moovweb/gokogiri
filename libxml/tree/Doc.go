@@ -51,15 +51,28 @@ func (doc *Doc) NewElement(name string) *Element {
 }
 
 func (doc *Doc) Free() {
-	C.xmlFreeDoc(doc.DocPtr)
+	if doc.DocPtr != nil {
+		C.xmlFreeDoc(doc.DocPtr)
+		doc.DocPtr = nil
+	}
+}
+
+func (doc *Doc) IsValid() bool {
+	return (doc.DocPtr != nil)
 }
 
 func (doc *Doc) MetaEncoding() string {
+	if ! doc.IsValid() {
+		return ""
+	}
 	metaEncodingXmlCharPtr := C.htmlGetMetaEncoding(doc.DocPtr)
 	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
 func (doc *Doc) String() string {
+	if ! doc.IsValid() {
+		return ""
+	}
 	// TODO: Decide what type of return to do HTML or XML
 	dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
 	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
@@ -67,22 +80,34 @@ func (doc *Doc) String() string {
 }
 
 func (doc *Doc) DumpHTML() string {
+	if ! doc.IsValid() {
+		return ""
+	}
 	dumpCharPtr := C.DumpHtmlToString(doc.DocPtr)
 	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
 	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) DumpXML() string {
+	if ! doc.IsValid() {
+		return ""
+	}
 	dumpCharPtr := C.DumpXmlToString(doc.DocPtr)
 	defer XmlFreeChars(unsafe.Pointer(dumpCharPtr))
 	return C.GoString(dumpCharPtr)
 }
 
 func (doc *Doc) RootElement() *Element {
+	if ! doc.IsValid() {
+		return nil
+	}
 	return NewNode(unsafe.Pointer(C.xmlDocGetRootElement(doc.DocPtr)), doc).(*Element)
 }
 
 func (doc *Doc) NewCData(content string) *CData {
+	if ! doc.IsValid() {
+		return nil
+	}
 	length := C.int(len([]byte(content)))
 	cData := C.xmlNewCDataBlock(doc.DocPtr, String2XmlChar(content), length)
 	return NewNode(unsafe.Pointer(cData), doc).(*CData)

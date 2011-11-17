@@ -2,6 +2,7 @@ package tree
 
 const (
 	//element type 
+	NIL_NODE           = -1
 	XML_ELEMENT_NODE       = 1
 	XML_ATTRIBUTE_NODE     = 2
 	XML_TEXT_NODE          = 3
@@ -41,9 +42,9 @@ const (
 
 func DefaultXmlParseOptions() int {
 	return XML_PARSE_RECOVER | 
-    XML_PARSE_NONET|
-    XML_PARSE_NOERROR|
-    XML_PARSE_NOWARNING
+	    XML_PARSE_NONET|
+	    XML_PARSE_NOERROR|
+	    XML_PARSE_NOWARNING
 }
 
 func DefaultHtmlParseOptions() int {

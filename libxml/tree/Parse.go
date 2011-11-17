@@ -90,23 +90,23 @@ func XmlParseFragment(content string) *Doc {
 }
 
 func HtmlParseFragment(content string) *Doc {
-  doc := XmlParseString("<root></root>")
+	doc := XmlParseString("<root></root>")
 	tmpDoc := HtmlParseStringWithOptions(content, "", "", DefaultHtmlParseOptions())
-  defer tmpDoc.Free()
+	defer tmpDoc.Free()
 
-  tmpNode := tmpDoc.RootElement().First()
-  if strings.Index(strings.ToLower(content), "<body") < 0 {
-    tmpNode = tmpNode.First()
-  }
-  
-  //append all children of tmpRoot to root.
-  root := doc.RootElement()
-  child := tmpNode
-  for child != nil {
-    nextChild := child.Next()
-    root.AppendChildNode(child)
-    child = nextChild
-  }
+	tmpNode := tmpDoc.RootElement().First()
+	if strings.Index(strings.ToLower(content), "<body") < 0 {
+		tmpNode = tmpNode.First()
+	}
+
+	//append all children of tmpRoot to root.
+	root := doc.RootElement()
+	child := tmpNode
+	for child != nil {
+		nextChild := child.Next()
+		root.AppendChildNode(child)
+		child = nextChild
+	}
 	return doc
 }
 

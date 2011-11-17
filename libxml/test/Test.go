@@ -47,4 +47,4 @@ func runParallel(testFunc func(chan bool), concurrency int) {
 	help.XmlCleanUpParser()
 }
 
-const numConcurrentRuns = 1000
+const numConcurrentRuns = 100

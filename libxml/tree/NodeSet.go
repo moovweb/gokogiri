@@ -51,7 +51,6 @@ func (nodeSet *NodeSet) First() Node {
 
 func (nodeSet *NodeSet) Slice() []Node {
 	list := make([]Node, nodeSet.Size(), nodeSet.Size())
-
 	for i := 0; i < nodeSet.Size(); i++ {
 		node := nodeSet.NodeAt(i)
 		if node != nil {

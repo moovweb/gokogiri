@@ -16,6 +16,9 @@ func NewAttribute(ptr unsafe.Pointer, node Node) *Attribute {
 }
 
 func (attr *Attribute) Remove() bool {
+	if ! attr.IsValid() {
+		return false
+	}
 	C.xmlRemoveProp((*C.xmlAttr)(unsafe.Pointer(attr.ptr())))
 	return true
 }
