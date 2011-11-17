@@ -114,7 +114,7 @@ func TestSearchRemoval(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
-/*
+
 // What if we remove a node that may have been removed
 func TestSearchRemoval2(t *testing.T) {
 	testFunc := func(done chan bool) {
@@ -126,9 +126,7 @@ func TestSearchRemoval2(t *testing.T) {
 		nodes := nodeSet.Slice()
 		for i := range nodes {
 			node := nodes[i]
-			t.Logf("node: %q\n", node.String())
 			node.SetContent("")
-			//node.Free()
 		}
 
 		xp.Free()
@@ -142,8 +140,6 @@ func TestSearchRemoval2(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
-
-*/
 
 //what if a search returns a nil pointer?
 func TestNilSearch(t *testing.T) {
