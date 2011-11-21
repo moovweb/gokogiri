@@ -52,6 +52,7 @@ func (node *XmlNode) Free() {
 		}
 		node.Remove()
 		C.xmlFreeNode(node.ptr())
+		node.Doc().BookkeepNode(node.ptr(), nil)
 		node.NodePtr = nil
 	}
 }
