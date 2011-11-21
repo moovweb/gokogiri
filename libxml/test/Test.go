@@ -4,7 +4,6 @@ import "testing"
 import "io/ioutil"
 import "runtime"
 import "libxml/help"
-import "libxml/tree"
 
 func AssertNil(t *testing.T, value interface{}, what string) {
 	if value != nil {
@@ -32,7 +31,7 @@ func LoadFile(name string) string {
 }
 
 func runParallel(testFunc func(chan bool), concurrency int) {
-  tree.InitMemFreeCallback()
+  	help.InitMemFreeCallback()
 	help.XmlInitParser()
 
 	runtime.GOMAXPROCS(4)

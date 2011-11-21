@@ -1,7 +1,7 @@
 #include <libxml/parser.h> 
 #include <libxml/tree.h> 
 #include <libxml/xmlstring.h> 
-#include "XmlMemFree.h"
+#include "XmlMem.h"
 //#include "_cgo_export.h"
 
 void newXmlMemFree(void * ptr) {
@@ -9,9 +9,9 @@ void newXmlMemFree(void * ptr) {
 	xmlMemFree(ptr);
 }
 
-void newXmlMemRealloc(void * ptr, size_t size) {
+void* newXmlMemRealloc(void * ptr, size_t size) {
 	XmlNodeFreedByLibXml(ptr);
-	xmlMemRealloc(ptr, size);
+	return xmlMemRealloc(ptr, size);
 }
 
 void initMemFreeCallback() {

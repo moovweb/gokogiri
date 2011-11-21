@@ -10,6 +10,8 @@ CGO_CFLAGS=$(shell $(XML_CONFIG) --cflags)
 TARG=libxml/help
 GOFILES=\
 
+CGO_OFILES=\
+	XmlMem.o\
 
 CGOFILES=\
 	Helpers.go\
