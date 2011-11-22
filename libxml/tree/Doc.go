@@ -27,10 +27,15 @@ import "C"
 import "unsafe"
 import "fmt"
 
+type PtrPair struct {
+	node Node
+	xmlNode *XmlNode
+}
+
 type Doc struct {
 	DocPtr *C.xmlDoc
 	*XmlNode
-	nodeMap map[string]Node
+	nodeMap map[string]*PtrPair
 }
 
 func NewDoc(ptr unsafe.Pointer) *Doc {
@@ -48,24 +53,37 @@ func CreateHtmlDoc() *Doc {
 func (doc *Doc) NewElement(name string) *Element {
 	nameXmlCharPtr := String2XmlChar(name)
 	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
-	return NewNode(unsafe.Pointer(C.xmlNewNode(nil, nameXmlCharPtr)), doc).(*Element)
+	xmlNode := C.xmlNewNode(nil, nameXmlCharPtr)
+	node := NewNode(unsafe.Pointer(xmlNode), doc)
+	return node.(*Element)
 }
 
 func (doc *Doc) InitDocNodeMap() {
 	if doc.nodeMap == nil {
-		doc.nodeMap = make(map[string]Node)
+		doc.nodeMap = make(map[string]*PtrPair)
 	}
 }
 
-func (doc *Doc) LookupNode(nodePtr *C.xmlNode) (node Node) {
+func (doc *Doc) LookupNodeInMap(nodePtr *C.xmlNode) (node Node, xmlNode *XmlNode) {
 	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
-	node = doc.nodeMap[id]
+	pair := doc.nodeMap[id]
+	if pair == nil {
+		return nil, nil
+	} else {
+		return pair.node, pair.xmlNode
+	}
 	return
 }
 
-func (doc *Doc) BookkeepNode(nodePtr *C.xmlNode, node Node) {
+func (doc *Doc) SaveNodeInMap(nodePtr *C.xmlNode, node Node, xmlNode *XmlNode) {
 	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
-	doc.nodeMap[id] = node
+	pair := &PtrPair{node: node, xmlNode: xmlNode}
+	doc.nodeMap[id] = pair, true
+}
+
+func (doc *Doc) ClearNodeInMap(nodePtr *C.xmlNode) {
+	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
+	doc.nodeMap[id] = nil, false
 }
 
 func (doc *Doc) Free() {
