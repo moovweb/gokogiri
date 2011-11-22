@@ -17,6 +17,13 @@ xmlBufferPtr DumpNodeToXml(xmlNode *node, xmlDoc *doc) {
 import "C"
 import "unsafe"
 
+//export invalidNode
+func invalidNode(nodePtr unsafe.Pointer, docPtr unsafe.Pointer) {
+	doc := (*Doc)(docPtr)
+	node := (*C.xmlNode)(nodePtr)
+	doc.ClearNodeInMap(node)
+}
+
 func xmlNodeType(node *C.xmlNode) int {
 	return int(C.NodeType(node))
 }
@@ -52,13 +59,14 @@ func (node *XmlNode) Free() {
 		}
 		node.Remove()
 		C.xmlFreeNode(node.ptr())
-		node.Doc().BookkeepNode(node.ptr(), nil)
+		node.Doc().ClearNodeInMap(node.ptr())
 		node.NodePtr = nil
 	}
 }
 
 func (node *XmlNode) IsValid() bool {
-    return (node.NodePtr != nil)
+	_, xmlNodeInMap := node.Doc().LookupNodeInMap(node.NodePtr)
+    return (node.NodePtr != nil && xmlNodeInMap == node)
 }
 
 // Used internally to the XmlNode to quickly create nodes
@@ -235,7 +243,7 @@ func (node *XmlNode) AppendChildNode(child Node) {
 		if node.Doc().DocPtr != child.Doc().DocPtr {
 			copiedChildPtr := C.xmlDocCopyNode(childPtr, node.Doc().DocPtr, 1)
 			C.xmlAddChild(node.ptr(), copiedChildPtr)
-			C.xmlFreeNode(childPtr) //this is a must; otherwise it would leak memory on text nodes
+			child.Free() //this is a must; otherwise it would leak memory on text nodes
 		} else {
 			C.xmlAddChild(node.ptr(), childPtr)
 		}
@@ -259,7 +267,7 @@ func (node *XmlNode) AddNodeAfter(sibling Node) {
 		if node.Doc().DocPtr != sibling.Doc().DocPtr {
 			copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1)
 			C.xmlAddNextSibling(node.ptr(), copiedSibling)
-			C.xmlFreeNode(siblingPtr)
+			sibling.Free()
 		} else {
 			C.xmlAddNextSibling(node.ptr(), siblingPtr)
 		}
@@ -273,7 +281,7 @@ func (node *XmlNode) AddNodeBefore(sibling Node) {
 		if node.Doc().DocPtr != sibling.Doc().DocPtr {
 			copiedSibling := C.xmlDocCopyNode(siblingPtr, node.Doc().DocPtr, 1)
 			C.xmlAddPrevSibling(node.ptr(), copiedSibling)
-			C.xmlFreeNode(siblingPtr)
+			sibling.Free()
 		} else {
 			C.xmlAddPrevSibling(node.ptr(), siblingPtr)
 		}
@@ -298,7 +306,7 @@ func (node *XmlNode) Wrap(elementName string) (wrapperNode *Element) {
 		return nil
 	}
 	// Build the wrapper
-	wrapperNode = node.Parent().NewChild(elementName, "")
+	wrapperNode = node.Doc().NewElement(elementName)
 	// Add it after me
 	node.AddNodeBefore(wrapperNode)
 	// Add me as its child

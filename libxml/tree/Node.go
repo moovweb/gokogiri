@@ -65,10 +65,10 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 		doc = &Doc{}
 		doc.InitDocNodeMap()
 	}
-	node = doc.LookupNode(cPtr)
+	node, _ = doc.LookupNodeInMap(cPtr)
+	nodeType := xmlNodeType(cPtr)
 	if node == nil {
 		xmlNode := &XmlNode{NodePtr: cPtr, DocRef: doc}
-		nodeType := xmlNodeType(cPtr)
 		if nodeType == C.XML_DOCUMENT_NODE || nodeType == C.XML_HTML_DOCUMENT_NODE {
 			doc.XmlNode = xmlNode
 			// If we are a doc, then we reference ourselves
@@ -87,7 +87,7 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 		} else {
 			node = xmlNode
 		}
-		doc.BookkeepNode(cPtr, node)
+		doc.SaveNodeInMap(cPtr, node, xmlNode)
 	}
 	return
 }
