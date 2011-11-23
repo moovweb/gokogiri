@@ -5,11 +5,15 @@
 void invalidTree(xmlNode *node, void *doc) {
     xmlNode *cur_node = NULL;
     if (node != NULL) {
-        //fprintf(stderr, "invalid 0x%x\n", node);
-        
-        for (cur_node = node->children; cur_node; cur_node = cur_node->next) {
-            //fprintf(stderr, "invalid child 0x%x\n", cur_node);
+        cur_node = node->children;
+        while(cur_node != NULL) {
             invalidTree(cur_node, doc);
+            cur_node = node->children;            
         }
+        invalidNode(node, doc);
+        if (node->parent != NULL) {
+            xmlUnlinkNode(node);
+        }
+        xmlFreeNode(node);
     }
 }

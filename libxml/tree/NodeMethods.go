@@ -5,6 +5,7 @@ package tree
 #include <libxml/tree.h> 
 #include <libxml/xmlstring.h> 
 #include <libxml/HTMLtree.h>
+#include "Callback.h"
 
 int NodeType(xmlNode *node) { return (int)node->type; }
 
@@ -52,14 +53,7 @@ func (node *XmlNode) Type() int {
 
 func (node *XmlNode) Free() {
 	if node.IsValid() {
-		child := node.First()
-		for child != nil {
-			child.Free()
-			child = node.First()
-		}
-		node.Remove()
-		node.Doc().ClearNodeInMap(node.ptr())
-		C.xmlFreeNode(node.ptr())
+		C.invalidTree(node.ptr(), unsafe.Pointer(node.Doc()))
 		node.NodePtr = nil
 	}
 }
