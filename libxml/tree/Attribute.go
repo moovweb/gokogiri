@@ -19,8 +19,8 @@ func (attr *Attribute) Remove() bool {
 	if ! attr.IsValid() {
 		return false
 	}
-	C.xmlRemoveProp((*C.xmlAttr)(unsafe.Pointer(attr.ptr())))
 	attr.Doc().ClearNodeInMap(attr.ptr())
+	C.xmlRemoveProp((*C.xmlAttr)(unsafe.Pointer(attr.ptr())))
 	attr.NodePtr = nil
 	return true
 }

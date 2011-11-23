@@ -65,25 +65,37 @@ func (doc *Doc) InitDocNodeMap() {
 }
 
 func (doc *Doc) LookupNodeInMap(nodePtr *C.xmlNode) (node Node, xmlNode *XmlNode) {
-	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
+	if nodePtr == nil {
+		return nil, nil
+	}
+	id := fmt.Sprintf("%d_%d", unsafe.Pointer(nodePtr), xmlNodeType(nodePtr))
 	pair := doc.nodeMap[id]
 	if pair == nil {
 		return nil, nil
 	} else {
 		return pair.node, pair.xmlNode
 	}
+	//println("lookup", id)
 	return
 }
 
 func (doc *Doc) SaveNodeInMap(nodePtr *C.xmlNode, node Node, xmlNode *XmlNode) {
-	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
+	if nodePtr == nil {
+		return
+	}
+	id := fmt.Sprintf("%d_%d", unsafe.Pointer(nodePtr), xmlNodeType(nodePtr))
 	pair := &PtrPair{node: node, xmlNode: xmlNode}
 	doc.nodeMap[id] = pair, true
+	//println("save", id)
 }
 
 func (doc *Doc) ClearNodeInMap(nodePtr *C.xmlNode) {
-	id := fmt.Sprintf("%d", unsafe.Pointer(nodePtr))
+	if nodePtr == nil {
+		return
+	}
+	id := fmt.Sprintf("%d_%d", unsafe.Pointer(nodePtr), xmlNodeType(nodePtr))
 	doc.nodeMap[id] = nil, false
+	//println("clear", id)
 }
 
 func (doc *Doc) Free() {

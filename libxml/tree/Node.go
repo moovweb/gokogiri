@@ -88,6 +88,9 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 			node = xmlNode
 		}
 		doc.SaveNodeInMap(cPtr, node, xmlNode)
+		//println("create node. pointer:", ptr, " type:", nodeType, "str: ", node.String())
+	} else {
+		//println("cached node. pointer:", ptr, " type:", nodeType, "str: ", node.String())
 	}
 	return
 }

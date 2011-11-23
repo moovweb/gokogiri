@@ -58,8 +58,8 @@ func (node *XmlNode) Free() {
 			child = node.First()
 		}
 		node.Remove()
-		C.xmlFreeNode(node.ptr())
 		node.Doc().ClearNodeInMap(node.ptr())
+		C.xmlFreeNode(node.ptr())
 		node.NodePtr = nil
 	}
 }
