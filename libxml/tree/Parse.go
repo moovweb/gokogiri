@@ -32,6 +32,13 @@ func XmlParseWithOptions(content string, url string, encoding string, opts int) 
 		defer C.free(unsafe.Pointer(encodingCharPtr))
 	}
 	xmlDocPtr := C.xmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
+	if xmlDocPtr == nil {
+		versionCharPtr := C.CString("1.0")
+		defer C.free(unsafe.Pointer(versionCharPtr))
+		versionXmlCharPtr := C.xmlCharStrdup(versionCharPtr)
+		defer XmlFreeChars(unsafe.Pointer(versionXmlCharPtr))
+		xmlDocPtr = C.xmlNewDoc(versionXmlCharPtr)
+	}
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
