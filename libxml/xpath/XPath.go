@@ -30,7 +30,7 @@ func NewXPath(doc *Doc) *XPath {
 	return xpath
 }
 
-func (xpath *XPath) Compile(xpathExp string) (xpathExpCompiled C.xmlXPathCompExprPtr) {
+func Compile(xpathExp string) (xpathExpCompiled C.xmlXPathCompExprPtr) {
 	expressionCharPtr := C.CString(xpathExp)
 	defer C.free(unsafe.Pointer(expressionCharPtr))
 	expressionXmlCharPtr := C.xmlCharStrdup(expressionCharPtr)
@@ -41,7 +41,7 @@ func (xpath *XPath) Compile(xpathExp string) (xpathExpCompiled C.xmlXPathCompExp
 }
 
 func (xpath *XPath) Search(node Node, xpathExp string) *NodeSet {
-	xpathExpCompiled := xpath.Compile(xpathExp)
+	xpathExpCompiled := Compile(xpathExp)
 	if xpathExpCompiled == nil {
 		panic(fmt.Sprintf("cannot compile xpath: %q", xpathExp))
 	}
