@@ -30,26 +30,17 @@ func NewXPath(doc *Doc) *XPath {
 	return xpath
 }
 
-func Compile(xpathExp string) (xpathExpCompiled C.xmlXPathCompExprPtr) {
-	expressionCharPtr := C.CString(xpathExp)
-	defer C.free(unsafe.Pointer(expressionCharPtr))
-	expressionXmlCharPtr := C.xmlCharStrdup(expressionCharPtr)
-	defer XmlFreeChars(unsafe.Pointer(expressionXmlCharPtr))
-
-	xpathExpCompiled = C.xmlXPathCompile(expressionXmlCharPtr)
-	return
-}
 
 func (xpath *XPath) Search(node Node, xpathExp string) *NodeSet {
-	xpathExpCompiled := Compile(xpathExp)
-	if xpathExpCompiled == nil {
+	exp := CompileXPath(xpathExp)
+	if exp == nil {
 		panic(fmt.Sprintf("cannot compile xpath: %q", xpathExp))
 	}
-	defer C.xmlXPathFreeCompExpr(xpathExpCompiled)
-	return xpath.SearchByCompiledXPath(node, xpathExpCompiled)
+	defer exp.Free()
+	return xpath.SearchByCompiledXPath(node, exp)
 }
 
-func (xpath *XPath) SearchByCompiledXPath(node Node, xpathExp C.xmlXPathCompExprPtr) *NodeSet {
+func (xpath *XPath) SearchByCompiledXPath(node Node, exp *Expression) *NodeSet {
 	if node.Doc().Ptr() != xpath.Doc.Ptr() {
 		panic("this node's document does NOT match the document of the XPath context")
 	}
@@ -58,7 +49,7 @@ func (xpath *XPath) SearchByCompiledXPath(node Node, xpathExp C.xmlXPathCompExpr
 		//free the previous result if the XPath objecy is being reused.
 		C.xmlXPathFreeObject(xpath.result)
 	}
-	xpath.result = C.xmlXPathCompiledEval(xpathExp, xpath.context)
+	xpath.result = C.xmlXPathCompiledEval(exp.ptr, xpath.context)
 	return NewNodeSet(unsafe.Pointer(C.FetchNodeSet(xpath.result)), xpath.Doc)
 }
 

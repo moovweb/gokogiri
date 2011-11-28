@@ -12,6 +12,7 @@ GOFILES=\
 
 
 CGOFILES=\
+	Expression.go\
 	XPath.go\
 
 
