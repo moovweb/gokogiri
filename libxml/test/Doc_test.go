@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func TestDocXmlNoInput(t *testing.T) {
+	libxml.XmlParseString("")
+}
+
 func TestNewElement(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
 	root := doc.RootElement()
