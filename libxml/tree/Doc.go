@@ -25,6 +25,7 @@ DumpHtmlToString(xmlDoc *doc) {
 */
 import "C"
 import "unsafe"
+import "strings"
 
 type PtrPair struct {
 	node Node
@@ -152,4 +153,28 @@ func (doc *Doc) NewCData(content string) *CData {
 	length := C.int(len([]byte(content)))
 	cData := C.xmlNewCDataBlock(doc.DocPtr, String2XmlChar(content), length)
 	return NewNode(unsafe.Pointer(cData), doc).(*CData)
+}
+
+func (doc *Doc) ParseHtmlFragment(fragment string) []Node {
+	tmpDoc := HtmlParseStringWithOptions(fragment, "", "", DefaultHtmlParseOptions())
+	defer tmpDoc.Free()
+
+	tmpNode := tmpDoc.RootElement().First()
+	if strings.Index(strings.ToLower(fragment), "<body") < 0 {
+		tmpNode = tmpNode.First()
+	}
+	nodes := make([]Node, 0, 1)
+	child := tmpNode
+	for child != nil {
+		nextChild := child.Next()
+		childPtr := (*C.xmlNode)(child.Ptr())
+		C.xmlUnlinkNode(childPtr)
+		copiedChildPtr := C.xmlDocCopyNode(childPtr, doc.DocPtr, 1)
+		copiedChild := NewNode(unsafe.Pointer(copiedChildPtr), doc)
+		nodes = append(nodes, copiedChild)
+		child.Free() //this is a must; otherwise it would leak memory on text nodes
+		child = nextChild
+	}
+	return nodes
+	
 }
