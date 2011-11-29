@@ -21,11 +21,13 @@ using namespace std;
 class ChelpersTest : public CppUnit::TestCase  {
     CPPUNIT_TEST_SUITE( ChelpersTest );
     CPPUNIT_TEST( test_xml_output );
+    CPPUNIT_TEST( test_empty_xml );
     CPPUNIT_TEST( test_xmlElement_append );
     CPPUNIT_TEST( test_xmlElement_prepend );
     CPPUNIT_TEST_SUITE_END();
 
     void test_xml_output();
+    void test_empty_xml();
     void test_xmlElement_append();
     void test_xmlElement_prepend();
     const char* next_line(const char *xml);
@@ -73,6 +75,11 @@ void ChelpersTest::test_xml_output() {
   const char* next = next_line((char *) xmlbuff);
   CPPUNIT_ASSERT(strncmp(next, XML_STR, strlen(XML_STR)) == 0);
 
+}
+
+void ChelpersTest::test_empty_xml() {
+  xmlDocPtr emptyDoc = xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION);
+  //xmlFreeDoc(emptyDoc);
 }
 
 void ChelpersTest::test_xmlElement_append() {
