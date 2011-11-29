@@ -6,6 +6,7 @@ package help
 #include <libxml/xmlstring.h> 
 char* xmlChar2C(xmlChar* x) { return (char *) x; }
 xmlChar* C2xmlChar(char* x) { return (xmlChar *) x; }
+void printMemoryLeak() { xmlMemDisplay(stdout); }
 */
 import "C"
 
@@ -28,5 +29,5 @@ func XmlMemoryAllocation() int {
 }
 
 func XmlMemoryLeakReport() {
-	C.xmlMemDisplay(C.stdout)
+	C.printMemoryLeak()
 }
