@@ -3,3 +3,4 @@ build/*
 _*
 *.6
 *.o
+libxml/test/ctest/test

@@ -7,7 +7,14 @@ import (
 )
 
 func TestDocXmlNoInput(t *testing.T) {
-	libxml.XmlParseString("")
+	doc := libxml.XmlParseString("")
+	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestNewElement(t *testing.T) {
@@ -45,12 +52,8 @@ func TestDocParseHtmlFragment(t *testing.T) {
 
 func TestDocParseHtmlFragmentWithComment(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
-	root := doc.RootElement()
 	fragmentNodes := doc.ParseHtmlFragment("<!-- comment -->")
-	for _, node := range(fragmentNodes) {
-		root.AppendChildNode(node)
-	}
-	Equal(t, root.String(), "<root>hi<div><meta style=\"cool\"/></div><h1/></root>")
+	Equal(t, len(fragmentNodes), 0)
 	doc.Free()
 
 	help.XmlCleanUpParser()
