@@ -6,6 +6,7 @@ package tree
 
 xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
 xmlDoc * htmlDocToXmlDoc(htmlDocPtr doc) { return (xmlDocPtr)doc; }
+xmlDoc * newEmptyXmlDoc() { return xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION); }
 */
 import "C"
 import "unsafe"
@@ -33,11 +34,7 @@ func XmlParseWithOptions(content string, url string, encoding string, opts int) 
 	}
 	xmlDocPtr := C.xmlReadDoc(contentXmlCharPtr, urlCharPtr, encodingCharPtr, C.int(opts))
 	if xmlDocPtr == nil {
-		versionCharPtr := C.CString("1.0")
-		defer C.free(unsafe.Pointer(versionCharPtr))
-		versionXmlCharPtr := C.xmlCharStrdup(versionCharPtr)
-		defer XmlFreeChars(unsafe.Pointer(versionXmlCharPtr))
-		xmlDocPtr = C.xmlNewDoc(versionXmlCharPtr)
+		xmlDocPtr = C.newEmptyXmlDoc()
 	}
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
