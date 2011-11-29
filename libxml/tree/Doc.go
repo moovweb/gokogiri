@@ -143,7 +143,11 @@ func (doc *Doc) RootElement() *Element {
 	if ! doc.IsValid() {
 		return nil
 	}
-	return NewNode(unsafe.Pointer(C.xmlDocGetRootElement(doc.DocPtr)), doc).(*Element)
+	node := NewNode(unsafe.Pointer(C.xmlDocGetRootElement(doc.DocPtr)), doc)
+	if node == nil {
+		return nil
+	}
+	return node.(*Element)
 }
 
 func (doc *Doc) NewCData(content string) *CData {
@@ -158,8 +162,14 @@ func (doc *Doc) NewCData(content string) *CData {
 func (doc *Doc) ParseHtmlFragment(fragment string) []Node {
 	tmpDoc := HtmlParseStringWithOptions(fragment, "", "", DefaultHtmlParseOptions())
 	defer tmpDoc.Free()
-
-	tmpNode := tmpDoc.RootElement().First()
+	root := tmpDoc.RootElement() 
+	if root == nil {
+		return nil
+	}
+	tmpNode := root.First()
+	if tmpNode == nil {
+		return nil
+	}
 	if strings.Index(strings.ToLower(fragment), "<body") < 0 {
 		tmpNode = tmpNode.First()
 	}
