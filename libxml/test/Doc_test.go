@@ -63,5 +63,22 @@ func TestDocParseHtmlFragmentWithComment(t *testing.T) {
 	}
 }
 
+func TestInjectAtBottom(t *testing.T) {
+	fragment := "<span class='icons-orange-link-arrow'></span>"	
+	doc := libxml.XmlParseString("<root></root>")
+	nodeSet := doc.ParseHtmlFragment(fragment)
+	root := doc.RootElement()
+	for _, node := range(nodeSet) {
+		root.AppendChildNode(node)	
+	}	
+	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+
+}
+
 
 
