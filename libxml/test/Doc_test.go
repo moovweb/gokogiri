@@ -3,6 +3,7 @@ package test
 import (
 	"libxml"
 	"libxml/help"
+	"libxml/tree"
 	"testing"
 )
 
@@ -70,7 +71,7 @@ func TestInjectAtBottom(t *testing.T) {
 	root := doc.RootElement()
 	for _, node := range(nodeSet) {
 		root.AppendChildNode(node)	
-	}	
+	}
 	doc.Free()
 	help.XmlCleanUpParser()
 	if help.XmlMemoryAllocation() != 0 {
@@ -80,5 +81,26 @@ func TestInjectAtBottom(t *testing.T) {
 
 }
 
+func TestWrapThenInject(t *testing.T) {
+	fragment := "<span class='icons-orange-link-arrow'></span>"	
+	doc := libxml.XmlParseString("<root>hi</root>")
+    textNode, ok := doc.First().First().(*tree.Text)
+	if !ok {
+		t.Error("Should be a Text object")
+	}
+	wrapNode := textNode.Wrap("span")
 
+	nodeSet := doc.ParseHtmlFragment(fragment)
+	for _, node := range(nodeSet) {
+		wrapNode.AppendChildNode(node)	
+	}
+	println("doc:", doc.String())
+	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+
+}
 
