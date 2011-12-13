@@ -95,7 +95,7 @@ func XmlParseFragment(content string) *Doc {
 
 func HtmlParseFragment(content string) *Doc {
 	doc := XmlParseString("<root></root>")
-	tmpDoc := HtmlParseStringWithOptions(content, "", "", DefaultHtmlParseOptions())
+	tmpDoc := HtmlParseStringWithOptions("<html><body>"+content, "", "", DefaultHtmlParseOptions())
 	defer tmpDoc.Free()
 
 	tmpNode := tmpDoc.RootElement().First()
