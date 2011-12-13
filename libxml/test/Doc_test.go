@@ -94,7 +94,7 @@ func TestWrapThenInject(t *testing.T) {
 	for _, node := range(nodeSet) {
 		wrapNode.AppendChildNode(node)	
 	}
-	println("doc:", doc.String())
+	//println("doc:", doc.String())
 	doc.Free()
 	help.XmlCleanUpParser()
 	if help.XmlMemoryAllocation() != 0 {
