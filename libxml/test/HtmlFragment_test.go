@@ -50,3 +50,16 @@ func TestHtmlFragment3(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
+
+func TestHtmlFragmentNewlinesNokogiri(t *testing.T) {
+	html := "<script src=\"blah\"></script><div id=\"blah\" class=\" mw_testing\">"
+	doc := libxml.HtmlParseFragment(html)
+	Equal(t, doc.Content(), html)
+	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
