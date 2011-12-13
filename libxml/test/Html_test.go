@@ -90,9 +90,8 @@ func TestAppendHtmlContent(t *testing.T) {
   parent.AppendHtmlContent(" and <sibling/>")
   Equal(t, parent.Size(), 2)
   Equal(t, parent.First().Name(), "child")
-  Equal(t, parent.First().Next().Name(), "p")
-  Equal(t, parent.First().Next().First().Next().Name(), "sibling")
-  Equal(t, parent.First().Next().First().Content(), "and ")
+  Equal(t, parent.First().Next().Name(), "text")
+  Equal(t, parent.First().Next().Content(), " and ")
   doc.Free()
     help.XmlCleanUpParser()
     if help.XmlMemoryAllocation() != 0 {
