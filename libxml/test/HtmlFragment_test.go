@@ -52,9 +52,9 @@ func TestHtmlFragment3(t *testing.T) {
 }
 
 func TestHtmlFragmentNewlinesNokogiri(t *testing.T) {
-	html := "<script src=\"blah\"></script><div id=\"blah\" class=\" mw_testing\">"
+	html := "<script src=\"blah\"></script><div id=\"blah\" class=\" mw_testing\"></div>"
 	doc := libxml.HtmlParseFragment(html)
-	Equal(t, doc.Content(), html)
+	Equal(t, doc.RootElement().Content(), html)
 	doc.Free()
 
 	help.XmlCleanUpParser()
