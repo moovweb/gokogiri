@@ -14,3 +14,6 @@ func HtmlParseFragment(input string) *tree.Doc {
   return tree.HtmlParseFragment(input)
 }
 
+func HtmlParseBytes(input []byte) *tree.Doc {
+	return tree.HtmlParseBytes(input)
+}

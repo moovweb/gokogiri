@@ -7,6 +7,9 @@ package tree
 xmlNode * GoXmlCastDocToNode(xmlDoc *doc) { return (xmlNode *)doc; }
 xmlDoc * htmlDocToXmlDoc(htmlDocPtr doc) { return (xmlDocPtr)doc; }
 xmlDoc * newEmptyXmlDoc() { return xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION); }
+htmlDocPtr	htmlReadDoc2(const void * cur, const void * URL, const void * encoding, int options) {
+	return htmlReadDoc((xmlChar*)cur, (char*)URL, (char*)encoding, options);
+}
 */
 import "C"
 import "unsafe"
@@ -67,6 +70,24 @@ func HtmlParseStringWithOptions(content string, url string, encoding string, opt
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
+func HtmlParseBytesWithOptions(content []byte, url []byte, encoding []byte, opts int) *Doc {
+	contentCharPtr := unsafe.Pointer(&content[0])
+	/*
+	urlCharPtr := unsafe.Pointer(nil)
+	if url != nil {
+		urlCharPtr = unsafe.Pointer(&url[0])
+	}
+	encodingCharPtr := unsafe.Pointer(nil)
+	if encoding != nil {
+		encodingCharPtr = unsafe.Pointer(&encoding[0])
+	}*/
+	htmlDocPtr := C.htmlReadDoc2(contentCharPtr, nil, nil, C.int(opts))
+	if htmlDocPtr == nil {
+		return nil
+	}
+	xmlDocPtr := C.htmlDocToXmlDoc(htmlDocPtr)
+	return NewDoc(unsafe.Pointer(xmlDocPtr))
+}
 
 func HtmlParseFile(url string, encoding string, opts int) *Doc {
 	htmlDocPtr := C.htmlReadFile(C.CString(url), C.CString(encoding), C.int(opts))
@@ -79,6 +100,14 @@ func HtmlParseFile(url string, encoding string, opts int) *Doc {
 
 func HtmlParseString(content string) *Doc {
 	doc := HtmlParseStringWithOptions(content, "", "", DefaultHtmlParseOptions())
+	if doc == nil {
+		return HtmlParseString("<html />")
+	}
+	return doc
+}
+
+func HtmlParseBytes(content []byte) *Doc {
+	doc := HtmlParseBytesWithOptions(content, nil, nil, DefaultHtmlParseOptions())
 	if doc == nil {
 		return HtmlParseString("<html />")
 	}
