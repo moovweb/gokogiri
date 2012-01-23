@@ -121,7 +121,7 @@ func (node *XmlNode) Remove() bool {
 }
 
 func (node *XmlNode) IsLinked() bool {
-	if ! node.IsValid() {
+	if !node.IsValid() {
 		return false
 	}
 	return node.ptr().parent != nil

@@ -11,6 +11,12 @@ import (
 func TestElementRemove(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 	root := doc.RootElement()
+	if doc.IsLinked() == false {
+		t.Error("Should be linked when we start")
+	}
+	if doc.IsLinked() == false {
+		t.Error("Should be linked when we start")
+	}
 	node := root.Last().First()
 	node.Remove()
 	node.Free()

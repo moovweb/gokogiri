@@ -188,3 +188,9 @@ func (doc *Doc) ParseHtmlFragment(fragment string) []Node {
 	return nodes
 	
 }
+
+// The standard implementation of this checks to see if parent is defined.
+// Obviously, we have no parent, so I override this to not check that
+func (doc *Doc) IsLinked() bool {
+	return true
+}
