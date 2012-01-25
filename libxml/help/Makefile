@@ -13,19 +13,8 @@ GOFILES=\
 
 CGOFILES=\
 	Helpers.go\
-
-
-# gb: this is the local install
-GBROOT=../..
-
-# gb: compile/link against local install
-GC+= -I $(GBROOT)/_obj
-LD+= -L $(GBROOT)/_obj
-
-# gb: copy to local install
-$(GBROOT)/_obj/$(TARG).a: _obj/$(TARG).a
-	mkdir -p $(dir $@); cp -f $< $@
-
-package: $(GBROOT)/_obj/$(TARG).a
+	
+clean:
+	rm -rf *.o *.a *.[568vq] [568vq].out *.so _obj _test _testmain.go *.exe _cgo* test.out build.out
 
 include $(GOROOT)/src/Make.pkg
