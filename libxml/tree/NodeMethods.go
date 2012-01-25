@@ -157,6 +157,15 @@ func (node *XmlNode) SetName(name string) {
 	}
 }
 
+func (node *XmlNode) Path() string {
+	if ! node.IsValid() {
+		return ""
+	}
+	pathXmlCharPtr := C.xmlGetNodePath(node.ptr())
+	defer XmlFreeChars(unsafe.Pointer(pathXmlCharPtr))
+	return XmlChar2String(pathXmlCharPtr)
+}
+
 func (node *XmlNode) Content() string {
 	if ! node.IsValid() {
 		return ""

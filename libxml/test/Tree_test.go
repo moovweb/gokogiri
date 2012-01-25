@@ -238,3 +238,26 @@ func TestParallelNodeIsLinked(t *testing.T) {
 	}
 
 }
+
+func TestParallelPath(t *testing.T) {
+	testFunc := func(done chan bool) {
+		doc := libxml.XmlParseString("<root><child><a/><b/></child></root>")
+		done <- false
+		child := doc.RootElement().FirstElement()
+		if child.Path() != "/root/child" {
+			t.Error("path wrong")
+		}
+		b := child.First().Next()
+		if b.Path() != "/root/child/b" {
+			t.Error("path wrong")
+		}
+		doc.Free()
+		done <- true
+	}
+	runParallel(testFunc, numConcurrentRuns)
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+
+}
