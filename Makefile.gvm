@@ -1,6 +1,6 @@
 all: install
 compile: build
-	gb -i
+	./build install
 clean:
 	./build clean
 install: compile
