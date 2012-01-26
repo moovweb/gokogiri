@@ -3,10 +3,25 @@
 
 include $(GOROOT)/src/Make.inc
 
-TARG=libxml/help
+TARG=libxml
 GOFILES=\
 	lib.go\
 
 
+# gb: this is the local install
+GBROOT=..
+
+# gb: compile/link against local install
+GC+= -I $(GBROOT)/_obj
+LD+= -L $(GBROOT)/_obj
+
+# gb: copy to local install
+$(GBROOT)/_obj/$(TARG).a: _obj/$(TARG).a
+	mkdir -p $(dir $@); cp -f $< $@
+
+package: $(GBROOT)/_obj/$(TARG).a
+
 include $(GOROOT)/src/Make.pkg
 
+# gb: local dependencies
+_obj/$(TARG).a: $(GBROOT)/_obj/libxml/tree.a
