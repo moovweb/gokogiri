@@ -1,1 +1,1 @@
-void invalidTree(xmlNode *node, void *doc);
+void invalidateTree(xmlNode *node, void *doc);
