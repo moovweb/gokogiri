@@ -18,8 +18,8 @@ xmlBufferPtr DumpNodeToXml(xmlNode *node, xmlDoc *doc) {
 import "C"
 import "unsafe"
 
-//export invalidNode
-func invalidNode(nodePtr unsafe.Pointer, docPtr unsafe.Pointer) {
+//export invalidateNode
+func invalidateNode(nodePtr unsafe.Pointer, docPtr unsafe.Pointer) {
 	doc := (*Doc)(docPtr)
 	node := (*C.xmlNode)(nodePtr)
 	doc.ClearNodeInMap(node)
@@ -53,7 +53,7 @@ func (node *XmlNode) Type() int {
 
 func (node *XmlNode) Free() {
 	if node.IsValid() {
-		C.invalidTree(node.ptr(), unsafe.Pointer(node.Doc()))
+		C.invalidateTree(node.ptr(), unsafe.Pointer(node.Doc()))
 		node.NodePtr = nil
 	}
 }
