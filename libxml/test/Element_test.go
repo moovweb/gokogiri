@@ -158,6 +158,7 @@ func TestElementClearChildNodeRemoval(t *testing.T) {
 }
 
 /* from asda home page */
+/*
 func TestElementContent2(t *testing.T) {
 	docStr, err := ioutil.ReadFile("asda_home_html_body.html")
 	if err != nil {
@@ -167,13 +168,32 @@ func TestElementContent2(t *testing.T) {
 	if err != nil {
 		t.Errorf("Err: %v", err.String())
 	}
-	doc := libxml.XmlParseString(string(docStr))
+	doc := libxml.HtmlParseFragment(string(docStr))
 	root := doc.RootElement()
 	//Equal(t, root.Content(), contents)
 	root.SetContent(string(contentStr))
 
 	doc.Free()
 
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+*/
+
+/* a much simplified version of test of the above */
+func TestElementContent3(t *testing.T) {
+	contentStr, err := ioutil.ReadFile("long_unclosed_tags.html")
+	if err != nil {
+		t.Errorf("Err: %v", err.String())
+	}
+	doc := libxml.HtmlParseFragment("<div></div>")
+	root := doc.RootElement()
+
+	root.SetContent(string(contentStr))
+	doc.Free()
 	help.XmlCleanUpParser()
 	if help.XmlMemoryAllocation() != 0 {
 		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
