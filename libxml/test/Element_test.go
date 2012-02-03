@@ -6,6 +6,7 @@ import (
 	"libxml/tree"
 	"testing"
 	"strings"
+	"io/ioutil"
 )
 
 func TestElementRemove(t *testing.T) {
@@ -149,6 +150,30 @@ func TestElementClearChildNodeRemoval(t *testing.T) {
 	root.Clear()
 	child.SetContent("hey!")
 	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+
+/* from asda home page */
+func TestElementContent2(t *testing.T) {
+	docStr, err := ioutil.ReadFile("asda_home_html_body.html")
+	if err != nil {
+		t.Errorf("Err: %v", err.String())
+	}
+	contentStr, err := ioutil.ReadFile("asda_home_setcontent.html")
+	if err != nil {
+		t.Errorf("Err: %v", err.String())
+	}
+	doc := libxml.XmlParseString(string(docStr))
+	root := doc.RootElement()
+	//Equal(t, root.Content(), contents)
+	root.SetContent(string(contentStr))
+
+	doc.Free()
+
 	help.XmlCleanUpParser()
 	if help.XmlMemoryAllocation() != 0 {
 		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
