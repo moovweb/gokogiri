@@ -158,7 +158,6 @@ func TestElementClearChildNodeRemoval(t *testing.T) {
 }
 
 /* from asda home page */
-/*
 func TestElementContent2(t *testing.T) {
 	docStr, err := ioutil.ReadFile("asda_home_html_body.html")
 	if err != nil {
@@ -181,14 +180,14 @@ func TestElementContent2(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
-*/
 
 /* a much simplified version of test of the above */
 func TestElementContent3(t *testing.T) {
-	contentStr, err := ioutil.ReadFile("long_unclosed_tags.html")
-	if err != nil {
-		t.Errorf("Err: %v", err.String())
+	contentStr := "<form>"
+	for i := 0; i < 200; i ++ {
+		contentStr += "<input value=\"210\" type=\"hidden\" name=\"foo\">"
 	}
+	contentStr += "</form>"
 	doc := libxml.HtmlParseFragment("<div></div>")
 	root := doc.RootElement()
 
