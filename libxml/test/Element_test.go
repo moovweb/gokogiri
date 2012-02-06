@@ -159,11 +159,11 @@ func TestElementClearChildNodeRemoval(t *testing.T) {
 
 /* from asda home page */
 func TestElementContent2(t *testing.T) {
-	docStr, err := ioutil.ReadFile("asda_home_html_body.html")
+	docStr, err := ioutil.ReadFile("htmldata/asda_home_html_body.html")
 	if err != nil {
 		t.Errorf("Err: %v", err.String())
 	}
-	contentStr, err := ioutil.ReadFile("asda_home_setcontent.html")
+	contentStr, err := ioutil.ReadFile("htmldata/asda_home_setcontent.html")
 	if err != nil {
 		t.Errorf("Err: %v", err.String())
 	}
