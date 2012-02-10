@@ -100,4 +100,22 @@ func TestAppendHtmlContent(t *testing.T) {
     }
 }
 
+func TestSetMetaEncoding(t *testing.T) {
+	doc := libxml.HtmlParseString("<html><head /><body /></html>")
+	if doc.Size() != 1 {
+		t.Error("Incorrect size")
+	}
+	doc.SetMetaEncoding("utf-8")
+	// Doctype gets returned as the first child!
+	htmlTag := doc.First().Next()
+	Equal(t, htmlTag.First().First().String(), `<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>`)
+	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+
+
 
