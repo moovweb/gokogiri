@@ -26,6 +26,11 @@ DumpHtmlToString(xmlDoc *doc) {
 import "C"
 import "unsafe"
 import "strings"
+import "os"
+
+var (
+	ErrSetMetaEncoding = os.NewError("Set Meta Encoding failed")
+)
 
 type PtrPair struct {
 	node Node
@@ -111,6 +116,19 @@ func (doc *Doc) MetaEncoding() string {
 	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
+func (doc *Doc) SetMetaEncoding(encoding string) (err os.Error) {
+	if ! doc.IsValid() {
+		return
+	}
+	metaEncodingXmlCharPtr := String2XmlChar(encoding)
+	defer XmlFreeChars(unsafe.Pointer(metaEncodingXmlCharPtr))
+	ret := int(C.htmlSetMetaEncoding(doc.DocPtr, metaEncodingXmlCharPtr))
+	if (ret == -1) {
+		err = ErrSetMetaEncoding
+	}
+	return
+}
+
 func (doc *Doc) String() string {
 	if ! doc.IsValid() {
 		return ""
@@ -159,8 +177,8 @@ func (doc *Doc) NewCData(content string) *CData {
 	return NewNode(unsafe.Pointer(cData), doc).(*CData)
 }
 
-func (doc *Doc) ParseHtmlFragment(fragment string) []Node {
-	tmpDoc := HtmlParseStringWithOptions(fragment, "", "", DefaultHtmlParseOptions())
+func (doc *Doc) ParseHtmlFragment(fragment string, encoding string) []Node {
+	tmpDoc := HtmlParseStringWithOptions(fragment, "", encoding, DefaultHtmlParseOptions())
 	defer tmpDoc.Free()
 	root := tmpDoc.RootElement() 
 	if root == nil {
