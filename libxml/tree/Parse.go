@@ -12,12 +12,13 @@ import "C"
 import "unsafe"
 import "strings"
 
+/*
 func Parse(input string) *Doc {
 	cCharInput := C.CString(input)
 	defer C.free(unsafe.Pointer(cCharInput))
 	doc := C.xmlParseMemory(cCharInput, C.int(len(input)))
 	return NewNode(unsafe.Pointer(doc), nil).(*Doc)
-}
+}*/
 
 func XmlParseWithOptions(content string, url string, encoding string, opts int) *Doc {
 	contentCharPtr := C.CString(content)
@@ -38,7 +39,6 @@ func XmlParseWithOptions(content string, url string, encoding string, opts int) 
 	}
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
-
 
 // Returns the first element in the input string.
 // Use Next() to access siblings
@@ -77,25 +77,25 @@ func HtmlParseFile(url string, encoding string, opts int) *Doc {
 	return NewDoc(unsafe.Pointer(xmlDocPtr))
 }
 
-func HtmlParseString(content string) *Doc {
-	doc := HtmlParseStringWithOptions(content, "", "", DefaultHtmlParseOptions())
+func HtmlParseString(content string, encoding string) *Doc {
+	doc := HtmlParseStringWithOptions(content, "", encoding, DefaultHtmlParseOptions())
 	if doc == nil {
-		return HtmlParseString("<html />")
+		return HtmlParseString("<html />", "")
 	}
 	return doc
 }
 
-func XmlParseString(content string) *Doc {
-	return XmlParseWithOptions(content, "", "", DefaultXmlParseOptions())
+func XmlParseString(content string, encoding string) *Doc {
+	return XmlParseWithOptions(content, "", encoding, DefaultXmlParseOptions())
 }
 
-func XmlParseFragment(content string) *Doc {
-	return XmlParseFragmentWithOptions(content, "", "", DefaultXmlParseOptions())
+func XmlParseFragment(content string, encoding string) *Doc {
+	return XmlParseFragmentWithOptions(content, "", encoding, DefaultXmlParseOptions())
 }
 
-func HtmlParseFragment(content string) *Doc {
-	doc := XmlParseString("<root></root>")
-	tmpDoc := HtmlParseStringWithOptions("<html><body>"+content, "", "", DefaultHtmlParseOptions())
+func HtmlParseFragment(content string, encoding string) *Doc {
+	doc := XmlParseString("<root></root>", "")
+	tmpDoc := HtmlParseStringWithOptions("<html><body>"+content, "", encoding, DefaultHtmlParseOptions())
 	defer tmpDoc.Free()
 
 	tmpNode := tmpDoc.RootElement().First()
@@ -113,5 +113,3 @@ func HtmlParseFragment(content string) *Doc {
 	}
 	return doc
 }
-
-
