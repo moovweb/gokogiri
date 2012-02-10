@@ -15,7 +15,7 @@ func TestEncodingRead(t *testing.T) {
 	if err != nil {
 		t.Errorf("Err: %v", err.String())
 	}
-	doc := tree.HtmlParseStringWithOptions(string(docContent), "", "utf8", tree.DefaultHtmlParseOptions())
+	doc := tree.HtmlParseString(string(docContent), "utf8")
 	root := doc.RootElement()
 	head := root.FirstElement()
 	body := head.Next()
@@ -37,13 +37,12 @@ func TestEncodingRead(t *testing.T) {
 	}
 }
 
-
 func TestEncodingSetContent(t *testing.T) {
 	docContent, err := ioutil.ReadFile("htmldata/google-cn.html")
 	if err != nil {
 		t.Errorf("Err: %v", err.String())
 	}
-	doc := tree.HtmlParseStringWithOptions(string(docContent), "", "utf8", tree.DefaultHtmlParseOptions())
+	doc := tree.HtmlParseString(string(docContent), "utf8")
 	root := doc.RootElement()
 	head := root.FirstElement()
 	body := head.Next()

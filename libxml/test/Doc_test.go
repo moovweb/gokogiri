@@ -36,7 +36,7 @@ func TestNewElement(t *testing.T) {
 func TestDocParseHtmlFragment(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
 	root := doc.RootElement()
-	fragmentNodes := doc.ParseHtmlFragment("<div><meta style=\"cool\"></div><h1/>")
+	fragmentNodes := doc.ParseHtmlFragment("<div><meta style=\"cool\"></div><h1/>", "")
 	for _, node := range(fragmentNodes) {
 		root.AppendChildNode(node)
 	}
@@ -53,7 +53,7 @@ func TestDocParseHtmlFragment(t *testing.T) {
 
 func TestDocParseHtmlFragmentWithComment(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
-	fragmentNodes := doc.ParseHtmlFragment("<!-- comment -->")
+	fragmentNodes := doc.ParseHtmlFragment("<!-- comment -->", "")
 	Equal(t, len(fragmentNodes), 0)
 	doc.Free()
 
@@ -67,7 +67,7 @@ func TestDocParseHtmlFragmentWithComment(t *testing.T) {
 func TestInjectAtBottom(t *testing.T) {
 	fragment := "<span class='icons-orange-link-arrow'></span>"	
 	doc := libxml.XmlParseString("<root></root>")
-	nodeSet := doc.ParseHtmlFragment(fragment)
+	nodeSet := doc.ParseHtmlFragment(fragment, "")
 	root := doc.RootElement()
 	for _, node := range(nodeSet) {
 		root.AppendChildNode(node)	
@@ -90,7 +90,7 @@ func TestWrapThenInject(t *testing.T) {
 	}
 	wrapNode := textNode.Wrap("span")
 
-	nodeSet := doc.ParseHtmlFragment(fragment)
+	nodeSet := doc.ParseHtmlFragment(fragment, "")
 	for _, node := range(nodeSet) {
 		wrapNode.AppendChildNode(node)	
 	}

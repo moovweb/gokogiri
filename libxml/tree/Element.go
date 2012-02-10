@@ -82,7 +82,7 @@ func (node *Element) SetContent(content string) {
 
 func (node *Element) AppendContent(content string) {
 	if node.IsValid() {
-		newDoc := XmlParseFragment(content)
+		newDoc := XmlParseFragment(content, "")
 
 		defer newDoc.Free()
 		child := newDoc.RootElement().First()
@@ -98,7 +98,7 @@ func (node *Element) AppendContent(content string) {
 
 func (node *Element) PrependContent(content string) {
 	if node.IsValid() {
-		newDoc := XmlParseFragment(content)
+		newDoc := XmlParseFragment(content, "")
 
 		defer newDoc.Free()
 		child := newDoc.RootElement().Last()
@@ -112,7 +112,7 @@ func (node *Element) PrependContent(content string) {
 
 func (node *Element) AddContentAfter(content string) {
 	if node.IsValid() {
-	    newDoc := XmlParseFragment(content)
+	    newDoc := XmlParseFragment(content, "")
 	    defer newDoc.Free()
 		child := newDoc.Parent().Last()
 		for child != nil {
@@ -124,7 +124,7 @@ func (node *Element) AddContentAfter(content string) {
 }
 func (node *Element) AddContentBefore(content string) {
 	if node.IsValid() {
-	    newDoc := XmlParseFragment(content)
+	    newDoc := XmlParseFragment(content, "")
 	    defer newDoc.Free()
 
 		child := newDoc.Parent().First()
@@ -145,7 +145,7 @@ func (node *Element) SetHtmlContent(content string) {
 
 func (node *Element) AppendHtmlContent(content string) {
 	if node.IsValid() {
-		newDoc := HtmlParseFragment(content)
+		newDoc := HtmlParseFragment(content, "")
 		defer newDoc.Free()
 
 		child := newDoc.RootElement().First()

@@ -72,7 +72,7 @@ func TestParallelAddingChildLast(t *testing.T) {
 		doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 		done <- false
 
-		childDoc := tree.Parse("<child/>")
+		childDoc := tree.XmlParseString("<child/>", "")
 		child := childDoc.First()
 		doc.RootElement().FirstElement().AppendChildNode(child)
 		if !strings.Contains(doc.String(), "<brother/><child/>") {
@@ -98,7 +98,7 @@ func TestParallelAddingChildFirst(t *testing.T) {
 		doc := libxml.XmlParseString("<root>hi<parent><foo/><bar/></parent></root>")
 		done <- false
 
-		childDoc := tree.Parse("<child/>")
+		childDoc := tree.XmlParseString("<child/>", "")
 		child := childDoc.First()
 		doc.RootElement().FirstElement().PrependChildNode(child)
 		if !strings.Contains(doc.String(), "<child/><foo/>") {
@@ -121,7 +121,7 @@ func TestParallelAddingBefore(t *testing.T) {
 	testFunc := func(done chan bool) {
 		doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 		done <- false
-		childDoc := tree.Parse("<child/>")
+		childDoc := tree.XmlParseString("<child/>", "")
 		child := childDoc.First()
 		doc.RootElement().FirstElement().AddNodeBefore(child)
 		if !strings.Contains(doc.String(), "<child/><parent") {
@@ -145,7 +145,7 @@ func TestParallelAddingAfter(t *testing.T) {
 	testFunc := func(done chan bool) {
 		doc := libxml.XmlParseString("<root>hi<parent><brother/></parent></root>")
 		done <- false
-		childDoc := tree.Parse("<child/>")
+		childDoc := tree.XmlParseString("<child/>", "")
 		child := childDoc.First()
 		doc.RootElement().FirstElement().AddNodeAfter(child)
 		if !strings.Contains(doc.String(), "</parent><child/></root>") {
