@@ -18,6 +18,20 @@ func TestDocXmlNoInput(t *testing.T) {
 	}
 }
 
+func TestXmlDocWithComment(t *testing.T) {
+	doc := libxml.XmlParseString("<root>hi<!-- comments here --></root>")
+	root := doc.RootElement()
+	Equal(t, root.Content(), "hi<!-- comments here -->")
+	Equal(t, root.String(), "<root>hi<!-- comments here --></root>")
+	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+
 func TestNewElement(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
 	root := doc.RootElement()
@@ -54,7 +68,7 @@ func TestDocParseHtmlFragment(t *testing.T) {
 func TestDocParseHtmlFragmentWithComment(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
 	fragmentNodes := doc.ParseHtmlFragment("<!-- comment -->", "")
-	Equal(t, len(fragmentNodes), 0)
+	Equal(t, len(fragmentNodes), 1)
 	doc.Free()
 
 	help.XmlCleanUpParser()
@@ -103,4 +117,3 @@ func TestWrapThenInject(t *testing.T) {
 	}
 
 }
-

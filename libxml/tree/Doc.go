@@ -178,12 +178,13 @@ func (doc *Doc) NewCData(content string) *CData {
 }
 
 func (doc *Doc) ParseHtmlFragment(fragment string, encoding string) []Node {
-	tmpDoc := HtmlParseStringWithOptions(fragment, "", encoding, DefaultHtmlParseOptions())
+	tmpDoc := HtmlParseStringWithOptions("<html><body>"+fragment, "", encoding, DefaultHtmlParseOptions())
 	defer tmpDoc.Free()
 	root := tmpDoc.RootElement() 
 	if root == nil {
 		return nil
 	}
+
 	tmpNode := root.First()
 	if tmpNode == nil {
 		return nil

@@ -26,6 +26,29 @@ func TestHtmlSimpleParse(t *testing.T) {
 	}
 }
 
+func TestHtmlSimpleParseWithComments(t *testing.T) {
+	doc := libxml.HtmlParseString("<html><head /><!-- comments --><body /></html>")
+	if doc.Size() != 1 {
+		t.Error("Incorrect size")
+	}
+	// Doctype gets returned as the first child!
+	htmlTag := doc.First().Next()
+	if htmlTag.Size() != 2 {
+		print(htmlTag.Name())
+		t.Error("Should have been two tags are inside of <html>")
+	}
+	if htmlTag.String() != "<html><head/><!-- comments --><body/></html>" {
+		t.Error("Should have had comment")
+	}
+
+	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+
 func TestHtmlCDataTag(t *testing.T) {
 	doc := libxml.HtmlParseString(LoadFile("docs/script.html"))
 	if doc.Size() != 1 {
