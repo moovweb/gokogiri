@@ -4,6 +4,8 @@ package tree
 */
 import "C"
 import "unsafe"
+//import "runtime"
+//import "fmt"
 
 type Node interface {
 	ptr() *C.xmlNode
@@ -59,6 +61,24 @@ type XmlNode struct {
 	DocRef  *Doc
 }
 
+func GetNodeType(node Node) (nodeType int) {
+	switch v := node.(type) {
+	case *Doc:
+	    nodeType = XML_DOCUMENT_NODE
+	case *Element:
+	    nodeType = XML_ELEMENT_NODE
+	case *Attribute:
+	    nodeType = XML_ATTRIBUTE_NODE
+	case *CData:
+		nodeType = XML_CDATA_SECTION_NODE
+	case *Text:
+		nodeType = XML_TEXT_NODE
+	default:
+	    nodeType = NIL_NODE
+	}
+	return
+}
+
 func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 	cPtr := (*C.xmlNode)(ptr)
 	if cPtr == nil {
@@ -70,7 +90,7 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 	}
 	node, _ = doc.LookupNodeInMap(cPtr)
 	nodeType := xmlNodeType(cPtr)
-	if node == nil {
+	if node == nil || GetNodeType(node) != nodeType {
 		xmlNode := &XmlNode{NodePtr: cPtr, DocRef: doc}
 		if nodeType == C.XML_DOCUMENT_NODE || nodeType == C.XML_HTML_DOCUMENT_NODE {
 			doc.XmlNode = xmlNode
@@ -91,9 +111,23 @@ func NewNode(ptr unsafe.Pointer, doc *Doc) (node Node) {
 			node = xmlNode
 		}
 		doc.SaveNodeInMap(cPtr, node, xmlNode)
-		//println("create node. pointer:", ptr, " type:", nodeType, "str: ", node.String())
+		/*
+		println("create node. pointer:", ptr, " type:", nodeType, node)
+		if nodeType == 3  {
+			fmt.Printf("node: %q\n", node.String())
+			//if len(node.String()) == 0 {
+				pc, file, line, ok := runtime.Caller(0)
+				msg := ""
+				for i := 1; ok == true; i++ {
+					msg += fmt.Sprintf("        from %s:%d:in `<%s>'\n", file, line, runtime.FuncForPC(pc).Name())
+					pc, file, line, ok = runtime.Caller(i)
+				}
+				println("\n\n", msg, "\n")
+			//}
+		}
 	} else {
-		//println("cached node. pointer:", ptr, " type:", nodeType, "str: ", node.String())
+		println("cached node. pointer:", ptr, " type:", nodeType, node)
+		*/
 	}
 	return
 }
