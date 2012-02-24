@@ -14,6 +14,7 @@ void clearXmlNode(xmlNode *node, void *doc) {
 	    attr = attr->next;
 	}
 	invalidateNode(node, doc);
+	//printf("clear node 0x%x\n", (unsigned int)node);
 	if (node->parent != NULL) {
 	    xmlUnlinkNode(node);
 	}
