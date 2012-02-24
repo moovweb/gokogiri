@@ -55,12 +55,16 @@ func CreateHtmlDoc() *Doc {
 	return NewNode(unsafe.Pointer(cDoc), nil).(*Doc)
 }
 
-func (doc *Doc) NewElement(name string) *Element {
+func (doc *Doc) NewElement(name string) (*Element, os.Error) {
 	nameXmlCharPtr := String2XmlChar(name)
 	defer XmlFreeChars(unsafe.Pointer(nameXmlCharPtr))
 	xmlNode := C.xmlNewNode(nil, nameXmlCharPtr)
 	node := NewNode(unsafe.Pointer(xmlNode), doc)
-	return node.(*Element)
+	element, ok := node.(*Element)
+	if !ok {
+		return nil, os.NewError("Node creation failed")
+	}
+	return element, nil
 }
 
 func (doc *Doc) InitDocNodeMap() {

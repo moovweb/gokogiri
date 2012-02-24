@@ -104,6 +104,16 @@ func TestSetHtmlContent(t *testing.T) {
     }
 }
 
+func TestAppendContentNoscriptBug(t *testing.T) {
+	doc := libxml.HtmlParseString("<html><head><noscript><meta inner /></noscript><meta outer /></head><body><h1>Boo</h1></body></html>");
+	bodyTag := doc.RootElement().LastElement()
+	
+	println(bodyTag.Content())
+	bodyTag.SetContent(bodyTag.Content())
+	println("@@@@")
+	println(bodyTag.Content())
+}
+
 func TestAppendHtmlContent(t *testing.T) {
   doc := libxml.XmlParseString("<root><parent><child /></parent></root>")
   root := doc.RootElement()
