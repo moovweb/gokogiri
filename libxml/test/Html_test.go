@@ -34,7 +34,6 @@ func TestHtmlSimpleParseWithComments(t *testing.T) {
 	// Doctype gets returned as the first child!
 	htmlTag := doc.First().Next()
 	if htmlTag.Size() != 2 {
-		print(htmlTag.Name())
 		t.Error("Should have been two tags are inside of <html>")
 	}
 	if htmlTag.String() != "<html><head/><!-- comments --><body/></html>" {

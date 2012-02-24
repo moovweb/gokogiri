@@ -164,3 +164,27 @@ func TestNilSearch(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
+
+func TestSearchComments(t *testing.T) {
+	testFunc := func(done chan bool) {
+		done <- false
+		doc := libxml.HtmlParseString("<html><head><!-- COMMENT --><title>Mom</title></html>")
+		xp := xpath.NewXPath(doc)
+		comments := xp.Search(doc, "//comment()")
+
+		// Doctype gets returned as the first child!
+		if comments.Size() != 1 {
+			t.Errorf("# of comments!: %d", comments.Size())
+		}
+
+		xp.Free()
+		doc.Free()
+		done <- true
+	}
+	runParallel(testFunc, numConcurrentRuns)
+
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
