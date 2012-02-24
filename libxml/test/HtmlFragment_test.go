@@ -9,7 +9,10 @@ import (
 func TestHtmlFragment(t *testing.T) {
 	doc := libxml.XmlParseString("<meta name=\"format-detection\" content=\"telephone=no\">")
 	root := doc.RootElement()
-	child := doc.NewElement("child")
+	child, err := doc.NewElement("child")
+	if err != nil {
+		t.Fail()
+	}
 	root.AppendChildNode(child)
 	Equal(t, root.String(), "<meta name=\"format-detection\" content=\"telephone=no\"><child/></meta>")
 	doc.Free()
