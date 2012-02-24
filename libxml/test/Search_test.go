@@ -188,3 +188,28 @@ func TestSearchComments(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
+
+func TestSelectParent(t *testing.T) {
+	testFunc := func(done chan bool) {
+		done <- false
+
+		doc := libxml.XmlParseString("<div id='a'><div id='b'>Im a b</div></div>")
+		xp := xpath.NewXPath(doc)
+		child1 := xp.Search(doc, ".//*[@id='b']").NodeAt(0)
+		child2 := xp.Search(child1, "..").NodeAt(0)
+		child3 := xp.Search(child2, "/").NodeAt(0)
+		if (child3 != doc) {
+			t.Errorf("should get doc\n")
+		}
+
+		xp.Free()
+		doc.Free()
+		done <- true
+	}
+	runParallel(testFunc, numConcurrentRuns)
+
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
