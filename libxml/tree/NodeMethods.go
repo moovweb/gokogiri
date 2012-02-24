@@ -309,7 +309,8 @@ func (node *XmlNode) Wrap(elementName string) (wrapperNode *Element) {
 		return nil
 	}
 	// Build the wrapper
-	wrapperNode = node.Doc().NewElement(elementName)
+	wrapperNode, _ = node.Doc().NewElement(elementName)
+
 	// Add it after me
 	node.AddNodeBefore(wrapperNode)
 	// Add me as its child
