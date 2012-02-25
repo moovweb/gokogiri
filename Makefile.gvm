@@ -5,4 +5,5 @@ clean:
 	./build clean
 install: compile
 	gb -i
-
+test:
+	gb -t
