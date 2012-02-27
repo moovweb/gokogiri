@@ -112,6 +112,14 @@ func (doc *Doc) IsValid() bool {
 	return (doc.DocPtr != nil)
 }
 
+func (doc *Doc) GetEncoding() string {
+	if ! doc.IsValid() {
+		return ""
+	}
+	encodingXmlCharPtr := doc.DocPtr.encoding
+	return C.GoString((*C.char)(unsafe.Pointer(encodingXmlCharPtr)))
+}
+
 func (doc *Doc) MetaEncoding() string {
 	if ! doc.IsValid() {
 		return ""
