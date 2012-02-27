@@ -2,3 +2,11 @@ Gokogiri
 by Zhigang Chen and Hampton Catlin
 
 A pretty straightforward and simple library for using LibXML in native Go.
+
+This is a major rewrite from v0 in the following places:
+
+    - Separation of XML and HTML
+    - Put more burden of memory allocation/deallocation on Go
+    - Fragement parsing -- no more deep-copy
+    - Serialization
+    - Some API adjustment
