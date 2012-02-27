@@ -1,41 +1,4 @@
 Gokogiri 
-by Hampton Catlin and Zhigang Chen
+by Zhigang Chen and Hampton Catlin
 
-A pretty straightforward and simple library for using
-LibXML in native Go.
-
-First, install Go and libxml on your system. You can google that
-one yourself. You probably have libxml2 and since you are looking
-for a Go lib, assumedly you have that too.
-
-Then, we are using the build tool called "gb". You can get install
-instructions from here: http://code.google.com/p/go-gb/
-
-So, to build the project, just go to the root directory and type
-
-    $> gb
-
-Then, to run the tests:
-
-    $> gb -t
-    
-And finally, to install it...
-
-    $> sudo -E gb -i
-    
-Note: The -E flag is needed if your GO_PATH is not exported automatically to the root user. So, setting -E makes sure it is!
-
-To check memory leaks by libxml2, please add "--with-mem-debug" to the configure options when compiling libxml2. If you are on Mac and use brew, you can do 
-
-    brew edit libxml2
-
-Then add " --with-mem-debug " into "args", after "--prefix=#{prefix}", and do
-
-    brew install libxml2; brew link libxml2
-
-On linux, you just need to rebuild libxml2 with ( --with-mem-debug).Just do
-
-    ./configure --with-mem-debug; make install 
-
-You should run the tests again. If there are memory leaks, you should see errors if there are memory leaks by libxml2.
-
+A pretty straightforward and simple library for using LibXML in native Go.

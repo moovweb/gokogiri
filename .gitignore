@@ -4,3 +4,4 @@ _*
 *.6
 *.o
 libxml/test/ctest/test
+.DS_Store
