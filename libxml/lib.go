@@ -1,6 +1,6 @@
 package libxml
 
-import "libxml/tree"
+import "gokogiri/libxml/tree"
 
 func HtmlParseString(input string) *tree.Doc {
 	return tree.HtmlParseString(input, "")

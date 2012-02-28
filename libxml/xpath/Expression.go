@@ -1,11 +1,12 @@
 package xpath
 /* 
+#cgo pkg-config: libxml-2.0
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
 */
 import("C")
 import "unsafe"
-import . "libxml/tree"
+import . "gokogiri/libxml/tree"
 
 type Expression struct {
 	ptr C.xmlXPathCompExprPtr
