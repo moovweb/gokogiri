@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ERR_UNDEFINED_ADD_CHILD_PARAM 				= errors.New("unexpected parameter type in AddChild")
-	ERR_UNDEFINED_SET_CONTENT_PARAM 			= errors.New("unexpected parameter type in SetContent")
+	ERR_UNDEFINED_COERCE_PARAM 				    = errors.New("unexpected parameter type in coerce")
+	ERR_UNDEFINED_SET_CONTENT_PARAM             = errors.New("unexpected parameter type in SetContent")
 	ERR_CANNOT_MAKE_DUCMENT_AS_CHILD 			= errors.New("cannot add a document node as a child")
 	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD 	= errors.New("cannot copy a text node when adding it")
 )
@@ -122,81 +122,73 @@ func NewNode(nodePtr *C.xmlNode, document *Document) (node Node) {
 	return
 }
 
-//
-func (xmlNode *XmlNode) AddChild(tag interface{}) (err error) {
-	switch t := tag.(type) {
+func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err error) {
+	switch t := data.(type) {
 	default:
-		err = ERR_UNDEFINED_ADD_CHILD_PARAM
+		err = ERR_UNDEFINED_COERCE_PARAM
+	case []Node:
+		nodes = t
+	case *DocumentFragment:
+		nodes = t.Children
+	case string:
+		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.Encoding, DefaultParseOption)
+		if err == nil {
+			nodes = f.Children
+		}
+	case []byte:
+		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.Encoding, DefaultParseOption)
+		if err == nil {
+			nodes = f.Children
+		}
+	}
+	return
+}
+
+//
+func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
+	switch t := data.(type) {
+	default:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range(nodes) {
+				if err = xmlNode.addChild(node); err != nil {
+					break
+				}
+			}
+		}
 	case *XmlNode:
 		err = xmlNode.addChild(t)
-	case *DocumentFragment:
-		for _, child := range(t.Children) {
-			if err = xmlNode.addChild(child); err != nil {
-				break
-			}
-		}
-	case string:
-		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.Encoding, DefaultParseOption)
-		if err == nil {
-			xmlNode.AddChild(f)
-		}
-	case []byte:
-		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.Encoding, DefaultParseOption)
-		if err == nil {
-			xmlNode.AddChild(f)
-		}
 	}
 	return
 }
 
-func (xmlNode *XmlNode) AddPreviousSibling(tag interface{}) (err error) {
-	switch t := tag.(type) {
+func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
+	switch t := data.(type) {
 	default:
-		err = ERR_UNDEFINED_ADD_CHILD_PARAM
-	case *XmlNode:
-		err = xmlNode.addPreviousSibling(t)
-	case *DocumentFragment:
-		for _, child := range(t.Children) {
-			if err = xmlNode.addPreviousSibling(child); err != nil {
-				break
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range(nodes) {
+				if err = xmlNode.addPreviousSibling(node); err != nil {
+					break
+				}
 			}
 		}
-	case string:
-		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.Encoding, DefaultParseOption)
-		if err == nil {
-			xmlNode.AddPreviousSibling(f)
-		}
-	case []byte:
-		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.Encoding, DefaultParseOption)
-		if err == nil {
-			xmlNode.AddPreviousSibling(f)
-		}
+	case *XmlNode:
+		err = xmlNode.addChild(t)
 	}
 	return
 }
 
-func (xmlNode *XmlNode) AddNextSibling(tag interface{}) (err error) {
-	switch t := tag.(type) {
+func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
+	switch t := data.(type) {
 	default:
-		err = ERR_UNDEFINED_ADD_CHILD_PARAM
-	case *XmlNode:
-		err = xmlNode.addNextSibling(t)
-	case *DocumentFragment:
-		for _, child := range(t.Children) {
-			if err = xmlNode.addNextSibling(child); err != nil {
-				break
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range(nodes) {
+				if err = xmlNode.addNextSibling(node); err != nil {
+					break
+				}
 			}
 		}
-	case string:
-		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.Encoding, DefaultParseOption)
-		if err == nil {
-			xmlNode.AddNextSibling(f)
-		}
-	case []byte:
-		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.Encoding, DefaultParseOption)
-		if err == nil {
-			xmlNode.AddNextSibling(f)
-		}
+	case *XmlNode:
+		err = xmlNode.addChild(t)
 	}
 	return
 }
@@ -248,7 +240,7 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	case []byte:
 		if len(data) > 0 {
 			contentPtr := unsafe.Pointer(&data[0])
-			C.xmlSetContent(unsafe.Pointer(xmlNode), contentPtr)
+			C.xmlSetContent(unsafe.Pointer(xmlNode.NodePtr), contentPtr)
 		}
 	}
 	return
