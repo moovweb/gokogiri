@@ -58,3 +58,23 @@ func TestAddNextSibling(t *testing.T) {
 	doc.Free()
 	CheckXmlMemoryLeaks(t)
 }
+
+func TestSetContent(t *testing.T) {
+	doc, err := Parse([]byte("<foo><bar/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	expected :=
+`<?xml version="1.0" encoding="utf-8"?>
+<foo/>
+<bar/>
+`
+	if err != nil {
+		t.Error("Parsing has error:", err)
+	}
+//	doc.RootElement().SetContent("<bar></bar>")
+
+	if doc.String() != expected {
+		println(doc.String())
+		t.Error("the output of the xml doc does not match")
+	}
+	doc.Free()
+	CheckXmlMemoryLeaks(t)
+}

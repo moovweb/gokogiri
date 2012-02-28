@@ -3,7 +3,6 @@ package xml
 /*
 #cgo pkg-config: libxml-2.0
 
-#include <string.h>
 #include "chelper.h"
 */
 import "C"
@@ -47,25 +46,19 @@ type Document struct {
 	*XmlNode
 	
 	Encoding []byte
-	
-	outputBuffer []byte
-	outputOffset int
 }
 
-//run out of memory
-var ErrTooLarge = errors.New("Output buffer too large")
-
 //default encoding in byte slice
-var defaultEncodingBytes = []byte(DefaultEncoding)
-
-//pre-allocate a buffer for serializing the document
-const initialOutputBufferSize = 100*1024 //100K
+var DefaultEncodingBytes = []byte(DefaultEncoding)
 
 //create a document
-func NewDocument(docPtr *C.xmlDoc, encoding []byte) (doc *Document) {
-	p := unsafe.Pointer(docPtr)
+func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *Document) {
 	xmlNode := &XmlNode{NodePtr: (*C.xmlNode)(p)}
-	doc = &Document{DocPtr: docPtr, XmlNode: xmlNode, Encoding: encoding, outputBuffer: make([]byte, initialOutputBufferSize)}
+	if len(buffer) == 0 {
+		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
+	}
+	docPtr := (*C.xmlDoc)(p)
+	doc = &Document{DocPtr: docPtr, XmlNode: xmlNode, Encoding: encoding}
 	xmlNode.Document = doc
 	return
 }
@@ -82,14 +75,14 @@ func Parse(content, url, encoding []byte, options int) (doc *Document, err error
 		if len(url) > 0      { urlPtr       = unsafe.Pointer(&url[0]) }
 		if len(encoding) > 0 { encodingPtr  = unsafe.Pointer(&encoding[0]) }
 		
-		docPtr = C.native_parse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
+		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 	}
 	if docPtr == nil {
 		//why does newEmptyXmlDoc NOT call xmlInitParser like other parse functions?
 		C.xmlInitParser();
 		docPtr = C.newEmptyXmlDoc()
 	}
-	doc = NewDocument(docPtr, encoding)
+	doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
 	return
 }
 
@@ -104,7 +97,7 @@ func (document *Document) ToXml() string {
 	documentPtr := unsafe.Pointer(document)
 	docPtr      := unsafe.Pointer(document.DocPtr)
 	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
-	C.native_save_document(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_XML)
+	C.saveDocument(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_XML)
 	return string(document.outputBuffer[:document.outputOffset])
 }
 
@@ -120,7 +113,7 @@ func (document *Document) ToHtml() string {
 	documentPtr := unsafe.Pointer(document)
 	docPtr      := unsafe.Pointer(document.DocPtr)
 	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
-	C.native_save_document(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_HTML)
+	C.saveDocument(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_HTML)
 	return string(document.outputBuffer[:document.outputOffset])
 }
 
@@ -136,35 +129,4 @@ func (document *Document) String() string {
 
 func (document *Document) Free() {
 	C.xmlFreeDoc(document.DocPtr)
-}
-
-//export documentWriteCallback
-func documentWriteCallback(obj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
-	document := (*Document)(obj)
-	dataLen := int(data_len)
-
-	if document.outputOffset + dataLen > cap(document.outputBuffer) {
-		document.outputBuffer = grow(document.outputBuffer, dataLen)
-	}
-	if dataLen > 0 {
-		destBufPtr := unsafe.Pointer(&(document.outputBuffer[document.outputOffset]))
-		C.memcpy(destBufPtr, data, C.size_t(data_len))
-		document.outputOffset += dataLen
-	}
-}
-
-func grow(buffer []byte, n int) (newBuffer []byte) {
-	newBuffer = makeSlice(2*cap(buffer) + n)
-    copy(newBuffer, buffer)
-	return
-}
-
-func makeSlice(n int) []byte {
-    // If the make fails, give a known error.
-    defer func() {
-        if recover() != nil {
-            panic(ErrTooLarge)
-        }
-    }()
-    return make([]byte, n)
 }

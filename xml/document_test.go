@@ -5,7 +5,7 @@ import (
 )
 
 func TestParseDocument(t *testing.T) {
-	doc, err := Parse([]byte("<foo></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	doc, err := Parse([]byte("<foo></foo>"), nil, DefaultEncodingBytes, DefaultParseOption)
 	expected := 
 `<?xml version="1.0" encoding="utf-8"?>
 <foo/>
@@ -22,7 +22,7 @@ func TestParseDocument(t *testing.T) {
 }
 
 func TestEmptyDocument(t *testing.T) {
-	doc, err := Parse(nil, nil, []byte("utf-8"), DefaultParseOption)
+	doc, err := Parse(nil, nil, DefaultEncodingBytes, DefaultParseOption)
 	expected := 
 `<?xml version="1.0" encoding="utf-8"?>
 `

@@ -1,16 +1,19 @@
 package xml
 
 //#include "chelper.h"
+//#include <string.h>
 import "C"
 
 import (
 	"errors"
+	"unsafe"
 )
 
 var (
-	ERR_UNDEFINED_ADD_CHILD_PARAM = errors.New("unexpected parameter type in AddChild")
-	ERR_CANNOT_MAKE_DUCMENT_AS_CHILD = errors.New("cannot add a document node as a child")
-	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD = errors.New("cannot copy a text node when adding it")
+	ERR_UNDEFINED_ADD_CHILD_PARAM 				= errors.New("unexpected parameter type in AddChild")
+	ERR_UNDEFINED_SET_CONTENT_PARAM 			= errors.New("unexpected parameter type in SetContent")
+	ERR_CANNOT_MAKE_DUCMENT_AS_CHILD 			= errors.New("cannot add a document node as a child")
+	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD 	= errors.New("cannot copy a text node when adding it")
 )
 
 //xmlNode types
@@ -63,7 +66,7 @@ type Node interface {
 	//Swap(interface{}) error
 	//
 	////
-	//SetContent([]byte)
+	SetContent(interface{}) error
 	//SetParent(Node)
 	//IsComment() bool
 	//IsCData() bool
@@ -82,9 +85,18 @@ type Node interface {
 	String() string
 }
 
+//run out of memory
+var ErrTooLarge = errors.New("Output buffer too large")
+
+//pre-allocate a buffer for serializing the document
+const initialOutputBufferSize = 100*1024 //100K
+
 type XmlNode struct {
 	NodePtr *C.xmlNode
 	*Document
+	
+	outputBuffer []byte
+	outputOffset int
 }
 
 func NewNode(nodePtr *C.xmlNode, document *Document) (node Node) {
@@ -224,18 +236,27 @@ func (node *XmlNode) GetFirstChild() Node {
 }
 
 func (node *XmlNode) GetLastChild() Node {
-	return NewNode((*C.xmlNode)(node.NodePtr.children), node.Document)
+	return NewNode((*C.xmlNode)(node.NodePtr.last), node.Document)
 }
+
+func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
+	switch data := content.(type) {
+	default:
+		err = ERR_UNDEFINED_SET_CONTENT_PARAM
+	case string:
+		err = xmlNode.SetContent([]byte(data))
+	case []byte:
+		if len(data) > 0 {
+			contentPtr := unsafe.Pointer(&data[0])
+			C.xmlSetContent(unsafe.Pointer(xmlNode), contentPtr)
+		}
+	}
+	return
+}
+
 /*
 //func (xmlNode *XmlNode) Attributes() map[string]*AttributeNode
 
-func (xmlNode *XmlNode) AddPreviousSibling(interface{}) error {
-	
-}
-
-func (xmlNode *XmlNode) AddNextSibling(interface{}) error {
-	
-}
 func (xmlNode *XmlNode) InsertBefore(interface{}) error {
 	
 }
@@ -249,9 +270,6 @@ func (xmlNode *XmlNode) Replace(interface{}) error {
 	
 }
 func (xmlNode *XmlNode) Swap(interface{}) error {
-	
-}
-func (xmlNode *XmlNode) SetContent([]byte) {
 	
 }
 func (xmlNode *XmlNode) SetParent(Node) {
@@ -358,4 +376,36 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
 		node.ResetNodePointer()
 	}
 	return
+}
+
+
+//export xmlNodeWriteCallback
+func xmlNodeWriteCallback(obj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
+	node := (*XmlNode)(obj)
+	dataLen := int(data_len)
+
+	if node.outputOffset + dataLen > cap(node.outputBuffer) {
+		node.outputBuffer = grow(node.outputBuffer, dataLen)
+	}
+	if dataLen > 0 {
+		destBufPtr := unsafe.Pointer(&(node.outputBuffer[node.outputOffset]))
+		C.memcpy(destBufPtr, data, C.size_t(data_len))
+		node.outputOffset += dataLen
+	}
+}
+
+func grow(buffer []byte, n int) (newBuffer []byte) {
+	newBuffer = makeSlice(2*cap(buffer) + n)
+    copy(newBuffer, buffer)
+	return
+}
+
+func makeSlice(n int) []byte {
+    // If the make fails, give a known error.
+    defer func() {
+        if recover() != nil {
+            panic(ErrTooLarge)
+        }
+    }()
+    return make([]byte, n)
 }

@@ -33,7 +33,7 @@ func ParseFragment(document *Document, content, url []byte, options int) (fragme
 	contentLen   := len(content)
 	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
 	
-	rootElementPtr := C.native_parse_fragment(document.DocPtr, contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+	rootElementPtr := C.xmlParseFragment(document.DocPtr, contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 	
 	//
 	if rootElementPtr == nil { err = ErrFailParseFragment; return }

@@ -20,20 +20,6 @@ void xmlFreeChars(char *buffer) {
 	}
 }
 
-void dumpXmlError(xmlErrorPtr error, void *error_buffer, int error_buffer_len) {
-	char *c_error_buffer = (char*)error_buffer;
-	
-	if(error != NULL && error_buffer != NULL && error->level >= XML_ERR_ERROR) {
-		if (error->message != NULL) {
-			strncpy(c_error_buffer, error->message, error_buffer_len-1);
-			c_error_buffer[error_buffer_len-1] = '\0';
-		}
-		else {
-			snprintf(c_error_buffer, error_buffer_len, "xml parsing error:%d", error->code);
-		}
-	}
-}
-
 char *xmlDocDumpToString(xmlDoc *doc, void *encoding, int format) {
 	xmlChar *buff;
 	int buffersize;
@@ -48,7 +34,7 @@ char *htmlDocDumpToString(htmlDocPtr doc, int format) {
 	return (char*)buff;
 }
 
-xmlDoc* native_parse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len) {
+xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len) {
 	const char *c_buffer       = (char*)buffer;
 	const char *c_url          = (char*)url;
 	const char *c_encoding     = (char*)encoding;
@@ -61,12 +47,21 @@ xmlDoc* native_parse(void *buffer, int buffer_len, void *url, void *encoding, in
 		xmlErrorPtr error;
 	    xmlFreeDoc(doc);
 	    error = xmlGetLastError();
-		dumpXmlError(error, error_buffer, error_buffer_len);
+		if(error != NULL && error_buffer != NULL && error->level >= XML_ERR_ERROR) {
+			char *c_error_buffer = (char*)error_buffer;
+			if (error->message != NULL) {
+				strncpy(c_error_buffer, error->message, error_buffer_len-1);
+				c_error_buffer[error_buffer_len-1] = '\0';
+			}
+			else {
+				snprintf(c_error_buffer, error_buffer_len, "xml parsing error:%d", error->code);
+			}
+		}
 	}
 	return doc;
 }
 
-xmlNode* native_parse_fragment(xmlDoc* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+xmlNode* xmlParseFragment(xmlDoc* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
 	xmlNodePtr root_element = NULL;
 	xmlParserErrors errCode;
 	
@@ -79,7 +74,24 @@ xmlNode* native_parse_fragment(xmlDoc* doc, void *buffer, int buffer_len, void *
 	return root_element;
 }
 
-void native_save_document(void *obj, void *node, void *encoding, int options) {
+void xmlSetContent(void *n, void *content) {
+	xmlNode *node = (xmlNode*)n;
+	xmlNode *child = node->children;
+	xmlNode *next = NULL;
+	char *encoded = xmlEncodeSpecialChars(node->doc, content);
+	//printf("encoded: %s\n", encoded);
+	if (encoded) {
+		while (child) {
+			next = child->next ;
+			xmlUnlinkNode(child) ;
+			child = next ;
+	  	}
+	  	xmlNodeSetContent(node, (xmlChar*)encoded);
+		xmlFree(encoded);
+	}
+}
+
+void saveDocument(void *obj, void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
 	
