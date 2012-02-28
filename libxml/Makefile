@@ -3,7 +3,7 @@
 
 include $(GOROOT)/src/Make.inc
 
-TARG=libxml
+TARG=gokogiri/libxml
 GOFILES=\
 	lib.go\
 

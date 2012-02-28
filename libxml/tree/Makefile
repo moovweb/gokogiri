@@ -7,7 +7,7 @@ XML_CONFIG=$(shell which xml2-config)
 CGO_LDFLAGS=$(shell $(XML_CONFIG) --libs)
 CGO_CFLAGS=$(shell $(XML_CONFIG) --cflags)
 
-TARG=libxml/tree
+TARG=gokogiri/libxml/tree
 GOFILES=\
 	Constants.go\
 
