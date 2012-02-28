@@ -79,11 +79,11 @@ void xmlSetContent(void *n, void *content) {
 	xmlNode *child = node->children;
 	xmlNode *next = NULL;
 	char *encoded = xmlEncodeSpecialChars(node->doc, content);
-	//printf("encoded: %s\n", encoded);
 	if (encoded) {
 		while (child) {
 			next = child->next ;
-			xmlUnlinkNode(child) ;
+			xmlUnlinkNode(child);
+			xmlFreeNode(child);
 			child = next ;
 	  	}
 	  	xmlNodeSetContent(node, (xmlChar*)encoded);
