@@ -1,10 +1,10 @@
 package test
 
 import (
-	"libxml"
+	"gokogiri/libxml"
 	"testing"
-	"libxml/tree"
-	"libxml/help"
+	"gokogiri/libxml/tree"
+	"gokogiri/libxml/help"
 	"strings"
 )
 /*

@@ -1,9 +1,9 @@
 package test
 
 import (
-	"libxml"
+	"gokogiri/libxml"
 	"testing"
-	"libxml/help"
+	"gokogiri/libxml/help"
 )
 
 func TestHtmlFragment(t *testing.T) {

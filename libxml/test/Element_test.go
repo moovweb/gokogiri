@@ -1,9 +1,9 @@
 package test
 
 import (
-	"libxml"
-	"libxml/help"
-	"libxml/tree"
+	"gokogiri/libxml"
+	"gokogiri/libxml/help"
+	"gokogiri/libxml/tree"
 	"testing"
 	"strings"
 	"io/ioutil"

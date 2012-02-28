@@ -1,11 +1,11 @@
 package test
 
 import (
-	"libxml"
-	"libxml/tree"
+	"gokogiri/libxml"
+	"gokogiri/libxml/tree"
 	"testing"
 	"strings"
-	"libxml/help"
+	"gokogiri/libxml/help"
 )
 
 func TestTextNodeContent(t *testing.T) {

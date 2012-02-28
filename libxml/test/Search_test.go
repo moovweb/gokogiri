@@ -1,9 +1,9 @@
 package test
 
 import (
-	"libxml"
-	"libxml/help"
-	"libxml/xpath"
+	"gokogiri/libxml"
+	"gokogiri/libxml/help"
+	"gokogiri/libxml/xpath"
 	"testing"
 )
 

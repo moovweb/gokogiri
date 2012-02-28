@@ -3,7 +3,7 @@ package test
 import "testing"
 import "io/ioutil"
 import "runtime"
-import "libxml/help"
+import "gokogiri/libxml/help"
 
 func AssertNil(t *testing.T, value interface{}, what string) {
 	if value != nil {
