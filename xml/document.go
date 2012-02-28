@@ -9,7 +9,6 @@ import "C"
 
 import (
 	"unsafe"
-	"errors"
 )
 
 //xml parse option
@@ -94,10 +93,10 @@ func (document *Document) RootElement() (element *ElementNode) {
 
 func (document *Document) ToXml() string {
 	document.outputOffset = 0
-	documentPtr := unsafe.Pointer(document)
-	docPtr      := unsafe.Pointer(document.DocPtr)
+	objPtr := unsafe.Pointer(document.XmlNode)
+	nodePtr      := unsafe.Pointer(document.DocPtr)
 	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
-	C.saveDocument(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_XML)
+	C.xmlSaveNode(objPtr, nodePtr, encodingPtr, XML_SAVE_AS_XML)
 	return string(document.outputBuffer[:document.outputOffset])
 }
 
@@ -110,10 +109,10 @@ func (document *Document) ToXml2() string {
 
 func (document *Document) ToHtml() string {
 	document.outputOffset = 0
-	documentPtr := unsafe.Pointer(document)
+	documentPtr := unsafe.Pointer(document.XmlNode)
 	docPtr      := unsafe.Pointer(document.DocPtr)
 	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
-	C.saveDocument(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_HTML)
+	C.xmlSaveNode(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_HTML)
 	return string(document.outputBuffer[:document.outputOffset])
 }
 

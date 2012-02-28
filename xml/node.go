@@ -299,7 +299,15 @@ func (xmlNode *XmlNode) IsFragment() bool {
 */
 
 func (xmlNode *XmlNode) ToXml() []byte {
-	return nil
+	xmlNode.outputOffset = 0
+	if len(xmlNode.outputBuffer) == 0 {
+		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
+	}
+	objPtr := unsafe.Pointer(xmlNode)
+	nodePtr      := unsafe.Pointer(xmlNode.NodePtr)
+	encodingPtr := unsafe.Pointer(&(xmlNode.Document.Encoding[0]))
+	C.xmlSaveNode(objPtr, nodePtr, encodingPtr, XML_SAVE_AS_XML)
+	return xmlNode.outputBuffer[:xmlNode.outputOffset]
 }
 
 func (xmlNode *XmlNode) ToHtml() []byte {

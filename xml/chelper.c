@@ -2,8 +2,8 @@
 #include "chelper.h"
 
 //internal callback functions
-int document_write_callback(void *document, char *buffer, int len) {
-	documentWriteCallback(document, buffer, len);
+int xml_write_callback(void *document, char *buffer, int len) {
+	xmlNodeWriteCallback(document, buffer, len);
   	return len;
 }
 
@@ -91,12 +91,12 @@ void xmlSetContent(void *n, void *content) {
 	}
 }
 
-void saveDocument(void *obj, void *node, void *encoding, int options) {
+void xmlSaveNode(void *obj, void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
 	
 	savectx = xmlSaveToIO(
-	      (xmlOutputWriteCallback)document_write_callback,
+	      (xmlOutputWriteCallback)xml_write_callback,
 	      (xmlOutputCloseCallback)close_callback,
 	      (void *)obj,
 	      encoding,
