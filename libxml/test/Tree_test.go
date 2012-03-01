@@ -101,7 +101,7 @@ func TestParallelAddingChildFirstFromBug(t *testing.T) {
 		childDoc := tree.XmlParseString("<a/>", "")
 		child := childDoc.First()
 		doc.RootElement().PrependChildNode(child)
-		if !strings.Contains(doc.String(), "<a />hi") {
+		if !strings.Contains(doc.String(), "<a/>hi") {
 			t.Error("Should have new first child: %q\n", doc.String())
 		}
 		childDoc.Free()
