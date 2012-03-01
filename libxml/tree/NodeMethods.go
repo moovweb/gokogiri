@@ -255,7 +255,7 @@ func (node *XmlNode) AppendChildNode(child Node) {
 
 func (node *XmlNode) PrependChildNode(child Node) {
 	if node.IsValid() && child.IsValid() {
-		if node.Size() >= 1 {
+		if node.ptr().children != nil {
 			node.First().AddNodeBefore(child)
 		} else {
 			node.AppendChildNode(child)
