@@ -93,6 +93,30 @@ func TestParallelAddingChildLast(t *testing.T) {
 
 }
 
+func TestParallelAddingChildFirstFromBug(t *testing.T) {
+	testFunc := func(done chan bool) {
+		doc := libxml.XmlParseString("<div>hi</div>")
+		done <- false
+
+		childDoc := tree.XmlParseString("<a/>", "")
+		child := childDoc.First()
+		doc.RootElement().PrependChildNode(child)
+		if !strings.Contains(doc.String(), "<a />hi") {
+			t.Error("Should have new first child: %q\n", doc.String())
+		}
+		childDoc.Free()
+		doc.Free()
+		done <- true
+	}
+	runParallel(testFunc, numConcurrentRuns)
+
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+
+}
+
 func TestParallelAddingChildFirst(t *testing.T) {
 	testFunc := func(done chan bool) {
 		doc := libxml.XmlParseString("<root>hi<parent><foo/><bar/></parent></root>")
