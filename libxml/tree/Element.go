@@ -54,6 +54,7 @@ func (node *Element) Clear() {
 		// Remember, as we delete them, the last one moves to the front
 		child := node.First()
 		for child != nil {
+			child.Remove()
 	    	child.Free()
 			child = node.First()
 		}
