@@ -69,8 +69,10 @@ func TestDocParseHtmlFragmentWithComment(t *testing.T) {
 	doc := libxml.XmlParseString("<root>hi</root>")
 	fragmentNodes := doc.ParseHtmlFragment("<!-- comment -->", "")
 	Equal(t, len(fragmentNodes), 1)
+	for _, node := range(fragmentNodes) {
+		node.Free()
+	}
 	doc.Free()
-
 	help.XmlCleanUpParser()
 	if help.XmlMemoryAllocation() != 0 {
 		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())

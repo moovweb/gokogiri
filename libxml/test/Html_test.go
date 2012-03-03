@@ -107,11 +107,14 @@ func TestSetHtmlContent(t *testing.T) {
 func TestAppendContentNoscriptBug(t *testing.T) {
 	doc := libxml.HtmlParseString("<html><head><noscript><meta inner /></noscript><meta outer /></head><body><h1>Boo</h1></body></html>");
 	bodyTag := doc.RootElement().LastElement()
-	
-	println(bodyTag.Content())
+
 	bodyTag.SetContent(bodyTag.Content())
-	println("@@@@")
-	println(bodyTag.Content())
+	doc.Free()
+    help.XmlCleanUpParser()
+    if help.XmlMemoryAllocation() != 0 {
+        t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+        help.XmlMemoryLeakReport()
+    }
 }
 
 func TestAppendHtmlContent(t *testing.T) {
