@@ -7,6 +7,7 @@ import (
 	"gokogiri/libxml/tree"
 	"testing"
 	"io/ioutil"
+	//"strings"
 )
 
 
@@ -86,6 +87,12 @@ func TestEncodingHTMLFragment(t *testing.T) {
 	if rawContent != string(content) {
 		t.Errorf("Result of HtmlParseFragment() : [%v]\ndoesn't match original content: [%v]", newContent, string(content))
 	}
+	doc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
 
 func TestEncodingAppendChild(t *testing.T) {
@@ -96,15 +103,14 @@ func TestEncodingAppendChild(t *testing.T) {
 	if err != nil {
 		t.Errorf("Err: %v\n", err.String())
 	}
+	encoding := "utf-8"
+	controlXmlDoc := tree.XmlParseString("<root>" + string(content) + "</root>", encoding)
+	testXmlDoc := tree.XmlParseString("<root></root>", encoding)
 
-	controlXmlDoc := XmlParseString("<root>" + string(content) + "</root>", encoding)
-	testXmlDoc := XmlParseString("<root></root>", encoding)
-
-	htmlDoc := HtmlParseStringWithOptions("<html><body>"+content, "", encoding, DefaultHtmlParseOptions())
-	defer htmlDoc.Free()
-
+	htmlDoc := tree.HtmlParseStringWithOptions("<html><body>"+string(content), "", encoding, tree.DefaultHtmlParseOptions())
+	/*
 	tmpNode := htmlDoc.RootElement().First()
-	if strings.Index(strings.ToLower(content), "<body") < 0 {
+	if strings.Index(strings.ToLower(string(content)), "<body") < 0 {
 		tmpNode = tmpNode.First()
 	}
 
@@ -132,5 +138,13 @@ func TestEncodingAppendChild(t *testing.T) {
 	if string(content) != testXmlContent {
 		t.Errorf("Result of Appending children : [%v]\ndoesn't match original content: [%v]", testXmlContent, string(content))
 	}
-	
+	*/
+	htmlDoc.Free()
+	testXmlDoc.Free()
+	controlXmlDoc.Free()
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
 }
