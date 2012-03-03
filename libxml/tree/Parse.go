@@ -94,7 +94,7 @@ func XmlParseFragment(content string, encoding string) *Doc {
 }
 
 func HtmlParseFragment(content string, encoding string) *Doc {
-	doc := XmlParseString("<root></root>", "")
+	doc := XmlParseString("<root></root>", encoding)
 	tmpDoc := HtmlParseStringWithOptions("<html><body>"+content, "", encoding, DefaultHtmlParseOptions())
 	defer tmpDoc.Free()
 

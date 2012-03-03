@@ -72,3 +72,65 @@ func TestEncodingSetContent(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
+
+func TestEncodingHTMLFragment(t *testing.T) {
+	content, err := ioutil.ReadFile("htmldata/fragment.html")
+	if err != nil {
+		t.Errorf("Err: %v\n", err.String())
+	}
+
+	doc := tree.HtmlParseFragment(string(content), "utf-8") // vs "utf8" ?
+	newContent := doc.RootElement()
+	rawContent := newContent.Content()
+	
+	if rawContent != string(content) {
+		t.Errorf("Result of HtmlParseFragment() : [%v]\ndoesn't match original content: [%v]", newContent, string(content))
+	}
+}
+
+func TestEncodingAppendChild(t *testing.T) {
+	// Within the tree.HtmlParseFragment() method, using just an xml doc or just an html doc works,
+	// but appending the html nodes to the xml doc breaks encoding somehow.
+
+	content, err := ioutil.ReadFile("htmldata/fragment.html")
+	if err != nil {
+		t.Errorf("Err: %v\n", err.String())
+	}
+
+	controlXmlDoc := XmlParseString("<root>" + string(content) + "</root>", encoding)
+	testXmlDoc := XmlParseString("<root></root>", encoding)
+
+	htmlDoc := HtmlParseStringWithOptions("<html><body>"+content, "", encoding, DefaultHtmlParseOptions())
+	defer htmlDoc.Free()
+
+	tmpNode := htmlDoc.RootElement().First()
+	if strings.Index(strings.ToLower(content), "<body") < 0 {
+		tmpNode = tmpNode.First()
+	}
+
+	//append all children of tmpRoot to root.
+	root := testXmlDoc.RootElement()
+	child := tmpNode
+
+	for child != nil {
+		nextChild := child.Next()
+		root.AppendChildNode(child)
+		child = nextChild
+	}
+
+
+	// Now compare the differences:
+
+	testXmlContent := testXmlDoc.RootElement().Content()
+	controlXmlContent := controlXmlDoc.RootElement().Content()
+
+	if testXmlContent != controlXmlContent {
+		t.Errorf("Result of appending children messed up the encoding.\nPure xml: [%v]\nXml w appended nodes:[%v]\n", controlXmlContent, testXmlContent)
+	}
+
+
+	if string(content) != testXmlContent {
+		t.Errorf("Result of Appending children : [%v]\ndoesn't match original content: [%v]", testXmlContent, string(content))
+	}
+	
+}
