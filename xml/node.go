@@ -109,13 +109,13 @@ type XmlNode struct {
 	outputOffset int
 }
 
-func NewNode(nodePtr *C.xmlNode, document Document) (node Node) {
+func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 	if nodePtr == nil {
 		return nil
 	}
 	
-	xmlNode := &XmlNode{Ptr: nodePtr, Document: document}
-	nodeType := C.getNodeType(nodePtr)
+	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(nodePtr), Document: document}
+	nodeType := C.getNodeType((*C.xmlNode)(nodePtr))
 	
 	switch nodeType {
 	default:
@@ -225,20 +225,20 @@ func (xmlNode *XmlNode) NodeType() (nodeType int) {
 
 func (xmlNode *XmlNode) NextSibling() Node {
 	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.next);
-	return NewNode(siblingPtr, xmlNode.Document)
+	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
 }
 
 func (xmlNode *XmlNode) PreviousSibling() Node {
 	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.prev);
-	return NewNode(siblingPtr, xmlNode.Document)
+	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
 }
 
 func (node *XmlNode) FirstChild() Node {
-	return NewNode((*C.xmlNode)(node.Ptr.children), node.Document)
+	return NewNode(unsafe.Pointer(node.Ptr.children), node.Document)
 }
 
 func (node *XmlNode) LastChild() Node {
-	return NewNode((*C.xmlNode)(node.Ptr.last), node.Document)
+	return NewNode(unsafe.Pointer(node.Ptr.last), node.Document)
 }
 
 func (xmlNode *XmlNode) ResetChildren() {
@@ -306,7 +306,7 @@ func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
 			namePtr := unsafe.Pointer(prop.name)
 			name := C.GoString((*C.char)(namePtr))
 			attrPtr := unsafe.Pointer(prop)
-			attributeNode := NewNode((*C.xmlNode)(attrPtr), xmlNode.Document)
+			attributeNode := NewNode(attrPtr, xmlNode.Document)
 			if attr, ok := attributeNode.(*AttributeNode); ok {
 				attributes[name] = attr
 			}
@@ -332,7 +332,7 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err os.Error) {
 		xpathCtx := xmlNode.Document.DocXPathCtx()
 		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
 		for _, nodePtr := range(nodePtrs) {
-			result = append(result, NewNode((*C.xmlNode)(nodePtr), xmlNode.Document))
+			result = append(result, NewNode(nodePtr, xmlNode.Document))
 		}
 	}
 	return

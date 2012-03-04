@@ -23,14 +23,13 @@ const DefaultDocumentFragmentEncoding = "utf-8"
 const initChildrenNumber = 4
 
 var defaultDocumentFragmentEncodingBytes = []byte(DefaultDocumentFragmentEncoding)
-var emptyDocContent = []byte("")
 
 func ParseFragment(document Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//deal with trivial cases
 	if len(content) == 0 { return }
 	
 	if document == nil {
-		document, err = Parse(emptyDocContent, url, defaultDocumentFragmentEncodingBytes, options)
+		document, err = Parse(nil, url, defaultDocumentFragmentEncodingBytes, options)
 		if err != nil {
 			return
 		}
@@ -59,7 +58,7 @@ func ParseFragment(document Document, content, url []byte, options int) (fragmen
 	for ; c != nil; c = nextSibling {
 		nextSibling = (*C.xmlNode)(unsafe.Pointer(c.next))
 		C.xmlUnlinkNode(c)
-		fragment.Children = append(fragment.Children, NewNode(c, document))
+		fragment.Children = append(fragment.Children, NewNode(unsafe.Pointer(c), document))
 	}
 	//now we have rip all its children nodes, we should release the root node
 	C.xmlFreeNode(rootElementPtr)

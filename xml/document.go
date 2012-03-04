@@ -118,7 +118,7 @@ func (document *XmlDocument) AddUnlinkedNode(nodePtr unsafe.Pointer) {
 
 func (document *XmlDocument) Root() (element *ElementNode) {
 	nodePtr := C.xmlDocGetRootElement(document.Ptr)
-	element = NewNode(nodePtr, document).(*ElementNode)
+	element = NewNode(unsafe.Pointer(nodePtr), document).(*ElementNode)
 	return
 }
 
