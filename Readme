@@ -13,8 +13,8 @@ This is a major rewrite from v0 in the following places:
 
 To build and install
 
-	- make install
+    - make install
 	
 To run test
 
-	- make test
+    - make test
