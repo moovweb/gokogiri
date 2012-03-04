@@ -9,7 +9,7 @@
 #include <libxml/xpath.h>
 
 xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int errror_buffer_len);
-xmlNode* xmlParseFragment(xmlDoc* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len);
+xmlNode* xmlParseFragment(void* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len);
 void xmlSaveNode(void *obj, void *node, void *encoding, int options);
 
 void xmlSetContent(void* node, void *content);

@@ -10,14 +10,14 @@ func TestSetValue(t *testing.T) {
 	if err != nil {
 		t.Error("Parsing has error:", err)
 	}
-	root := doc.GetRoot()
-	attributes := root.GetAttributes()
+	root := doc.Root()
+	attributes := root.Attributes()
 	if len(attributes) != 2 || attributes["myname"].String() != "ff" {
 		fmt.Printf("%v, %q\n", attributes, attributes["myname"].String())
 		t.Error("root's attributes do not match")
 	}
-	child := root.GetFirstChild()
-	childAttributes := child.GetAttributes()
+	child := root.FirstChild()
+	childAttributes := child.Attributes()
 	if len(childAttributes) != 1 || childAttributes["class"].String() != "shine" {
 		t.Error("child's attributes do not match")
 	}

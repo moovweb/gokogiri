@@ -10,8 +10,16 @@ import "C"
 import (
 	"unsafe"
 	"os"
-	. "gokogiri/xpath"
+	"gokogiri/xpath"
 )
+
+type Document interface {
+	DocPtr() unsafe.Pointer
+	DocEncoding() []byte
+	DocXPathCtx() *xpath.XPath
+	AddUnlinkedNode(unsafe.Pointer)
+	Free()
+}
 
 //xml parse option
 const (
@@ -42,15 +50,12 @@ const (
 //libxml2 use "utf-8" by default, and so do we
 const DefaultEncoding = "utf-8"
 
-type Document struct {
-	DocPtr *C.xmlDoc
-	*XmlNode
-	
+type XmlDocument struct {
+	Ptr *C.xmlDoc
+	*XmlNode	
 	Encoding []byte
-	
-	UnlinkedNodes []Node
-	
-	XPathCtx *XPath
+	UnlinkedNodes []unsafe.Pointer
+	XPathCtx *xpath.XPath
 }
 
 //default encoding in byte slice
@@ -58,21 +63,21 @@ var DefaultEncodingBytes = []byte(DefaultEncoding)
 
 const initialUnlinkedNodes = 8
 //create a document
-func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *Document) {
-	xmlNode := &XmlNode{NodePtr: (*C.xmlNode)(p)}
+func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *XmlDocument) {
+	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
 	if len(buffer) == 0 {
 		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
 	}
 	docPtr := (*C.xmlDoc)(p)
-	doc = &Document{DocPtr: docPtr, XmlNode: xmlNode, Encoding: encoding}
-	doc.UnlinkedNodes = make([]Node, 0, initialUnlinkedNodes)
-	doc.XPathCtx = NewXPath(p) 
+	doc = &XmlDocument{Ptr: docPtr, XmlNode: xmlNode, Encoding: encoding}
+	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
+	doc.XPathCtx = xpath.NewXPath(p) 
 	xmlNode.Document = doc
 	return
 }
 
 //parse a string to document
-func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Error) {
+func Parse(content, url, encoding []byte, options int) (doc *XmlDocument, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 	
@@ -92,51 +97,71 @@ func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Er
 	return
 }
 
-func (document *Document) GetRoot() (element *ElementNode) {
-	nodePtr := C.xmlDocGetRootElement(document.DocPtr)
+func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {
+	ptr = unsafe.Pointer(document.Ptr)
+	return
+}
+
+func (document *XmlDocument) DocEncoding() (encoding []byte) {
+	encoding = document.Encoding
+	return
+}
+
+func (document *XmlDocument) DocXPathCtx() (ctx *xpath.XPath) {
+	ctx = document.XPathCtx
+	return
+}
+
+func (document *XmlDocument) AddUnlinkedNode(nodePtr unsafe.Pointer) {
+	document.UnlinkedNodes = append(document.UnlinkedNodes, nodePtr)
+}
+
+func (document *XmlDocument) Root() (element *ElementNode) {
+	nodePtr := C.xmlDocGetRootElement(document.Ptr)
 	element = NewNode(nodePtr, document).(*ElementNode)
 	return
 }
 
-func (document *Document) ToXml() string {
+func (document *XmlDocument) ToXml() string {
 	document.outputOffset = 0
 	objPtr := unsafe.Pointer(document.XmlNode)
-	nodePtr      := unsafe.Pointer(document.DocPtr)
+	nodePtr      := unsafe.Pointer(document.Ptr)
 	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
 	C.xmlSaveNode(objPtr, nodePtr, encodingPtr, XML_SAVE_AS_XML)
 	return string(document.outputBuffer[:document.outputOffset])
 }
 
-func (document *Document) ToXml2() string {
-	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
-	charPtr := C.xmlDocDumpToString(document.DocPtr, encodingPtr, 0)
-	defer C.xmlFreeChars(charPtr)
-	return C.GoString(charPtr)
-}
-
-func (document *Document) ToHtml() string {
+func (document *XmlDocument) ToHtml() string {
 	document.outputOffset = 0
 	documentPtr := unsafe.Pointer(document.XmlNode)
-	docPtr      := unsafe.Pointer(document.DocPtr)
+	docPtr      := unsafe.Pointer(document.Ptr)
 	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
 	C.xmlSaveNode(documentPtr, docPtr, encodingPtr, XML_SAVE_AS_HTML)
 	return string(document.outputBuffer[:document.outputOffset])
 }
 
-func (document *Document) ToHtml2() string {
-	charPtr := C.htmlDocDumpToString(document.DocPtr, 0)
+/*
+func (document *XmlDocument) ToXml2() string {
+	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
+	charPtr := C.xmlDocDumpToString(document.Ptr, encodingPtr, 0)
 	defer C.xmlFreeChars(charPtr)
 	return C.GoString(charPtr)
 }
 
-func (document *Document) String() string {
+func (document *XmlDocument) ToHtml2() string {
+	charPtr := C.htmlDocDumpToString(document.Ptr, 0)
+	defer C.xmlFreeChars(charPtr)
+	return C.GoString(charPtr)
+}
+*/
+func (document *XmlDocument) String() string {
 	return document.ToXml()
 }
 
-func (document *Document) Free() {
-	for _, node := range(document.UnlinkedNodes) {
-		node.Free()
+func (document *XmlDocument) Free() {
+	for _, nodePtr := range(document.UnlinkedNodes) {
+		C.xmlFreeNode((*C.xmlNode)(nodePtr))
 	}
 	document.XPathCtx.Free()
-	C.xmlFreeDoc(document.DocPtr)
+	C.xmlFreeDoc(document.Ptr)
 }

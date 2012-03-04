@@ -15,7 +15,7 @@ var (
 )
 
 type DocumentFragment struct {
-	*Document
+	Document
 	Children []Node
 }
 
@@ -23,13 +23,14 @@ const DefaultDocumentFragmentEncoding = "utf-8"
 const initChildrenNumber = 4
 
 var defaultDocumentFragmentEncodingBytes = []byte(DefaultDocumentFragmentEncoding)
+var emptyDocContent = []byte("")
 
-func ParseFragment(document *Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+func ParseFragment(document Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//deal with trivial cases
 	if len(content) == 0 { return }
 	
 	if document == nil {
-		document, err = Parse(content, url, defaultDocumentFragmentEncodingBytes, options)
+		document, err = Parse(emptyDocContent, url, defaultDocumentFragmentEncodingBytes, options)
 		if err != nil {
 			return
 		}
@@ -43,7 +44,7 @@ func ParseFragment(document *Document, content, url []byte, options int) (fragme
 	contentLen   := len(content)
 	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
 	
-	rootElementPtr := C.xmlParseFragment(document.DocPtr, contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+	rootElementPtr := C.xmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 	
 	//
 	if rootElementPtr == nil { err = ErrFailParseFragment; return }
@@ -67,6 +68,6 @@ func ParseFragment(document *Document, content, url []byte, options int) (fragme
 
 func (f *DocumentFragment) Free() {
 	for _, node := range(f.Children) {
-		node.Free()
+		node.Remove()
 	}
 }

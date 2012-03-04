@@ -44,18 +44,18 @@ const (
 )
 
 type Node interface {
-	GetNodePointer() *C.xmlNode
-	ResetNodePointer()
-	GetDocument() *Document
+	NodePtr() unsafe.Pointer
+	ResetNodePtr()
+	MyDocument() Document
 	
 	//
-	GetNodeType() int
-	GetNextSibling() Node
-	GetPreviousSibling() Node
+	NodeType() int
+	NextSibling() Node
+	PreviousSibling() Node
 	
-	GetFirstChild() Node
-	GetLastChild() Node
-	GetAttributes() map[string]*AttributeNode
+	FirstChild() Node
+	LastChild() Node
+	Attributes() map[string]*AttributeNode
 	
 	//
 	AddChild(interface{}) os.Error
@@ -87,12 +87,12 @@ type Node interface {
 	Unlink()
 	Remove()
 	ResetChildren()
-	Free()
+	//Free()
 	////
 	ToXml() []byte
 	ToHtml() []byte
 	String() string
-	GetContent() string
+	Content() string
 }
 
 //run out of memory
@@ -102,19 +102,19 @@ var ErrTooLarge = os.NewError("Output buffer too large")
 const initialOutputBufferSize = 100*1024 //100K
 
 type XmlNode struct {
-	NodePtr *C.xmlNode
-	*Document
+	Ptr *C.xmlNode
+	Document
 	
 	outputBuffer []byte
 	outputOffset int
 }
 
-func NewNode(nodePtr *C.xmlNode, document *Document) (node Node) {
+func NewNode(nodePtr *C.xmlNode, document Document) (node Node) {
 	if nodePtr == nil {
 		return nil
 	}
 	
-	xmlNode := &XmlNode{NodePtr: nodePtr, Document: document}
+	xmlNode := &XmlNode{Ptr: nodePtr, Document: document}
 	nodeType := C.getNodeType(nodePtr)
 	
 	switch nodeType {
@@ -141,12 +141,12 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 	case *DocumentFragment:
 		nodes = t.Children
 	case string:
-		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.Encoding, DefaultParseOption)
+		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.DocEncoding(), DefaultParseOption)
 		if err == nil {
 			nodes = f.Children
 		}
 	case []byte:
-		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.Encoding, DefaultParseOption)
+		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.DocEncoding(), DefaultParseOption)
 		if err == nil {
 			nodes = f.Children
 		}
@@ -203,48 +203,53 @@ func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err os.Error) {
 	return
 }
 
-func (xmlNode *XmlNode) ResetNodePointer() {
-	xmlNode.NodePtr = nil
+func (xmlNode *XmlNode) ResetNodePtr() {
+	xmlNode.Ptr = nil
 	return
 }
 
-func (xmlNode *XmlNode) GetDocument() (document *Document) {
+func (xmlNode *XmlNode) MyDocument() (document Document) {
 	document = xmlNode.Document
 	return
 }
 
-func (xmlNode *XmlNode) GetNodePointer() (p *C.xmlNode) {
-	p = xmlNode.NodePtr
+func (xmlNode *XmlNode) NodePtr() (p unsafe.Pointer) {
+	p = unsafe.Pointer(xmlNode.Ptr)
 	return
 }
 
-func (xmlNode *XmlNode) GetNodeType() (nodeType int) {
-	nodeType = int(C.getNodeType(xmlNode.NodePtr))
+func (xmlNode *XmlNode) NodeType() (nodeType int) {
+	nodeType = int(C.getNodeType(xmlNode.Ptr))
 	return
 }
 
-func (xmlNode *XmlNode) GetNextSibling() Node {
-	siblingPtr := (*C.xmlNode)(xmlNode.NodePtr.next);
+func (xmlNode *XmlNode) NextSibling() Node {
+	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.next);
 	return NewNode(siblingPtr, xmlNode.Document)
 }
 
-func (xmlNode *XmlNode) GetPreviousSibling() Node {
-	siblingPtr := (*C.xmlNode)(xmlNode.NodePtr.prev);
+func (xmlNode *XmlNode) PreviousSibling() Node {
+	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.prev);
 	return NewNode(siblingPtr, xmlNode.Document)
 }
 
-func (node *XmlNode) GetFirstChild() Node {
-	return NewNode((*C.xmlNode)(node.NodePtr.children), node.Document)
+func (node *XmlNode) FirstChild() Node {
+	return NewNode((*C.xmlNode)(node.Ptr.children), node.Document)
 }
 
-func (node *XmlNode) GetLastChild() Node {
-	return NewNode((*C.xmlNode)(node.NodePtr.last), node.Document)
+func (node *XmlNode) LastChild() Node {
+	return NewNode((*C.xmlNode)(node.Ptr.last), node.Document)
 }
 
 func (xmlNode *XmlNode) ResetChildren() {
-	nodeToBeUnlinked := NewNode((*C.xmlNode)(xmlNode.NodePtr.children), xmlNode.Document)
-	nodeToBeUnlinked.Unlink()
-	C.xmlUnlinkNode((*C.xmlNode)(xmlNode.NodePtr.children))
+	var p unsafe.Pointer
+	for childPtr := xmlNode.Ptr.children; childPtr != nil; {
+		nextPtr := childPtr.next
+		p = unsafe.Pointer(childPtr)
+		C.xmlUnlinkNode((*C.xmlNode)(p))
+		xmlNode.Document.AddUnlinkedNode(p)
+		childPtr = nextPtr
+	}
 }
 
 func (xmlNode *XmlNode) SetContent(content interface{}) (err os.Error) {
@@ -256,7 +261,7 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err os.Error) {
 	case []byte:
 		if len(data) > 0 {
 			contentPtr := unsafe.Pointer(&data[0])
-			C.xmlSetContent(unsafe.Pointer(xmlNode.NodePtr), contentPtr)
+			C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), contentPtr)
 		}
 	}
 	return
@@ -294,9 +299,9 @@ func (xmlNode *XmlNode) Replace(data interface{}) (err os.Error) {
 	return
 }
 
-func (xmlNode *XmlNode) GetAttributes() (attributes map[string]*AttributeNode) {
+func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
 	attributes = make(map[string]*AttributeNode)
-	for prop := xmlNode.NodePtr.properties; prop != nil; prop = prop.next {
+	for prop := xmlNode.Ptr.properties; prop != nil; prop = prop.next {
 		if prop.name != nil {
 			namePtr := unsafe.Pointer(prop.name)
 			name := C.GoString((*C.char)(namePtr))
@@ -324,8 +329,8 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err os.Error) {
 	case []byte:
 		result, err = xmlNode.Search(string(data))
 	case *xpath.Expression:
-		xpathCtx := xmlNode.Document.XPathCtx
-		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.NodePtr), data)
+		xpathCtx := xmlNode.Document.DocXPathCtx()
+		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
 		for _, nodePtr := range(nodePtrs) {
 			result = append(result, NewNode((*C.xmlNode)(nodePtr), xmlNode.Document))
 		}
@@ -377,8 +382,9 @@ func (xmlNode *XmlNode) ToXml() []byte {
 		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
 	}
 	objPtr := unsafe.Pointer(xmlNode)
-	nodePtr      := unsafe.Pointer(xmlNode.NodePtr)
-	encodingPtr := unsafe.Pointer(&(xmlNode.Document.Encoding[0]))
+	nodePtr      := unsafe.Pointer(xmlNode.Ptr)
+	encoding := xmlNode.Document.DocEncoding()
+	encodingPtr := unsafe.Pointer(&(encoding[0]))
 	C.xmlSaveNode(objPtr, nodePtr, encodingPtr, XML_SAVE_AS_XML)
 	return xmlNode.outputBuffer[:xmlNode.outputOffset]
 }
@@ -395,83 +401,75 @@ func (xmlNode *XmlNode) String() string {
 	return string(b)
 }
 
-func (xmlNode *XmlNode) GetContent() string {
-	contentPtr := C.xmlNodeGetContent(xmlNode.NodePtr);
+func (xmlNode *XmlNode) Content() string {
+	contentPtr := C.xmlNodeGetContent(xmlNode.Ptr);
 	charPtr := (*C.char)(unsafe.Pointer(contentPtr))
 	defer C.xmlFreeChars(charPtr)
 	return C.GoString(charPtr)
 }
 
 func (xmlNode *XmlNode) Unlink() {
-	C.xmlUnlinkNode((*C.xmlNode)(xmlNode.NodePtr))
-	xmlNode.Document.UnlinkedNodes = append(xmlNode.Document.UnlinkedNodes, xmlNode)
+	C.xmlUnlinkNode(xmlNode.Ptr)
+	xmlNode.Document.AddUnlinkedNode(unsafe.Pointer(xmlNode.Ptr))
 }
 
 func (xmlNode *XmlNode) Remove() {
 	xmlNode.Unlink()
 }
 
-
-func (xmlNode *XmlNode) Free() {
-	if xmlNode.NodePtr != nil {
-		C.xmlFreeNode(xmlNode.NodePtr)
-		xmlNode.NodePtr = nil
-	}
-}
-
 func (xmlNode *XmlNode) addChild(node Node) (err os.Error) {
-	nodeType := node.GetNodeType()
+	nodeType := node.NodeType()
 	if nodeType == XML_DOCUMENT_NODE || nodeType == XML_HTML_DOCUMENT_NODE {
 		err = ERR_CANNOT_MAKE_DUCMENT_AS_CHILD
 		return
 	}
-	nodePtr := node.GetNodePointer()
-	C.xmlUnlinkNode(nodePtr)
+	nodePtr := node.NodePtr()
+	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
 	
-	childPtr := C.xmlAddChild(xmlNode.NodePtr, nodePtr)
-	if nodeType == XML_TEXT_NODE && childPtr != nodePtr {
+	childPtr := C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
 		//check the retured pointer
 		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
 		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.ResetNodePointer()
+		node.ResetNodePtr()
 	}
 	return
 }
 
 func (xmlNode *XmlNode) addPreviousSibling(node Node) (err os.Error) {
-	nodeType := node.GetNodeType()
+	nodeType := node.NodeType()
 	if nodeType == XML_DOCUMENT_NODE || nodeType == XML_HTML_DOCUMENT_NODE {
 		err = ERR_CANNOT_MAKE_DUCMENT_AS_CHILD
 		return
 	}
-	nodePtr := node.GetNodePointer()
-	C.xmlUnlinkNode(nodePtr)
+	nodePtr := node.NodePtr()
+	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
 	
-	childPtr := C.xmlAddPrevSibling(xmlNode.NodePtr, nodePtr)
-	if nodeType == XML_TEXT_NODE && childPtr != nodePtr {
+	childPtr := C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
 		//check the retured pointer
 		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
 		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.ResetNodePointer()
+		node.ResetNodePtr()
 	}
 	return
 }
 
 func (xmlNode *XmlNode) addNextSibling(node Node) (err os.Error) {
-	nodeType := node.GetNodeType()
+	nodeType := node.NodeType()
 	if nodeType == XML_DOCUMENT_NODE || nodeType == XML_HTML_DOCUMENT_NODE {
 		err = ERR_CANNOT_MAKE_DUCMENT_AS_CHILD
 		return
 	}
-	nodePtr := node.GetNodePointer()
-	C.xmlUnlinkNode(nodePtr)
+	nodePtr := node.NodePtr()
+	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
 	
-	childPtr := C.xmlAddNextSibling(xmlNode.NodePtr, nodePtr)
-	if nodeType == XML_TEXT_NODE && childPtr != nodePtr {
+	childPtr := C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
 		//check the retured pointer
 		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
 		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.ResetNodePointer()
+		node.ResetNodePtr()
 	}
 	return
 }

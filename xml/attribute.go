@@ -5,11 +5,11 @@ type AttributeNode struct {
 }
 
 func (attrNode *AttributeNode) String() string {
-	return attrNode.GetContent()
+	return attrNode.Content()
 }
 
 func (attrNode *AttributeNode) Value() string {
-	return attrNode.GetContent()
+	return attrNode.Content()
 }
 
 func (attrNode *AttributeNode) SetValue(val string) {

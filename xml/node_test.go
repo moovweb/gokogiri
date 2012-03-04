@@ -23,12 +23,12 @@ func TestAddChild(t *testing.T) {
 	if doc.String() != expectedDoc {
 		t.Error("the output of the xml doc does not match")
 	}
-	doc.GetRoot().AddChild("<bar></bar>")
+	doc.Root().AddChild("<bar></bar>")
 	if doc.String() != expectedDocAfterAdd {
 		println(doc.String())
 		t.Error("the output of the xml doc after AddChild does not match")
 	}
-	if doc.GetRoot().String() != expectedNodeAfterAdd {
+	if doc.Root().String() != expectedNodeAfterAdd {
 		t.Error("the output of the xml root after AddChild does not match")
 	}
 	doc.Free()
@@ -46,7 +46,7 @@ func TestAddPreviousSibling(t *testing.T) {
 	if err != nil {
 		t.Error("Parsing has error:", err)
 	}
-	err = doc.GetRoot().AddPreviousSibling("<bar></bar><cat></cat>")
+	err = doc.Root().AddPreviousSibling("<bar></bar><cat></cat>")
 	if doc.String() != expected {
 		println(doc.String())
 		t.Error("the output of the xml doc does not match")
@@ -65,7 +65,7 @@ func TestAddNextSibling(t *testing.T) {
 	if err != nil {
 		t.Error("Parsing has error:", err)
 	}
-	doc.GetRoot().AddNextSibling("<bar></bar>")
+	doc.Root().AddNextSibling("<bar></bar>")
 	if doc.String() != expected {
 		println(doc.String())
 		t.Error("the output of the xml doc does not match")
@@ -83,7 +83,7 @@ func TestSetContent(t *testing.T) {
 	if err != nil {
 		t.Error("Parsing has error:", err)
 	}
-	root := doc.GetRoot()
+	root := doc.Root()
 	root.SetContent("<fun></fun>")
 	if doc.String() != expected {
 		println(doc.String())
@@ -93,8 +93,9 @@ func TestSetContent(t *testing.T) {
 	help.CheckXmlMemoryLeaks(t)
 }
 
+
 func TestSetChildren(t *testing.T) {
-	doc, err := Parse([]byte("<foo><bar/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	doc, err := Parse([]byte("<foo><bar1/><bar2/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
 	expected :=
 `<?xml version="1.0" encoding="utf-8"?>
 <foo><fun/></foo>
@@ -102,9 +103,11 @@ func TestSetChildren(t *testing.T) {
 	if err != nil {
 		t.Error("Parsing has error:", err)
 	}
-	root := doc.GetRoot()
+	
+	root := doc.Root()
 	root.SetChildren("<fun></fun>")
 	if doc.String() != expected {
+		println(doc.String())
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
@@ -121,12 +124,12 @@ func TestReplace(t *testing.T) {
 	if err != nil {
 		t.Error("Parsing has error:", err)
 	}
-	root := doc.GetRoot()
+	root := doc.Root()
 	root.Replace("<fun></fun><cool/>")
 	if doc.String() != expected {
 		t.Error("the output of the xml doc does not match")
 	}
-	root = doc.GetRoot()
+	root = doc.Root()
 	if root.String() != "<fun/>" {
 		t.Error("the output of the xml root does not match")
 	}
@@ -134,19 +137,19 @@ func TestReplace(t *testing.T) {
 	help.CheckXmlMemoryLeaks(t)
 }
 
-func TestGetAttributes(t *testing.T) {
+func TestAttributes(t *testing.T) {
 	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
 	if err != nil {
 		t.Error("Parsing has error:", err)
 	}
-	root := doc.GetRoot()
-	attributes := root.GetAttributes()
+	root := doc.Root()
+	attributes := root.Attributes()
 	if len(attributes) != 2 || attributes["myname"].String() != "ff" {
 		fmt.Printf("%v, %q\n", attributes, attributes["myname"].String())
 		t.Error("root's attributes do not match")
 	}
-	child := root.GetFirstChild()
-	childAttributes := child.GetAttributes()
+	child := root.FirstChild()
+	childAttributes := child.Attributes()
 	if len(childAttributes) != 1 || childAttributes["class"].String() != "shine" {
 		t.Error("child's attributes do not match")
 	}
@@ -160,7 +163,7 @@ func TestSearch(t *testing.T) {
 		t.Error("Parsing has error:", err)
 	}
 	
-	root := doc.GetRoot()
+	root := doc.Root()
 	result, _ := root.Search(".//*[@class]")
 	if len(result) != 2 {
 		t.Error("search at root does not match")

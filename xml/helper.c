@@ -66,7 +66,7 @@ xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int op
 	return doc;
 }
 
-xmlNode* xmlParseFragment(xmlDoc* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
 	xmlNodePtr root_element = NULL;
 	xmlParserErrors errCode;
 	
