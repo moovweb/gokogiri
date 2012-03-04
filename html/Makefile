@@ -10,6 +10,6 @@ CGOFILES=\
 	fragment.go\
 
 CGO_OFILES=\
-	helper.o
+	helper.o\
 
 include $(GOROOT)/src/Make.pkg

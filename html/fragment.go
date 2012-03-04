@@ -5,6 +5,7 @@ import "C"
 import (
 	"unsafe"
 	"os"
+	"bytes"
 	"gokogiri/xml"
 )
 
@@ -14,26 +15,26 @@ var (
 )
 
 type DocumentFragment struct {
-	*Document
-	Children []xml.Node
+	*xml.DocumentFragment
 }
 
 const DefaultDocumentFragmentEncoding = "utf-8"
 const initChildrenNumber = 4
 
 var defaultDocumentFragmentEncodingBytes = []byte(DefaultDocumentFragmentEncoding)
-var emptyDocContent = []byte("")
+var bodySigBytes = []byte("<body")
 
-func ParseFragment(document *Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+func ParseFragment(document xml.Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//deal with trivial cases
 	if len(content) == 0 { return }
-	
 	if document == nil {
-		document, err = Parse(emptyDocContent, url, defaultDocumentFragmentEncodingBytes, options)
+		document, err = Parse(nil, url, defaultDocumentFragmentEncodingBytes, options)
 		if err != nil {
 			return
 		}
 	} 
+	
+	containBody := (bytes.Index(content, bodySigBytes) >= 0)
 	
 	content = append(fragmentWrapperStart, content...)
 
@@ -42,31 +43,35 @@ func ParseFragment(document *Document, content, url []byte, options int) (fragme
 	contentLen   := len(content)
 	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
 	
-	docPtr := unsafe.Pointer(document.DocPtr)
-	rootElementPtr := C.htmlParseFragment(docPtr, contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
-	
-	//
-	if rootElementPtr == nil { err = ErrFailParseFragment; return }
+	htmlPtr := C.htmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+	if htmlPtr == nil {
+		err = ErrFailParseFragment
+		return
+	}
+
+	defer C.xmlFreeNode(htmlPtr)
 	
 	fragment = &DocumentFragment{}
+	fragment.DocumentFragment = &xml.DocumentFragment{}
 	fragment.Document = document
 	fragment.Children = make([]xml.Node, 0, initChildrenNumber)
+	bodyPtr := (*C.xmlNode)(unsafe.Pointer(htmlPtr.children))
 	
-	c := (*C.xmlNode)(unsafe.Pointer(rootElementPtr.children))
+	if bodyPtr == nil {
+		return
+	}
+	childPtr := bodyPtr
+	if ! containBody {
+		//note that the body node will be freed together with its parent
+		childPtr = (*C.xmlNode)(bodyPtr.children)
+	}
 	var nextSibling *C.xmlNode
 	
-	for ; c != nil; c = nextSibling {
-		nextSibling = (*C.xmlNode)(unsafe.Pointer(c.next))
-		C.xmlUnlinkNode(c)
-		fragment.Children = append(fragment.Children, xml.NewNode(c, document))
+	for ; childPtr != nil; {
+		nextSibling = (*C.xmlNode)(unsafe.Pointer(childPtr.next))
+		C.xmlUnlinkNode(childPtr)
+		fragment.Children = append(fragment.Children, xml.NewNode(unsafe.Pointer(childPtr), document))
+		childPtr = nextSibling
 	}
-	//now we have rip all its children nodes, we should release the root node
-	C.xmlFreeNode(rootElementPtr)
 	return
-}
-
-func (f *DocumentFragment) Free() {
-	for _, node := range(f.Children) {
-		node.Free()
-	}
 }

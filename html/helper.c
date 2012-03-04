@@ -30,5 +30,13 @@ htmlDocPtr htmlParse(void *buffer, int buffer_len, void *url, void *encoding, in
 }
 
 xmlNode* htmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
-	return xmlParseFragment((xmlDoc*)doc, buffer, buffer_len, url, options, error_buffer, error_buffer_len);
+	xmlNode* root_element = NULL;
+	xmlParserErrors errCode;
+	errCode = xmlParseInNodeContext((xmlNodePtr)doc, buffer, buffer_len, options, &root_element);
+	if (errCode != XML_ERR_OK) {
+		char *c_error_buffer = (char*)error_buffer;
+		snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
+		return NULL;
+	} 
+	return root_element;
 }

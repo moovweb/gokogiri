@@ -28,6 +28,8 @@ const (
     HTML_PARSE_COMPACT  = 1<<16 /* compact small text nodes */
 )
 
+const EmptyHtmlDoc = ""
+
 //default parsing option: relax parsing
 var DefaultParseOption = 	HTML_PARSE_RECOVER|
 							HTML_PARSE_NONET|
@@ -35,21 +37,22 @@ var DefaultParseOption = 	HTML_PARSE_RECOVER|
 							HTML_PARSE_NOWARNING
 
 type HtmlDocument struct {
-	*xml.Document
+	*xml.XmlDocument
 }
 
 //default encoding in byte slice
 var DefaultEncodingBytes = []byte(xml.DefaultEncoding)
+var emptyHtmlDocBytes = []byte(EmptyHtmlDoc)
 
 //create a document
-func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *Document) {
-	doc = &Document{}
-	doc.Document = xml.NewDocument(p, encoding, buffer)
+func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *HtmlDocument) {
+	doc = &HtmlDocument{}
+	doc.XmlDocument = xml.NewDocument(p, encoding, buffer)
 	return
 }
 
 //parse a string to document
-func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Error) {
+func Parse(content, url, encoding []byte, options int) (doc *HtmlDocument, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 	
@@ -63,8 +66,7 @@ func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Er
 		docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 	}
 	if docPtr == nil {
-		//why does newEmptyXmlDoc NOT call xmlInitParser like other parse functions?
-		C.xmlInitParser();
+		C.xmlInitParser()
 		docPtr = C.htmlNewDoc(nil, nil)
 	}
 	
@@ -72,6 +74,6 @@ func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Er
 	return
 }
 
-func (document *Document) String() string {
+func (document *HtmlDocument) String() string {
 	return document.ToHtml()
 }
