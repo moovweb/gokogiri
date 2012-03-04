@@ -2,6 +2,7 @@ package xml
 
 import (
 	"testing"
+	"gokogiri/help"
 )
 
 func TestParseDocument(t *testing.T) {
@@ -18,7 +19,7 @@ func TestParseDocument(t *testing.T) {
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
-	CheckXmlMemoryLeaks(t)
+	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestEmptyDocument(t *testing.T) {
@@ -34,17 +35,17 @@ func TestEmptyDocument(t *testing.T) {
 		t.Error("the output of the xml doc does not match the empty xml")
 	}
 	doc.Free()
-	CheckXmlMemoryLeaks(t)
+	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestParseDocumentFragment(t *testing.T) {
 	doc, err := Parse(nil, nil, []byte("utf-8"), DefaultParseOption)
 	if err != nil {
-		println(err.Error())
+		println(err.String())
 	}
 	docFragment, err := ParseFragment(doc, []byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.Error())
+		t.Error(err.String())
 	}
 	if (len(docFragment.Children) != 3) {
 		t.Error("the number of children from the fragment does not match")
@@ -52,6 +53,6 @@ func TestParseDocumentFragment(t *testing.T) {
 	
 	docFragment.Free()
 	doc.Free()
-	CheckXmlMemoryLeaks(t)
+	help.CheckXmlMemoryLeaks(t)
 	
 }

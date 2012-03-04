@@ -3,12 +3,14 @@ package xml
 /*
 #cgo pkg-config: libxml-2.0
 
-#include "chelper.h"
+#include "helper.h"
 */
 import "C"
 
 import (
 	"unsafe"
+	"os"
+	. "gokogiri/xpath"
 )
 
 //xml parse option
@@ -45,11 +47,16 @@ type Document struct {
 	*XmlNode
 	
 	Encoding []byte
+	
+	UnlinkedNodes []Node
+	
+	XPathCtx *XPath
 }
 
 //default encoding in byte slice
 var DefaultEncodingBytes = []byte(DefaultEncoding)
 
+const initialUnlinkedNodes = 8
 //create a document
 func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *Document) {
 	xmlNode := &XmlNode{NodePtr: (*C.xmlNode)(p)}
@@ -58,12 +65,14 @@ func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *Documen
 	}
 	docPtr := (*C.xmlDoc)(p)
 	doc = &Document{DocPtr: docPtr, XmlNode: xmlNode, Encoding: encoding}
+	doc.UnlinkedNodes = make([]Node, 0, initialUnlinkedNodes)
+	doc.XPathCtx = NewXPath(p) 
 	xmlNode.Document = doc
 	return
 }
 
 //parse a string to document
-func Parse(content, url, encoding []byte, options int) (doc *Document, err error) {
+func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 	
@@ -77,15 +86,13 @@ func Parse(content, url, encoding []byte, options int) (doc *Document, err error
 		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 	}
 	if docPtr == nil {
-		//why does newEmptyXmlDoc NOT call xmlInitParser like other parse functions?
-		C.xmlInitParser();
 		docPtr = C.newEmptyXmlDoc()
 	}
 	doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
 	return
 }
 
-func (document *Document) RootElement() (element *ElementNode) {
+func (document *Document) GetRoot() (element *ElementNode) {
 	nodePtr := C.xmlDocGetRootElement(document.DocPtr)
 	element = NewNode(nodePtr, document).(*ElementNode)
 	return
@@ -127,5 +134,9 @@ func (document *Document) String() string {
 }
 
 func (document *Document) Free() {
+	for _, node := range(document.UnlinkedNodes) {
+		node.Free()
+	}
+	document.XPathCtx.Free()
 	C.xmlFreeDoc(document.DocPtr)
 }

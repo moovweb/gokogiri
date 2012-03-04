@@ -5,13 +5,13 @@ package html
 
 #include <libxml/HTMLtree.h>
 #include <libxml/HTMLparser.h>
-#include "chelper.h"
+#include "helper.h"
 */
 import "C"
 
 import (
 	"unsafe"
-	//"errors"
+	"os"
 	"gokogiri/xml"
 )
 
@@ -49,7 +49,7 @@ func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *Documen
 }
 
 //parse a string to document
-func Parse(content, url, encoding []byte, options int) (doc *Document, err error) {
+func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 	

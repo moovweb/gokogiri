@@ -1,17 +1,17 @@
 package xml
 
-//#include "chelper.h"
+//#include "helper.h"
 import "C"
 import (
 	"unsafe"
-	"errors"
+	"os"
 )
 
 var (
 	fragmentWrapperStart = []byte("<root>")
 	fragmentWrapperEnd   = []byte("</root>")
 	
-	ErrFailParseFragment = errors.New("failed to parse xml fragment")
+	ErrFailParseFragment = os.NewError("failed to parse xml fragment")
 )
 
 type DocumentFragment struct {
@@ -19,11 +19,21 @@ type DocumentFragment struct {
 	Children []Node
 }
 
+const DefaultDocumentFragmentEncoding = "utf-8"
 const initChildrenNumber = 4
 
-func ParseFragment(document *Document, content, url []byte, options int) (fragment *DocumentFragment, err error) {
+var defaultDocumentFragmentEncodingBytes = []byte(DefaultDocumentFragmentEncoding)
+
+func ParseFragment(document *Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//deal with trivial cases
-	if document == nil || len(content) == 0 { return }
+	if len(content) == 0 { return }
+	
+	if document == nil {
+		document, err = Parse(content, url, defaultDocumentFragmentEncodingBytes, options)
+		if err != nil {
+			return
+		}
+	} 
 	
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)

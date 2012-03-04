@@ -1,19 +1,21 @@
 package xml
 
-//#include "chelper.h"
+//#include "helper.h"
 //#include <string.h>
 import "C"
 
 import (
-	"errors"
+	"os"
 	"unsafe"
+	"gokogiri/xpath"
 )
 
 var (
-	ERR_UNDEFINED_COERCE_PARAM 				    = errors.New("unexpected parameter type in coerce")
-	ERR_UNDEFINED_SET_CONTENT_PARAM             = errors.New("unexpected parameter type in SetContent")
-	ERR_CANNOT_MAKE_DUCMENT_AS_CHILD 			= errors.New("cannot add a document node as a child")
-	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD 	= errors.New("cannot copy a text node when adding it")
+	ERR_UNDEFINED_COERCE_PARAM 				    = os.NewError("unexpected parameter type in coerce")
+	ERR_UNDEFINED_SET_CONTENT_PARAM             = os.NewError("unexpected parameter type in SetContent")
+	ERR_UNDEFINED_SEARCH_PARAM             		= os.NewError("unexpected parameter type in Search")
+	ERR_CANNOT_MAKE_DUCMENT_AS_CHILD 			= os.NewError("cannot add a document node as a child")
+	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD 	= os.NewError("cannot copy a text node when adding it")
 )
 
 //xmlNode types
@@ -53,20 +55,24 @@ type Node interface {
 	
 	GetFirstChild() Node
 	GetLastChild() Node
-	//Attributes() map[string]*AttributeNode
+	GetAttributes() map[string]*AttributeNode
 	
 	//
-	AddChild(interface{}) error
-	AddPreviousSibling(interface{}) error
-	AddNextSibling(interface{}) error
-	//InsertBefore(interface{}) error
-	//InsertAfter(interface{}) error
-	//SetInnerHtml(interface{}) error
-	//Replace(interface{}) error
-	//Swap(interface{}) error
+	AddChild(interface{}) os.Error
+	AddPreviousSibling(interface{}) os.Error
+	AddNextSibling(interface{}) os.Error
+	InsertBefore(interface{}) os.Error
+	InsertAfter(interface{}) os.Error
+	SetInnerHtml(interface{}) os.Error
+	SetChildren(interface{}) os.Error
+	Replace(interface{}) os.Error
+	//Swap(interface{}) os.Error
 	//
 	////
-	SetContent(interface{}) error
+	SetContent(interface{}) os.Error
+	
+	Search(interface{}) ([]Node, os.Error)
+
 	//SetParent(Node)
 	//IsComment() bool
 	//IsCData() bool
@@ -78,15 +84,19 @@ type Node interface {
 	//
 	
 	//
+	Unlink()
+	Remove()
+	ResetChildren()
 	Free()
 	////
 	ToXml() []byte
 	ToHtml() []byte
 	String() string
+	GetContent() string
 }
 
 //run out of memory
-var ErrTooLarge = errors.New("Output buffer too large")
+var ErrTooLarge = os.NewError("Output buffer too large")
 
 //pre-allocate a buffer for serializing the document
 const initialOutputBufferSize = 100*1024 //100K
@@ -122,7 +132,7 @@ func NewNode(nodePtr *C.xmlNode, document *Document) (node Node) {
 	return
 }
 
-func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err error) {
+func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 	switch t := data.(type) {
 	default:
 		err = ERR_UNDEFINED_COERCE_PARAM
@@ -145,7 +155,7 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err error) {
 }
 
 //
-func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
+func (xmlNode *XmlNode) AddChild(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
@@ -161,7 +171,7 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 	return
 }
 
-func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
+func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
@@ -177,7 +187,7 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 	return
 }
 
-func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
+func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
@@ -231,7 +241,13 @@ func (node *XmlNode) GetLastChild() Node {
 	return NewNode((*C.xmlNode)(node.NodePtr.last), node.Document)
 }
 
-func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
+func (xmlNode *XmlNode) ResetChildren() {
+	nodeToBeUnlinked := NewNode((*C.xmlNode)(xmlNode.NodePtr.children), xmlNode.Document)
+	nodeToBeUnlinked.Unlink()
+	C.xmlUnlinkNode((*C.xmlNode)(xmlNode.NodePtr.children))
+}
+
+func (xmlNode *XmlNode) SetContent(content interface{}) (err os.Error) {
 	switch data := content.(type) {
 	default:
 		err = ERR_UNDEFINED_SET_CONTENT_PARAM
@@ -246,15 +262,80 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	return
 }
 
+func (xmlNode *XmlNode) InsertBefore(data interface{}) os.Error {
+	return xmlNode.AddPreviousSibling(data)
+}
+
+func (xmlNode *XmlNode) InsertAfter(data interface{}) os.Error {
+	return xmlNode.AddNextSibling(data)
+}
+
+func (xmlNode *XmlNode) SetChildren(data interface{}) (err os.Error) {
+	nodes, err := xmlNode.coerce(data)
+	if err != nil {
+		return
+	}
+	xmlNode.ResetChildren()
+	err = xmlNode.AddChild(nodes)
+	return
+}
+
+func (xmlNode *XmlNode) SetInnerHtml(data interface{}) (err os.Error) {
+	err = xmlNode.SetChildren(data)
+	return
+}
+
+func (xmlNode *XmlNode) Replace(data interface{}) (err os.Error) {
+	err = xmlNode.AddPreviousSibling(data)
+	if err != nil {
+		return
+	}
+	xmlNode.Unlink()
+	return
+}
+
+func (xmlNode *XmlNode) GetAttributes() (attributes map[string]*AttributeNode) {
+	attributes = make(map[string]*AttributeNode)
+	for prop := xmlNode.NodePtr.properties; prop != nil; prop = prop.next {
+		if prop.name != nil {
+			namePtr := unsafe.Pointer(prop.name)
+			name := C.GoString((*C.char)(namePtr))
+			attrPtr := unsafe.Pointer(prop)
+			attributeNode := NewNode((*C.xmlNode)(attrPtr), xmlNode.Document)
+			if attr, ok := attributeNode.(*AttributeNode); ok {
+				attributes[name] = attr
+			}
+		}
+	}
+	return
+}
+
+func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err os.Error) {
+	switch data := data.(type) {
+	default:
+		err = ERR_UNDEFINED_SEARCH_PARAM
+	case string:
+		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
+			result, err = xmlNode.Search(xpathExpr)
+			defer xpathExpr.Free()
+		} else {
+			err = os.NewError("cannot compile xpath: " + data)
+		}
+	case []byte:
+		result, err = xmlNode.Search(string(data))
+	case *xpath.Expression:
+		xpathCtx := xmlNode.Document.XPathCtx
+		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.NodePtr), data)
+		for _, nodePtr := range(nodePtrs) {
+			result = append(result, NewNode((*C.xmlNode)(nodePtr), xmlNode.Document))
+		}
+	}
+	return
+}
+
 /*
 //func (xmlNode *XmlNode) Attributes() map[string]*AttributeNode
 
-func (xmlNode *XmlNode) InsertBefore(interface{}) error {
-	
-}
-func (xmlNode *XmlNode) InsertAfter(interface{}) error {
-	
-}
 func (xmlNode *XmlNode) SetInnerHtml(interface{}) error {
 	
 }
@@ -314,6 +395,23 @@ func (xmlNode *XmlNode) String() string {
 	return string(b)
 }
 
+func (xmlNode *XmlNode) GetContent() string {
+	contentPtr := C.xmlNodeGetContent(xmlNode.NodePtr);
+	charPtr := (*C.char)(unsafe.Pointer(contentPtr))
+	defer C.xmlFreeChars(charPtr)
+	return C.GoString(charPtr)
+}
+
+func (xmlNode *XmlNode) Unlink() {
+	C.xmlUnlinkNode((*C.xmlNode)(xmlNode.NodePtr))
+	xmlNode.Document.UnlinkedNodes = append(xmlNode.Document.UnlinkedNodes, xmlNode)
+}
+
+func (xmlNode *XmlNode) Remove() {
+	xmlNode.Unlink()
+}
+
+
 func (xmlNode *XmlNode) Free() {
 	if xmlNode.NodePtr != nil {
 		C.xmlFreeNode(xmlNode.NodePtr)
@@ -321,7 +419,7 @@ func (xmlNode *XmlNode) Free() {
 	}
 }
 
-func (xmlNode *XmlNode) addChild(node Node) (err error) {
+func (xmlNode *XmlNode) addChild(node Node) (err os.Error) {
 	nodeType := node.GetNodeType()
 	if nodeType == XML_DOCUMENT_NODE || nodeType == XML_HTML_DOCUMENT_NODE {
 		err = ERR_CANNOT_MAKE_DUCMENT_AS_CHILD
@@ -340,7 +438,7 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 	return
 }
 
-func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
+func (xmlNode *XmlNode) addPreviousSibling(node Node) (err os.Error) {
 	nodeType := node.GetNodeType()
 	if nodeType == XML_DOCUMENT_NODE || nodeType == XML_HTML_DOCUMENT_NODE {
 		err = ERR_CANNOT_MAKE_DUCMENT_AS_CHILD
@@ -359,7 +457,7 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
 	return
 }
 
-func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
+func (xmlNode *XmlNode) addNextSibling(node Node) (err os.Error) {
 	nodeType := node.GetNodeType()
 	if nodeType == XML_DOCUMENT_NODE || nodeType == XML_HTML_DOCUMENT_NODE {
 		err = ERR_CANNOT_MAKE_DUCMENT_AS_CHILD

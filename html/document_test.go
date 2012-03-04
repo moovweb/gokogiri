@@ -2,6 +2,7 @@ package html
 
 import (
 	"testing"
+	"gokogiri/help"
 )
 
 func TestParseDocument(t *testing.T) {
@@ -28,7 +29,7 @@ func TestParseDocument(t *testing.T) {
 	}
 
 	doc.Free()
-	CheckXmlMemoryLeaks(t)
+	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestEmptyDocument(t *testing.T) {
@@ -45,6 +46,6 @@ func TestEmptyDocument(t *testing.T) {
 		t.Error("the output of the html doc does not match the empty xml")
 	}
 	doc.Free()
-	CheckXmlMemoryLeaks(t)
+	help.CheckXmlMemoryLeaks(t)
 }
 
