@@ -7,6 +7,7 @@ include $(GOROOT)/src/Make.inc
 TARG=gokogiri/html
 CGOFILES=\
     document.go\
+	fragment.go\
 
 CGO_OFILES=\
 	helper.o

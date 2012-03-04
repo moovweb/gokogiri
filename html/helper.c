@@ -1,7 +1,8 @@
 #include "helper.h"
+#include "../xml/helper.h"
 #include <string.h>
 
-htmlDocPtr html_native_parse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len) {
+htmlDocPtr htmlParse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len) {
 	const char *c_buffer       = (char*)buffer;
 	const char *c_url          = (char*)url;
 	const char *c_encoding     = (char*)encoding;
@@ -26,4 +27,8 @@ htmlDocPtr html_native_parse(void *buffer, int buffer_len, void *url, void *enco
 		}
 	}
 	return doc;
+}
+
+xmlNode* htmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+	return xmlParseFragment((xmlDoc*)doc, buffer, buffer_len, url, options, error_buffer, error_buffer_len);
 }

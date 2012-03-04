@@ -34,7 +34,7 @@ var DefaultParseOption = 	HTML_PARSE_RECOVER|
 							HTML_PARSE_NOERROR|
 							HTML_PARSE_NOWARNING
 
-type Document struct {
+type HtmlDocument struct {
 	*xml.Document
 }
 
@@ -60,7 +60,7 @@ func Parse(content, url, encoding []byte, options int) (doc *Document, err os.Er
 		if len(url) > 0      { urlPtr       = unsafe.Pointer(&url[0]) }
 		if len(encoding) > 0 { encodingPtr  = unsafe.Pointer(&encoding[0]) }
 		
-		docPtr = C.html_native_parse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
+		docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 	}
 	if docPtr == nil {
 		//why does newEmptyXmlDoc NOT call xmlInitParser like other parse functions?
