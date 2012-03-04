@@ -10,3 +10,11 @@ This is a major rewrite from v0 in the following places:
     - Fragement parsing -- no more deep-copy
     - Serialization
     - Some API adjustment
+
+To build and install
+
+	- make install
+	
+To run test
+
+	- make test
