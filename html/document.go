@@ -73,7 +73,3 @@ func Parse(content, url, encoding []byte, options int) (doc *HtmlDocument, err o
 	doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
 	return
 }
-
-func (document *HtmlDocument) String() string {
-	return document.ToHtml()
-}
