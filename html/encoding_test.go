@@ -13,13 +13,12 @@ func TestParseDocument_CP1252(t *testing.T) {
 	response, _ := httpClient.Get("http://florist.1800flowers.com/store.php?id=123")
 	responseBytes, _ := ioutil.ReadAll(response.Body)
 	
-	doc, err := Parse(responseBytes, nil, []byte("utf-8"), DefaultParseOption)
+	doc, err := Parse(responseBytes, nil, []byte("windows-1252"), DefaultParseOption)
 	if err != nil {
 		println("err:", err.String())
 	} else {
 		//println("output")
-		out := doc.ToHtml([]byte("iso-8859-2"))
-		println(len(out))
+		out := doc.ToHtml([]byte("utf-8"))
 		index := bytes.IndexByte(out, byte(146))
 		println(index)
 	}
