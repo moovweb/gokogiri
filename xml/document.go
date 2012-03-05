@@ -15,6 +15,7 @@ import (
 
 type Document interface {
 	DocPtr() unsafe.Pointer
+	DocType() int
 	DocEncoding() []byte
 	DocXPathCtx() *xpath.XPath
 	AddUnlinkedNode(unsafe.Pointer)
@@ -56,6 +57,7 @@ type XmlDocument struct {
 	Encoding []byte
 	UnlinkedNodes []unsafe.Pointer
 	XPathCtx *xpath.XPath
+	Type int
 }
 
 //default encoding in byte slice
@@ -72,6 +74,7 @@ func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *XmlDocu
 	doc = &XmlDocument{Ptr: docPtr, XmlNode: xmlNode, Encoding: encoding}
 	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
 	doc.XPathCtx = xpath.NewXPath(p) 
+	doc.Type = xmlNode.NodeType()
 	xmlNode.Document = doc
 	return
 }
@@ -102,6 +105,11 @@ func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {
 	return
 }
 
+func (document *XmlDocument) DocType() (t int) {
+	t = document.Type
+	return
+}
+
 func (document *XmlDocument) DocEncoding() (encoding []byte) {
 	encoding = document.Encoding
 	return
@@ -122,6 +130,7 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 	return
 }
 
+/*
 func (document *XmlDocument) ToXml() string {
 	document.outputOffset = 0
 	objPtr := unsafe.Pointer(document.XmlNode)
@@ -140,7 +149,6 @@ func (document *XmlDocument) ToHtml() string {
 	return string(document.outputBuffer[:document.outputOffset])
 }
 
-/*
 func (document *XmlDocument) ToXml2() string {
 	encodingPtr := unsafe.Pointer(&(document.Encoding[0]))
 	charPtr := C.xmlDocDumpToString(document.Ptr, encodingPtr, 0)
@@ -153,11 +161,11 @@ func (document *XmlDocument) ToHtml2() string {
 	defer C.xmlFreeChars(charPtr)
 	return C.GoString(charPtr)
 }
-*/
+
 func (document *XmlDocument) String() string {
 	return document.ToXml()
 }
-
+*/
 func (document *XmlDocument) Free() {
 	for _, nodePtr := range(document.UnlinkedNodes) {
 		C.xmlFreeNode((*C.xmlNode)(nodePtr))

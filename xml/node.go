@@ -89,8 +89,8 @@ type Node interface {
 	ResetChildren()
 	//Free()
 	////
-	ToXml() []byte
-	ToHtml() []byte
+	ToXml([]byte) []byte
+	ToHtml([]byte) []byte
 	String() string
 	Content() string
 }
@@ -339,11 +339,6 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err os.Error) {
 }
 
 /*
-//func (xmlNode *XmlNode) Attributes() map[string]*AttributeNode
-
-func (xmlNode *XmlNode) SetInnerHtml(interface{}) error {
-	
-}
 func (xmlNode *XmlNode) Replace(interface{}) error {
 	
 }
@@ -376,25 +371,36 @@ func (xmlNode *XmlNode) IsFragment() bool {
 }
 */
 
-func (xmlNode *XmlNode) ToXml() []byte {
+func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
 	xmlNode.outputOffset = 0
 	if len(xmlNode.outputBuffer) == 0 {
 		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
 	}
 	objPtr := unsafe.Pointer(xmlNode)
 	nodePtr      := unsafe.Pointer(xmlNode.Ptr)
-	encoding := xmlNode.Document.DocEncoding()
+	if len(encoding) == 0 {
+		encoding = xmlNode.Document.DocEncoding()
+	}
 	encodingPtr := unsafe.Pointer(&(encoding[0]))
-	C.xmlSaveNode(objPtr, nodePtr, encodingPtr, XML_SAVE_AS_XML)
+	C.xmlSaveNode(objPtr, nodePtr, encodingPtr, C.int(format))
 	return xmlNode.outputBuffer[:xmlNode.outputOffset]
 }
 
-func (xmlNode *XmlNode) ToHtml() []byte {
-	return nil
+func (xmlNode *XmlNode) ToXml(encoding []byte) []byte {
+	return xmlNode.to_s(XML_SAVE_AS_XML, encoding)
+}
+
+func (xmlNode *XmlNode) ToHtml(encoding []byte) []byte {
+	return xmlNode.to_s(XML_SAVE_AS_HTML, encoding)
 }
 
 func (xmlNode *XmlNode) String() string {
-	b := xmlNode.ToXml()
+	var b []byte
+	if docType := xmlNode.Document.DocType(); docType == XML_HTML_DOCUMENT_NODE {
+		b = xmlNode.ToHtml(xmlNode.Document.DocEncoding())
+	} else {
+		b = xmlNode.ToXml(xmlNode.Document.DocEncoding())
+	}
 	if b == nil {
 		return ""
 	}
