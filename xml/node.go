@@ -382,7 +382,11 @@ func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
 		encoding = xmlNode.Document.DocEncoding()
 	}
 	encodingPtr := unsafe.Pointer(&(encoding[0]))
-	C.xmlSaveNode(objPtr, nodePtr, encodingPtr, C.int(format))
+	ret := int(C.xmlSaveNode(objPtr, nodePtr, encodingPtr, C.int(format)))
+	if ret < 0 {
+		println("output error!!!")
+		return nil
+	}
 	return xmlNode.outputBuffer[:xmlNode.outputOffset]
 }
 
