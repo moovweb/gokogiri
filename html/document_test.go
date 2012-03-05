@@ -24,7 +24,7 @@ func TestParseDocument(t *testing.T) {
 		t.Error("the output of the html doc does not match")
 	}
 	
-	if doc.ToXml() != expected_xml {
+	if string(doc.ToXml(nil)) != expected_xml {
 		t.Error("the xml output of the html doc does not match")
 	}
 
@@ -51,18 +51,18 @@ func TestEmptyDocument(t *testing.T) {
 }
 
 func TestParseDocumentFragmentText(t *testing.T) {
-	doc, err := Parse(nil, nil, []byte("utf-8"), DefaultParseOption)
+	doc, err := Parse(nil, nil, []byte("iso-8859-1"), DefaultParseOption)
 	if err != nil {
 		println(err.String())
 	}
-	docFragment, err := ParseFragment(doc, []byte("ok\n"), nil, DefaultParseOption)
+	docFragment, err := ParseFragment(doc, []byte("ok\r\n"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
 	}
-	if (len(docFragment.Children) != 1 || docFragment.Children[0].String() != "ok\n") {
+	if (len(docFragment.Children) != 1 || docFragment.Children[0].String() != "ok\r\n") {
 		t.Error("the children from the fragment text do not match")
 	}
-	
+
 	docFragment.Free()
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
@@ -78,7 +78,7 @@ func TestParseDocumentFragment(t *testing.T) {
 	if err != nil {
 		t.Error(err.String())
 	}
-	if (len(docFragment.Children) != 1 || docFragment.Children[0].String() != "<div><h1/></div>") {
+	if (len(docFragment.Children) != 1 || docFragment.Children[0].String() != "<div><h1></h1></div>") {
 		t.Error("the of children from the fragment do not match")
 	}
 	
