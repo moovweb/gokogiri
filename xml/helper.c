@@ -8,7 +8,7 @@ int xml_write_callback(void *document, char *buffer, int len) {
 }
 
 int close_callback(void * ctx) {
-  return 0;
+  	return 0;
 }
 
 xmlDoc* newEmptyXmlDoc() {
@@ -96,7 +96,7 @@ void xmlSetContent(void *n, void *content) {
 	}
 }
 
-void xmlSaveNode(void *obj, void *node, void *encoding, int options) {
+int xmlSaveNode(void *obj, void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
 	
@@ -108,5 +108,5 @@ void xmlSaveNode(void *obj, void *node, void *encoding, int options) {
 	      options
 	  );
 	xmlSaveTree(savectx, (xmlNode*)node);
-	xmlSaveClose(savectx);
+	return xmlSaveClose(savectx);
 }
