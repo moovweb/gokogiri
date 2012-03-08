@@ -47,6 +47,8 @@ type Node interface {
 	NodePtr() unsafe.Pointer
 	ResetNodePtr()
 	MyDocument() Document
+
+	IsValid() bool
 	
 	//
 	NodeType() int
@@ -70,6 +72,16 @@ type Node interface {
 	//
 	////
 	SetContent(interface{}) os.Error
+
+	//
+	Name() string
+	SetName(string)
+
+	//
+	Path() string
+
+	//
+	Duplicate(int) Node
 	
 	Search(interface{}) ([]Node, os.Error)
 
@@ -210,6 +222,10 @@ func (xmlNode *XmlNode) ResetNodePtr() {
 	return
 }
 
+func (xmlNode *XmlNode) IsValid() bool {
+	return xmlNode.valid
+}
+
 func (xmlNode *XmlNode) MyDocument() (document Document) {
 	document = xmlNode.Document
 	return
@@ -222,6 +238,16 @@ func (xmlNode *XmlNode) NodePtr() (p unsafe.Pointer) {
 
 func (xmlNode *XmlNode) NodeType() (nodeType int) {
 	nodeType = int(C.getNodeType(xmlNode.Ptr))
+	return
+}
+
+func (xmlNode *XmlNode) Path() (path string) {
+	pathPtr := C.xmlGetNodePath(xmlNode.Ptr)
+	if pathPtr != nil {
+		p := (*C.char)(unsafe.Pointer(pathPtr))
+		defer C.xmlFreeChars(p)
+		path = C.GoString(p)
+	}
 	return
 }
 
@@ -372,6 +398,33 @@ func (xmlNode *XmlNode) IsFragment() bool {
 	
 }
 */
+
+func (xmlNode *XmlNode) Name() (name string) {
+	if xmlNode.Ptr.name != nil {
+		p := unsafe.Pointer(xmlNode.Ptr.name)
+		name = C.GoString((*C.char)(p))
+	}
+	return ""
+}
+
+func (xmlNode *XmlNode) SetName(name string) {
+	if len(name) > 0 {
+		nameBytes := []byte(name)
+		namePtr := unsafe.Pointer(&nameBytes[0])
+		C.xmlNodeSetName(xmlNode.Ptr, (*C.xmlChar)(namePtr))
+	}
+}
+
+func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
+	if xmlNode.valid {
+		dupPtr := C.xmlDocCopyNode(xmlNode.Ptr, (*C.xmlDoc)(xmlNode.Document.DocPtr()), C.int(level))
+		if dupPtr != nil {
+			dup = NewNode(unsafe.Pointer(dupPtr), xmlNode.Document)
+		}
+	}
+	return
+}
+
 
 func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
 	xmlNode.outputOffset = 0

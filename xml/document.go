@@ -22,6 +22,7 @@ type Document interface {
 	DocXPathCtx() *xpath.XPath
 	AddUnlinkedNode(unsafe.Pointer)
 	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
+	CreateElementNode(string) *ElementNode
 	Free()
 	String() string
 	BookkeepFragment(*DocumentFragment)
@@ -170,6 +171,18 @@ func (document *XmlDocument) BookkeepFragment(fragment *DocumentFragment) {
 func (document *XmlDocument) Root() (element *ElementNode) {
 	nodePtr := C.xmlDocGetRootElement(document.Ptr)
 	element = NewNode(unsafe.Pointer(nodePtr), document).(*ElementNode)
+	return
+}
+
+func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode) {
+	var tagPtr unsafe.Pointer
+	if len(tag) > 0 {
+		tagBytes := []byte(tag)
+		tagPtr = unsafe.Pointer(&tagBytes[0])
+	}
+	newNodePtr := C.xmlNewNode(nil, (*C.xmlChar)(tagPtr))
+	newNode := NewNode(unsafe.Pointer(newNodePtr), document)
+	element = newNode.(*ElementNode)
 	return
 }
 
