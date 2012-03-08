@@ -22,6 +22,7 @@ type Document interface {
 	AddUnlinkedNode(unsafe.Pointer)
 	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
 	Free()
+	String() string
 	BookkeepFragment(*DocumentFragment)
 }
 
