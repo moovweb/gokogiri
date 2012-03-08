@@ -11,6 +11,7 @@ GOFILES=\
 	cdata.go\
 	element.go\
 	text.go\
+	nodeset.go\
 	
 CGOFILES=\
 	document.go\
