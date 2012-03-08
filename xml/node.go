@@ -107,6 +107,8 @@ type XmlNode struct {
 	
 	outputBuffer []byte
 	outputOffset int
+
+	valid bool
 }
 
 func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
@@ -114,7 +116,7 @@ func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 		return nil
 	}
 	
-	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(nodePtr), Document: document}
+	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(nodePtr), Document: document, valid: true}
 	nodeType := C.getNodeType((*C.xmlNode)(nodePtr))
 	
 	switch nodeType {
@@ -139,16 +141,16 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 	case []Node:
 		nodes = t
 	case *DocumentFragment:
-		nodes = t.Children
+		nodes = t.Children.Nodes
 	case string:
 		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.DocEncoding(), nil, DefaultParseOption)
 		if err == nil {
-			nodes = f.Children
+			nodes = f.Children.Nodes
 		}
 	case []byte:
 		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.DocEncoding(), nil, DefaultParseOption)
 		if err == nil {
-			nodes = f.Children
+			nodes = f.Children.Nodes
 		}
 	}
 	return
@@ -424,7 +426,10 @@ func (xmlNode *XmlNode) Unlink() {
 }
 
 func (xmlNode *XmlNode) Remove() {
-	xmlNode.Unlink()
+	if xmlNode.valid {
+		xmlNode.Unlink()
+		xmlNode.valid = false
+	}
 }
 
 func (xmlNode *XmlNode) addChild(node Node) (err os.Error) {
@@ -441,7 +446,7 @@ func (xmlNode *XmlNode) addChild(node Node) (err os.Error) {
 		//check the retured pointer
 		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
 		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.ResetNodePtr()
+		node.Remove()
 	}
 	return
 }
@@ -460,7 +465,7 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err os.Error) {
 		//check the retured pointer
 		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
 		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.ResetNodePtr()
+		node.Remove()
 	}
 	return
 }
@@ -479,7 +484,7 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err os.Error) {
 		//check the retured pointer
 		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
 		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.ResetNodePtr()
+		node.Remove()
 	}
 	return
 }
