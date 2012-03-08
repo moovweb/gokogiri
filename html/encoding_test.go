@@ -13,37 +13,33 @@ func TestParseDocument_CP1252(t *testing.T) {
 	response, _ := httpClient.Get("http://florist.1800flowers.com/store.php?id=123")
 	responseBytes, _ := ioutil.ReadAll(response.Body)
 	
-	doc, err := Parse(responseBytes, nil, []byte("windows-1252"), DefaultParseOption)
+	doc, err := Parse(responseBytes, []byte("windows-1252"), nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
 		println("err:", err.String())
-	} else {
-		//println("output")
-		out := doc.ToHtml([]byte("utf-8"))
-		index := bytes.IndexByte(out, byte(146))
-		println(index)
+		return
 	}
-	
+	out := doc.String()
+	if index := bytes.IndexByte([]byte(out), byte(146)); index >= 0 {
+		t.Error("the output is not properly encoded")
+	}
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
 }
 
-/*
-func TestParseDocumentFragment(t *testing.T) {
-	doc, err := Parse(nil, nil, []byte("utf-8"), DefaultParseOption)
-	if err != nil {
-		println(err.String())
-	}
-	docFragment, err := ParseFragment(doc, []byte("<div><h1>"), nil, DefaultParseOption)
-	if err != nil {
-		t.Error(err.String())
-	}
-	if (len(docFragment.Children) != 1 || docFragment.Children[0].String() != "<div><h1></h1></div>") {
-		t.Error("the of children from the fragment do not match")
-	}
+func TestParseDocumentWithInOutEncodings(t *testing.T) {
+	httpClient := &http.Client{}
+	response, _ := httpClient.Get("http://florist.1800flowers.com/store.php?id=123")
+	responseBytes, _ := ioutil.ReadAll(response.Body)
 	
-	docFragment.Free()
+	doc, err := Parse(responseBytes, []byte("windows-1252"), nil, DefaultParseOption, []byte("windows-1252"))
+	if err != nil {
+		println("err:", err.String())
+		return
+	}
+	out := doc.String()
+	if index := bytes.IndexByte([]byte(out), byte(146)); index < 0 {
+		t.Error("the output is not properly encoded")
+	}
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
-	
 }
-*/

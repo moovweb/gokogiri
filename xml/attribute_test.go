@@ -6,9 +6,11 @@ import "gokogiri/help"
 
 
 func TestSetValue(t *testing.T) {
-	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
 		t.Error("Parsing has error:", err)
+		return
 	}
 	root := doc.Root()
 	attributes := root.Attributes()
@@ -30,5 +32,4 @@ func TestSetValue(t *testing.T) {
 		t.Error("root's new attr do not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }

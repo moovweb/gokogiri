@@ -6,7 +6,6 @@ import (
 )
 
 func TestParseDocument(t *testing.T) {
-	doc, err := Parse([]byte("<html><body><div><h1></div>"), nil, DefaultEncodingBytes, DefaultParseOption)
 	expected := 
 `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html><body><div><h1></h1></div></body></html>
@@ -16,8 +15,11 @@ func TestParseDocument(t *testing.T) {
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html><body><div><h1/></div></body></html>
 `
+	doc, err := Parse([]byte("<html><body><div><h1></div>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	
 	if err != nil {
 		t.Error("Parsing has error:", err)
+		return
 	}
 	
 	if doc.String() != expected {
@@ -33,13 +35,15 @@ func TestParseDocument(t *testing.T) {
 }
 
 func TestEmptyDocument(t *testing.T) {
-	doc, err := Parse(nil, nil, DefaultEncodingBytes, DefaultParseOption)
 	expected := 
 `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 
 `
+	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
 	if err != nil {
 		t.Error("Parsing has error:", err)
+		return
 	}
 	
 	if doc.String() != expected {

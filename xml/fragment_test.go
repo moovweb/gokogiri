@@ -6,35 +6,44 @@ import (
 )
 
 func TestParseDocumentFragment(t *testing.T) {
-	doc, err := Parse(nil, nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
+	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		println(err.String())
+		t.Error("parsing error:", err.String())
+		return
 	}
 	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
+		doc.Free()
+		return
 	}
 	if (docFragment.Children.Length() != 3) {
 		t.Error("the number of children from the fragment does not match")
 	}
-
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
-	
 }
 
 func TestSearchDocumentFragment(t *testing.T) {
-	doc, err := Parse("<moovweb><z/><s/></moovweb>", nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
+	doc, err := Parse([]byte("<moovweb><z/><s/></moovweb>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		println(err.String())
+		t.Error("parsing error:", err.String())
+		return
 	}
 	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
+		doc.Free()
+		return
 	}
 	nodes, err := docFragment.Search(".//*")
 	if err != nil {
 		t.Error("fragment search has error")
+		doc.Free()
+		return
 	}
 	if len(nodes) != 2 {
 		t.Error("the number of children from the fragment does not match")
@@ -43,29 +52,36 @@ func TestSearchDocumentFragment(t *testing.T) {
 
 	if err != nil {
 		t.Error("fragment search has error")
+		doc.Free()
+		return
 	}
 
-	if len(nodes) != 0 {
+	if len(nodes) != 3 {
 		t.Error("the number of children from the fragment's document does not match")
 	}
 
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
-	
 }
 
 func TestSearchDocumentFragmentWithEmptyDoc(t *testing.T) {
-	doc, err := Parse(nil, nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
+	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		println(err.String())
+		t.Error("parsing error:", err.String())
+		return
 	}
 	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
+		doc.Free()
+		return
 	}
 	nodes, err := docFragment.Search(".//*")
 	if err != nil {
 		t.Error("fragment search has error")
+		doc.Free()
+		return
 	}
 	if len(nodes) != 2 {
 		t.Error("the number of children from the fragment does not match")
@@ -74,6 +90,8 @@ func TestSearchDocumentFragmentWithEmptyDoc(t *testing.T) {
 
 	if err != nil {
 		t.Error("fragment search has error")
+		doc.Free()
+		return
 	}
 
 	if len(nodes) != 0 {
@@ -81,6 +99,4 @@ func TestSearchDocumentFragmentWithEmptyDoc(t *testing.T) {
 	}
 
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
-	
 }

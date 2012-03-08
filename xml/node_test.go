@@ -5,7 +5,8 @@ import "fmt"
 import "gokogiri/help"
 
 func TestAddChild(t *testing.T) {
-	doc, err := Parse([]byte("<foo></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
 	expectedDoc :=
 `<?xml version="1.0" encoding="utf-8"?>
 <foo/>
@@ -17,8 +18,11 @@ func TestAddChild(t *testing.T) {
 	expectedNodeAfterAdd :=
 `<foo><bar/></foo>`
 
+	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	if doc.String() != expectedDoc {
 		t.Error("the output of the xml doc does not match")
@@ -32,19 +36,22 @@ func TestAddChild(t *testing.T) {
 		t.Error("the output of the xml root after AddChild does not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestAddPreviousSibling(t *testing.T) {
-	doc, err := Parse([]byte("<foo></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
 	expected :=
 `<?xml version="1.0" encoding="utf-8"?>
 <bar/>
 <cat/>
 <foo/>
 `
+	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	err = doc.Root().AddPreviousSibling("<bar></bar><cat></cat>")
 	if doc.String() != expected {
@@ -52,18 +59,21 @@ func TestAddPreviousSibling(t *testing.T) {
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestAddNextSibling(t *testing.T) {
-	doc, err := Parse([]byte("<foo></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
 	expected :=
 `<?xml version="1.0" encoding="utf-8"?>
 <foo/>
 <bar/>
 `
+	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	doc.Root().AddNextSibling("<bar></bar>")
 	if doc.String() != expected {
@@ -71,17 +81,20 @@ func TestAddNextSibling(t *testing.T) {
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestSetContent(t *testing.T) {
-	doc, err := Parse([]byte("<foo><bar/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
 	expected :=
 `<?xml version="1.0" encoding="utf-8"?>
 <foo>&lt;fun&gt;&lt;/fun&gt;</foo>
 `
+	doc, err := Parse([]byte("<foo><bar/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	root := doc.Root()
 	root.SetContent("<fun></fun>")
@@ -90,18 +103,21 @@ func TestSetContent(t *testing.T) {
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
 
 
 func TestSetChildren(t *testing.T) {
-	doc, err := Parse([]byte("<foo><bar1/><bar2/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+	
 	expected :=
 `<?xml version="1.0" encoding="utf-8"?>
 <foo><fun/></foo>
 `
+	doc, err := Parse([]byte("<foo><bar1/><bar2/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	
 	root := doc.Root()
@@ -111,18 +127,21 @@ func TestSetChildren(t *testing.T) {
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestReplace(t *testing.T) {
-	doc, err := Parse([]byte("<foo><bar/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
 	expected :=
 `<?xml version="1.0" encoding="utf-8"?>
 <fun/>
 <cool/>
 `
+	doc, err := Parse([]byte("<foo><bar/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	root := doc.Root()
 	root.Replace("<fun></fun><cool/>")
@@ -134,13 +153,15 @@ func TestReplace(t *testing.T) {
 		t.Error("the output of the xml root does not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestAttributes(t *testing.T) {
-	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
+	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	root := doc.Root()
 	attributes := root.Attributes()
@@ -154,13 +175,15 @@ func TestAttributes(t *testing.T) {
 		t.Error("child's attributes do not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
 
 func TestSearch(t *testing.T) {
-	doc, err := Parse([]byte("<foo id=\"a\" class=\"shine\"><bar class=\"shine\"/><vic class=\"dim\"></foo>"), nil, []byte("utf-8"), DefaultParseOption)
+	defer help.CheckXmlMemoryLeaks(t)
+
+	doc, err := Parse([]byte("<foo id=\"a\" class=\"shine\"><bar class=\"shine\"/><vic class=\"dim\"></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		t.Error("Parsing has error:", err)
+		t.Error("parsing error:", err.String())
+		return
 	}
 	
 	root := doc.Root()
@@ -182,5 +205,4 @@ func TestSearch(t *testing.T) {
 	}
 	
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
 }
