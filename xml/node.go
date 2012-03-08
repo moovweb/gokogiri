@@ -141,12 +141,12 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 	case *DocumentFragment:
 		nodes = t.Children
 	case string:
-		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.DocEncoding(), DefaultParseOption)
+		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.DocEncoding(), nil, DefaultParseOption)
 		if err == nil {
 			nodes = f.Children
 		}
 	case []byte:
-		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.DocEncoding(), DefaultParseOption)
+		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.DocEncoding(), nil, DefaultParseOption)
 		if err == nil {
 			nodes = f.Children
 		}

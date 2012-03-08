@@ -43,7 +43,7 @@ func TestParseDocumentFragment(t *testing.T) {
 	if err != nil {
 		println(err.String())
 	}
-	docFragment, err := ParseFragment(doc, []byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
+	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
 	}

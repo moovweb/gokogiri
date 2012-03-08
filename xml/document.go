@@ -19,6 +19,7 @@ type Document interface {
 	DocEncoding() []byte
 	DocXPathCtx() *xpath.XPath
 	AddUnlinkedNode(unsafe.Pointer)
+	ParseFragment([]byte, []byte, int) (Document, os.Error)
 	Free()
 }
 
@@ -92,12 +93,41 @@ func Parse(content, url, encoding []byte, options int) (doc *XmlDocument, err os
 		if len(encoding) > 0 { encodingPtr  = unsafe.Pointer(&encoding[0]) }
 		
 		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
+	} else {
+		doc = CreateEmptyDocument(encoding)
 	}
-	if docPtr == nil {
-		docPtr = C.newEmptyXmlDoc()
-	}
+	return
+}
+
+func CreateEmptyDocument(encoding []byte) (doc *XmlDocument) {
+	docPtr := C.newEmptyXmlDoc()
 	doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
 	return
+}
+
+func (document *XmlDocument) ParseFragment(input, url []byte, options int) (doc Document, err os.Error) {
+	content = append(fragmentWrapperStart, content...)
+	content = append(content, fragmentWrapperEnd...)
+
+	var contentPtr, urlPtr unsafe.Pointer
+	contentPtr   = unsafe.Pointer(&content[0])
+	contentLen   := len(content)
+	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
+	
+	rootElementPtr := C.xmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+
+	if rootElementPtr == nil { err = ErrFailParseFragment; return }
+	
+	c := (*C.xmlNode)(unsafe.Pointer(rootElementPtr.children))
+	var nextSibling *C.xmlNode
+	
+	for ; c != nil; c = nextSibling {
+		nextSibling = (*C.xmlNode)(unsafe.Pointer(c.next))
+		C.xmlUnlinkNode(c)
+		fragment.Children = append(fragment.Children, NewNode(unsafe.Pointer(c), document))
+	}
+	//now we have rip all its children nodes, we should release the root node
+	C.xmlFreeNode(rootElementPtr)
 }
 
 func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {

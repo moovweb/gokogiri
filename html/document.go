@@ -44,6 +44,8 @@ type HtmlDocument struct {
 var DefaultEncodingBytes = []byte(xml.DefaultEncoding)
 var emptyHtmlDocBytes = []byte(EmptyHtmlDoc)
 
+var ErrSetMetaEncoding = os.NewError("Set Meta Encoding failed")
+
 //create a document
 func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *HtmlDocument) {
 	doc = &HtmlDocument{}
@@ -72,4 +74,33 @@ func Parse(content, url, encoding []byte, options int) (doc *HtmlDocument, err o
 	
 	doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
 	return
+}
+
+func CreateEmptyDocument([]byte encoding) (doc *HtmlDocument) {
+	C.xmlInitParser()
+	docPtr = C.htmlNewDoc(nil, nil)
+	doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
+	return
+}
+
+func (doc *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
+	return ParseFragment(doc, input, nil, url, options)
+}
+
+func (doc *HtmlDocument) MetaEncoding() string {
+    metaEncodingXmlCharPtr := C.htmlGetMetaEncoding((*C.xmlDoc)(doc.DocPtr()))
+    return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
+}
+
+func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err os.Error) {
+	var encodingPtr unsafe.Pointer = nil
+	if len(encoding) > 0 {
+		encodingBytes := []byte(encoding)
+		encodingPtr = unsafe.Pointer(&encodingBytes[0])
+	}
+    ret := int(C.htmlSetMetaEncoding((*C.xmlDoc)(doc.DocPtr()), (*C.xmlChar)(encodingPtr)))
+    if (ret == -1) {
+        err = ErrSetMetaEncoding
+    }
+    return
 }

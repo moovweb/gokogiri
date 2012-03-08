@@ -14,21 +14,17 @@ var (
 	ErrFailParseFragment = os.NewError("failed to parse html fragment")
 )
 
-type DocumentFragment struct {
-	*xml.DocumentFragment
-}
-
 const DefaultDocumentFragmentEncoding = "utf-8"
 const initChildrenNumber = 4
 
 var defaultDocumentFragmentEncodingBytes = []byte(DefaultDocumentFragmentEncoding)
 var bodySigBytes = []byte("<body")
 
-func ParseFragment(document xml.Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+func ParseFragment(document xml.Document, content, encoding, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
 	//deal with trivial cases
 	if len(content) == 0 { return }
 	if document == nil {
-		document, err = Parse(nil, url, defaultDocumentFragmentEncodingBytes, options)
+		document, err = Parse(nil, url, encoding, options)
 		if err != nil {
 			return
 		}
@@ -51,8 +47,7 @@ func ParseFragment(document xml.Document, content, url []byte, options int) (fra
 
 	defer C.xmlFreeNode(htmlPtr)
 	
-	fragment = &DocumentFragment{}
-	fragment.DocumentFragment = &xml.DocumentFragment{}
+	fragment = &xml.DocumentFragment{}
 	fragment.Document = document
 	fragment.Children = make([]xml.Node, 0, initChildrenNumber)
 	bodyPtr := (*C.xmlNode)(unsafe.Pointer(htmlPtr.children))

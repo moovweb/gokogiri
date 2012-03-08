@@ -55,7 +55,7 @@ func TestParseDocumentFragmentText(t *testing.T) {
 	if err != nil {
 		println(err.String())
 	}
-	docFragment, err := ParseFragment(doc, []byte("ok\r\n"), nil, DefaultParseOption)
+	docFragment, err := doc.ParseFragment([]byte("ok\r\n"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
 	}
@@ -74,7 +74,7 @@ func TestParseDocumentFragment(t *testing.T) {
 	if err != nil {
 		println(err.String())
 	}
-	docFragment, err := ParseFragment(doc, []byte("<div><h1>"), nil, DefaultParseOption)
+	docFragment, err := doc.ParseFragment([]byte("<div><h1>"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
 	}
