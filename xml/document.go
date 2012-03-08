@@ -11,6 +11,7 @@ import (
 	"unsafe"
 	"os"
 	"gokogiri/xpath"
+//	"runtime/debug"
 )
 
 type Document interface {
@@ -19,8 +20,9 @@ type Document interface {
 	DocEncoding() []byte
 	DocXPathCtx() *xpath.XPath
 	AddUnlinkedNode(unsafe.Pointer)
-	ParseFragment([]byte, []byte, int) (Document, os.Error)
+	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
 	Free()
+	BookkeepFragment(*DocumentFragment)
 }
 
 //xml parse option
@@ -52,6 +54,8 @@ const (
 //libxml2 use "utf-8" by default, and so do we
 const DefaultEncoding = "utf-8"
 
+var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
+
 type XmlDocument struct {
 	Ptr *C.xmlDoc
 	*XmlNode	
@@ -59,12 +63,16 @@ type XmlDocument struct {
 	UnlinkedNodes []unsafe.Pointer
 	XPathCtx *xpath.XPath
 	Type int
+
+	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
 }
 
 //default encoding in byte slice
 var DefaultEncodingBytes = []byte(DefaultEncoding)
 
 const initialUnlinkedNodes = 8
+const initialFragments = 2
+
 //create a document
 func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *XmlDocument) {
 	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
@@ -76,6 +84,7 @@ func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *XmlDocu
 	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
 	doc.XPathCtx = xpath.NewXPath(p) 
 	doc.Type = xmlNode.NodeType()
+	doc.fragments = make([]*DocumentFragment, 0, initialFragments)
 	xmlNode.Document = doc
 	return
 }
@@ -93,6 +102,13 @@ func Parse(content, url, encoding []byte, options int) (doc *XmlDocument, err os
 		if len(encoding) > 0 { encodingPtr  = unsafe.Pointer(&encoding[0]) }
 		
 		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
+		
+		if docPtr == nil {
+			err = ERR_FAILED_TO_PARSE_XML
+		} else {
+			doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
+		}
+
 	} else {
 		doc = CreateEmptyDocument(encoding)
 	}
@@ -105,29 +121,9 @@ func CreateEmptyDocument(encoding []byte) (doc *XmlDocument) {
 	return
 }
 
-func (document *XmlDocument) ParseFragment(input, url []byte, options int) (doc Document, err os.Error) {
-	content = append(fragmentWrapperStart, content...)
-	content = append(content, fragmentWrapperEnd...)
-
-	var contentPtr, urlPtr unsafe.Pointer
-	contentPtr   = unsafe.Pointer(&content[0])
-	contentLen   := len(content)
-	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
-	
-	rootElementPtr := C.xmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
-
-	if rootElementPtr == nil { err = ErrFailParseFragment; return }
-	
-	c := (*C.xmlNode)(unsafe.Pointer(rootElementPtr.children))
-	var nextSibling *C.xmlNode
-	
-	for ; c != nil; c = nextSibling {
-		nextSibling = (*C.xmlNode)(unsafe.Pointer(c.next))
-		C.xmlUnlinkNode(c)
-		fragment.Children = append(fragment.Children, NewNode(unsafe.Pointer(c), document))
-	}
-	//now we have rip all its children nodes, we should release the root node
-	C.xmlFreeNode(rootElementPtr)
+func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+	fragment, err = ParseFragment(document, input, document.DocEncoding(), url, options)
+	return
 }
 
 func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {
@@ -152,6 +148,10 @@ func (document *XmlDocument) DocXPathCtx() (ctx *xpath.XPath) {
 
 func (document *XmlDocument) AddUnlinkedNode(nodePtr unsafe.Pointer) {
 	document.UnlinkedNodes = append(document.UnlinkedNodes, nodePtr)
+}
+
+func (document *XmlDocument) BookkeepFragment(fragment *DocumentFragment) {
+	document.fragments = append(document.fragments, fragment)
 }
 
 func (document *XmlDocument) Root() (element *ElementNode) {
@@ -197,9 +197,16 @@ func (document *XmlDocument) String() string {
 }
 */
 func (document *XmlDocument) Free() {
+	//must clear the fragments first
+	//because the nodes are put in the unlinked list
+	for _, fragment := range(document.fragments) {
+		fragment.Remove()
+	}
+
 	for _, nodePtr := range(document.UnlinkedNodes) {
 		C.xmlFreeNode((*C.xmlNode)(nodePtr))
 	}
+	
 	document.XPathCtx.Free()
 	C.xmlFreeDoc(document.Ptr)
 }

@@ -7,29 +7,35 @@ import (
 	"os"
 )
 
+type DocumentFragment struct {
+	Node
+	Children *NodeSet
+}
+
 var (
 	fragmentWrapperStart = []byte("<root>")
 	fragmentWrapperEnd   = []byte("</root>")
-	
-	ErrFailParseFragment = os.NewError("failed to parse xml fragment")
 )
 
-const DefaultDocumentFragmentEncoding = "utf-8"
+var ErrFailParseFragment = os.NewError("failed to parse xml fragment")
+
 const initChildrenNumber = 4
 
-var defaultDocumentFragmentEncodingBytes = []byte(DefaultDocumentFragmentEncoding)
-
-func ParseFragment(document Document, content, encoding, url []byte, options int) (document *XmlDocument, err os.Error) {
+func ParseFragment(document Document, content, encoding, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//deal with trivial cases
 	if len(content) == 0 { return }
 	
+	//if a document is not provided, we should create an empty Xml document
+	//a fragment must reside in a document
 	if document == nil {
 		document = CreateEmptyDocument(encoding)
 	}
 	
+	//wrap the content before parsing
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)
 
+	//set up pointers before calling the C function
 	var contentPtr, urlPtr unsafe.Pointer
 	contentPtr   = unsafe.Pointer(&content[0])
 	contentLen   := len(content)
@@ -37,22 +43,30 @@ func ParseFragment(document Document, content, encoding, url []byte, options int
 	
 	rootElementPtr := C.xmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 	
-	//
-	if rootElementPtr == nil { err = ErrFailParseFragment; return }
+	//Note we've parsed the fragment within the given document 
+	//the root is not the root of the document; rather it's the root of the subtree from the fragment
+	root := NewNode(unsafe.Pointer(rootElementPtr), document)
+
+	//the fragment was in invalid
+	if root == nil {
+		err = ErrFailParseFragment
+		return
+	}
 	
 	fragment = &DocumentFragment{}
-	fragment.Document = document
-	fragment.Children = make([]Node, 0, initChildrenNumber)
+	fragment.Node = root
 	
-	c := (*C.xmlNode)(unsafe.Pointer(rootElementPtr.children))
-	var nextSibling *C.xmlNode
-	
-	for ; c != nil; c = nextSibling {
-		nextSibling = (*C.xmlNode)(unsafe.Pointer(c.next))
-		C.xmlUnlinkNode(c)
-		fragment.Children = append(fragment.Children, NewNode(unsafe.Pointer(c), document))
+	nodes := make([]Node, 0, initChildrenNumber)
+	child := root.FirstChild()
+	for ; child != nil; child = child.NextSibling() {
+		nodes = append(nodes, child)
 	}
-	//now we have rip all its children nodes, we should release the root node
-	C.xmlFreeNode(rootElementPtr)
+	fragment.Children = NewNodeSet(document, nodes)
+	document.BookkeepFragment(fragment)
 	return
+}
+
+func (fragment *DocumentFragment) Remove() {
+	fragment.Children.Remove()
+	fragment.Node.Remove()
 }
