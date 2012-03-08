@@ -37,22 +37,3 @@ func TestEmptyDocument(t *testing.T) {
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
 }
-
-func TestParseDocumentFragment(t *testing.T) {
-	doc, err := Parse(nil, nil, []byte("utf-8"), DefaultParseOption)
-	if err != nil {
-		println(err.String())
-	}
-	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
-	if err != nil {
-		t.Error(err.String())
-	}
-	if (len(docFragment.Children) != 3) {
-		t.Error("the number of children from the fragment does not match")
-	}
-	
-	docFragment.Free()
-	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
-	
-}
