@@ -143,12 +143,12 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 	case *DocumentFragment:
 		nodes = t.Children.Nodes
 	case string:
-		f, err := ParseFragment(xmlNode.Document, []byte(t), xmlNode.Document.DocEncoding(), nil, DefaultParseOption)
+		f, err := xmlNode.Document.ParseFragment([]byte(t), nil, DefaultParseOption)
 		if err == nil {
 			nodes = f.Children.Nodes
 		}
 	case []byte:
-		f, err := ParseFragment(xmlNode.Document, t, xmlNode.Document.DocEncoding(), nil, DefaultParseOption)
+		f, err := xmlNode.Document.ParseFragment(t, nil, DefaultParseOption)
 		if err == nil {
 			nodes = f.Children.Nodes
 		}
@@ -381,7 +381,7 @@ func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
 	objPtr := unsafe.Pointer(xmlNode)
 	nodePtr      := unsafe.Pointer(xmlNode.Ptr)
 	if len(encoding) == 0 {
-		encoding = xmlNode.Document.DocEncoding()
+		encoding = xmlNode.Document.OutputEncoding()
 	}
 	encodingPtr := unsafe.Pointer(&(encoding[0]))
 	ret := int(C.xmlSaveNode(objPtr, nodePtr, encodingPtr, C.int(format)))
@@ -403,9 +403,9 @@ func (xmlNode *XmlNode) ToHtml(encoding []byte) []byte {
 func (xmlNode *XmlNode) String() string {
 	var b []byte
 	if docType := xmlNode.Document.DocType(); docType == XML_HTML_DOCUMENT_NODE {
-		b = xmlNode.ToHtml(xmlNode.Document.DocEncoding())
+		b = xmlNode.ToHtml(nil)
 	} else {
-		b = xmlNode.ToXml(xmlNode.Document.DocEncoding())
+		b = xmlNode.ToXml(nil)
 	}
 	if b == nil {
 		return ""

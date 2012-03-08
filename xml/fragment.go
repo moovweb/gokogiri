@@ -18,19 +18,17 @@ var (
 )
 
 var ErrFailParseFragment = os.NewError("failed to parse xml fragment")
+var ErrEmptyFragment = os.NewError("empty xml fragment")
 
 const initChildrenNumber = 4
 
-func ParseFragment(document Document, content, encoding, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+func parsefragment(document Document, content, encoding, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//deal with trivial cases
-	if len(content) == 0 { return }
-	
-	//if a document is not provided, we should create an empty Xml document
-	//a fragment must reside in a document
-	if document == nil {
-		document = CreateEmptyDocument(encoding)
+	if len(content) == 0 {
+		err = ErrEmptyFragment
+		return
 	}
-	
+
 	//wrap the content before parsing
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)
@@ -63,6 +61,17 @@ func ParseFragment(document Document, content, encoding, url []byte, options int
 	}
 	fragment.Children = NewNodeSet(document, nodes)
 	document.BookkeepFragment(fragment)
+	return
+}
+
+
+func ParseFragment(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (fragment *DocumentFragment, err os.Error) {
+	if len(content) == 0 {
+		err = ErrEmptyFragment
+		return
+	}
+	document := CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
+	fragment, err = parsefragment(document, content, inEncoding, url, options)
 	return
 }
 

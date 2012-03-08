@@ -17,7 +17,8 @@ import (
 type Document interface {
 	DocPtr() unsafe.Pointer
 	DocType() int
-	DocEncoding() []byte
+	InputEncoding() []byte
+	OutputEncoding() []byte
 	DocXPathCtx() *xpath.XPath
 	AddUnlinkedNode(unsafe.Pointer)
 	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
@@ -60,7 +61,8 @@ var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
 type XmlDocument struct {
 	Ptr *C.xmlDoc
 	*XmlNode	
-	Encoding []byte
+	InEncoding []byte
+	OutEncoding []byte
 	UnlinkedNodes []unsafe.Pointer
 	XPathCtx *xpath.XPath
 	Type int
@@ -75,13 +77,13 @@ const initialUnlinkedNodes = 8
 const initialFragments = 2
 
 //create a document
-func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *XmlDocument) {
+func NewDocument(p unsafe.Pointer, inEncoding, outEncoding, buffer []byte) (doc *XmlDocument) {
 	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
 	if len(buffer) == 0 {
 		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
 	}
 	docPtr := (*C.xmlDoc)(p)
-	doc = &XmlDocument{Ptr: docPtr, XmlNode: xmlNode, Encoding: encoding}
+	doc = &XmlDocument{Ptr: docPtr, XmlNode: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding}
 	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
 	doc.XPathCtx = xpath.NewXPath(p) 
 	doc.Type = xmlNode.NodeType()
@@ -90,8 +92,7 @@ func NewDocument(p unsafe.Pointer, encoding []byte, buffer []byte) (doc *XmlDocu
 	return
 }
 
-//parse a string to document
-func Parse(content, url, encoding []byte, options int) (doc *XmlDocument, err os.Error) {
+func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (doc *XmlDocument, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 	
@@ -100,30 +101,36 @@ func Parse(content, url, encoding []byte, options int) (doc *XmlDocument, err os
 		
 		contentPtr   = unsafe.Pointer(&content[0])
 		if len(url) > 0      { urlPtr       = unsafe.Pointer(&url[0]) }
-		if len(encoding) > 0 { encodingPtr  = unsafe.Pointer(&encoding[0]) }
+		if len(inEncoding) > 0 { encodingPtr  = unsafe.Pointer(&inEncoding[0]) }
 		
 		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 		
 		if docPtr == nil {
 			err = ERR_FAILED_TO_PARSE_XML
 		} else {
-			doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
+			doc = NewDocument(unsafe.Pointer(docPtr), inEncoding, outEncoding, outBuffer)
 		}
 
 	} else {
-		doc = CreateEmptyDocument(encoding)
+		doc = CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
 	}
 	return
 }
 
-func CreateEmptyDocument(encoding []byte) (doc *XmlDocument) {
+//parse a string to document
+func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err os.Error) {
+	doc, err = ParseWithBuffer(content, inEncoding, url, options, outEncoding, nil)
+	return
+}
+
+func CreateEmptyDocument(inEncoding , outEncoding, outBuffer []byte) (doc *XmlDocument) {
 	docPtr := C.newEmptyXmlDoc()
-	doc = NewDocument(unsafe.Pointer(docPtr), encoding, nil)
+	doc = NewDocument(unsafe.Pointer(docPtr), inEncoding, outEncoding, outBuffer)
 	return
 }
 
 func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
-	fragment, err = ParseFragment(document, input, document.DocEncoding(), url, options)
+	fragment, err = parsefragment(document, input, document.InputEncoding(), url, options)
 	return
 }
 
@@ -137,8 +144,13 @@ func (document *XmlDocument) DocType() (t int) {
 	return
 }
 
-func (document *XmlDocument) DocEncoding() (encoding []byte) {
-	encoding = document.Encoding
+func (document *XmlDocument) InputEncoding() (encoding []byte) {
+	encoding = document.InEncoding
+	return
+}
+
+func (document *XmlDocument) OutputEncoding() (encoding []byte) {
+	encoding = document.OutEncoding
 	return
 }
 

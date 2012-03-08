@@ -13,17 +13,16 @@ var fragmentWrapperStart = []byte("<html><body>")
 var bodySigBytes = []byte("<body")
 
 var ErrFailParseFragment = os.NewError("failed to parse html fragment")
+var ErrEmptyFragment = os.NewError("empty html fragment")
 
 const initChildrenNumber = 4
-func ParseFragment(document xml.Document, content, encoding, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
-	//deal with trivial cases
-	if len(content) == 0 { return }
 
-	//if a document is not provided, we should create an empty Html document
-	//a fragment must reside in a document
-	if document == nil {
-		document = CreateEmptyDocument(encoding)
-	} 
+func parsefragment(document xml.Document, content, encoding, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
+	//deal with trivial cases
+	if len(content) == 0 {
+		err = ErrEmptyFragment
+		return
+	}
 	
 	containBody := (bytes.Index(content, bodySigBytes) >= 0)
 	
@@ -63,5 +62,16 @@ func ParseFragment(document xml.Document, content, encoding, url []byte, options
 	}
 	fragment.Children = xml.NewNodeSet(document, nodes)
 	document.BookkeepFragment(fragment)
+	return
+}
+
+func ParseFragment(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (fragment *xml.DocumentFragment, err os.Error) {
+	if len(content) == 0 {
+		err = ErrEmptyFragment
+		return
+	}
+
+	document := CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
+	fragment, err = parsefragment(document, content, inEncoding, url, options)
 	return
 }
