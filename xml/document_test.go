@@ -3,61 +3,102 @@ package xml
 import (
 	"testing"
 	"gokogiri/help"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
+	"fmt"
 )
 
-func TestParseDocument(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+func TestDocuments(t *testing.T) {
+	tests := collectTests(t)
+	
+	errors := make([]string, 0)
 
-	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
-	expected := 
-`<?xml version="1.0" encoding="utf-8"?>
-<foo/>
-`
-	if err != nil {
-		t.Error("parsing error:", err)
+	print("\nTesting: [")
+
+	for _, test := range(tests) {
+		error := RunDocumentParseTest(t, test)
+
+		if error != nil {
+			errors = append(errors, fmt.Sprintf("Test %v failed:\n%v\n", test, *error))
+			print("F")
+		} else {
+			print(".")
+		}
 	}
 	
-	if doc.String() != expected {
-		t.Error("the output of the xml doc does not match")
+	println("]")
+
+	if len(errors) > 0 {
+		errorMessage := "\t" + strings.Join( strings.Split(strings.Join(errors, "\n\n"), "\n"), "\n\t")
+		t.Errorf("\nSome tests failed! (%d passed / %d total) :\n%v", len(tests) - len(errors), len(tests), errorMessage)
+	} else {
+		fmt.Printf("\nAll (%d) tests passed!\n", len(tests))
 	}
-	doc.Free()
-	
 }
 
-func TestParseDocumentWithBuffer(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
-	
-	buffer := make([]byte, 100)
+func RunDocumentParseTest(t *testing.T, name string) (error *string) {
 
-	doc, err := ParseWithBuffer([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes, buffer)
-	expected := 
-`<?xml version="1.0" encoding="utf-8"?>
-<foo/>
-`
+	var errorMessage string
+	offset := "\t"
+
+	defer help.CheckXmlMemoryLeaks(t)
+
+	input, err := ioutil.ReadFile(filepath.Join(name, "input.txt"))
+	
 	if err != nil {
-		t.Error("parsing error:", err)
+		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) input:\n%v\n", offset, name, offset + err.String())
 	}
 	
-	if doc.String() != expected {
-		t.Error("the output of the xml doc does not match")
+	output, err := ioutil.ReadFile(filepath.Join(name, "output.txt"))
+	
+	if err != nil {
+		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) output:\n%v\n", offset, name, offset + err.String())
 	}
-	doc.Free()
+
+
+	doc, err := Parse(input, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
+	if err != nil {
+		errorMessage = fmt.Sprintf("parsing error:%v\n", err)
+	}
+	
+	if doc.String() != string(output) {
+		formattedOutput := offset + strings.Join(strings.Split("[" + doc.String() + "]", "\n"), "\n" + offset)
+		formattedExpectedOutput := offset + strings.Join(strings.Split("[" + string(output) + "]", "\n"), "\n" + offset)
+		errorMessage = fmt.Sprintf("%v-- Got --\n%v\n%v-- Expected --\n%v\n", offset, formattedOutput, offset, formattedExpectedOutput)
+	}
+	doc.Free()	
+
+	if len(errorMessage) > 0 {
+		return &errorMessage	
+	} 
+	return nil
+
 }
 
-func TestEmptyDocument(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+func collectTests(t *testing.T) (names []string) {
+	testPath := "tests"
+	entries, err := ioutil.ReadDir(testPath)
 
-	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
-	expected := 
-`<?xml version="1.0" encoding="utf-8"?>
-`
 	if err != nil {
-		t.Error("Parsing has error:", err)
-		return
+		t.Errorf("Couldn't read tests:\n%v\n", err.String())
 	}
-	
-	if doc.String() != expected {
-		t.Error("the output of the xml doc does not match the empty xml")
+
+	for _, entry := range(entries) {
+		if strings.HasPrefix(entry.Name, "_") || strings.HasPrefix(entry.Name, ".") {
+			continue
+		}
+
+		if entry.IsDirectory() {
+			names = append(names, filepath.Join(testPath, entry.Name) )
+		}
 	}
-	doc.Free()
+
+	return
+}
+
+
+
+func TestBufferedDocuments(t *testing.T) {
 }
