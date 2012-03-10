@@ -10,7 +10,11 @@ import (
 )
 
 func TestDocuments(t *testing.T) {
-	tests := collectTests(t)
+	tests, err := collectTests()
+
+	if len(err) > 0 {
+		t.Errorf(err)
+	}
 	
 	errors := make([]string, 0)
 
@@ -38,7 +42,11 @@ func TestDocuments(t *testing.T) {
 }
 
 func TestBufferedDocuments(t *testing.T) {
-	tests := collectTests(t)
+	tests, err := collectTests()
+
+	if len(err) > 0 {
+		t.Errorf(err)
+	}
 	
 	errors := make([]string, 0)
 
@@ -132,12 +140,12 @@ func RunDocumentParseTest(t *testing.T, name string) (error *string) {
 
 }
 
-func collectTests(t *testing.T) (names []string) {
+func collectTests() (names []string, error string) {
 	testPath := "tests"
 	entries, err := ioutil.ReadDir(testPath)
 
 	if err != nil {
-		t.Errorf("Couldn't read tests:\n%v\n", err.String())
+		return nil, fmt.Sprintf("Couldn't read tests:\n%v\n", err.String())
 	}
 
 	for _, entry := range(entries) {
@@ -171,3 +179,90 @@ func getTestData(name string) (input []byte, output []byte, error string) {
 
 	return input, output, errorMessage
 }
+
+func BenchmarkDocParsing(b *testing.B) {
+	b.StopTimer()
+
+	tests, err := collectTests()
+
+	if len(err) > 0 {
+		fmt.Printf(err)
+		return
+	}	
+
+	data := make([][]byte, 0)
+
+	for _, testName := range(tests) {
+
+		input, _, dataError := getTestData(testName)
+
+		if len(dataError) > 0 {
+			fmt.Printf(dataError)
+			return
+		}
+
+		data = append(data, input)
+	}
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+
+		for index, _ := range(tests) {
+
+			_, err := Parse(data[index], DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
+			if err != nil {
+				fmt.Printf("parsing error:%v\n", err)
+				return
+			}
+
+		}
+	}
+	
+}
+
+func BenchmarkBufferedDocParsing(b *testing.B) {
+	b.StopTimer()
+
+	tests, err := collectTests()
+
+	if len(err) > 0 {
+		fmt.Printf(err)
+		return
+	}	
+
+	data := make([][]byte, 0)
+
+	for _, testName := range(tests) {
+
+		input, _, dataError := getTestData(testName)
+
+		if len(dataError) > 0 {
+			fmt.Printf(dataError)
+			return
+		}
+
+		data = append(data, input)
+	}
+	
+	buffer := make([]byte, 100)
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+
+		for index, _ := range(tests) {
+
+			_, err := ParseWithBuffer(data[index], DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes, buffer)
+
+			if err != nil {
+				fmt.Printf("parsing error:%v\n", err)
+				return
+			}
+
+		}
+	}
+
+}
+
