@@ -10,7 +10,7 @@
 
 xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int errror_buffer_len);
 xmlNode* xmlParseFragment(void* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len);
-int xmlSaveNode(void *obj, void *node, void *encoding, int options);
+int xmlSaveNode(void *buffer, int buffer_len, void *node, void *encoding, int options);
 
 void xmlSetContent(void* node, void *content);
 
@@ -20,5 +20,10 @@ char *xmlDocDumpToString(xmlDoc *doc, void *encoding, int format);
 char *htmlDocDumpToString(xmlDoc *doc, int format);
 void xmlFreeChars(char *buffer);
 
+typedef struct XmlBufferContext {
+	char *buffer;
+	int buffer_len;
+	int data_size;
+} XmlBufferContext;
 
 #endif //__CHELPER_H__

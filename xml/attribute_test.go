@@ -4,7 +4,6 @@ import "testing"
 import "fmt"
 import "gokogiri/help"
 
-
 func TestSetValue(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
@@ -25,10 +24,12 @@ func TestSetValue(t *testing.T) {
 	}
 	attributes["myname"].SetValue("new")
 	if root.String() != `<foo id="a" myname="new"><bar class="shine"/></foo>` {
+		println("OK:", root.String())
 		t.Error("root's new attr do not match")
 	}
 	attributes["id"].Remove()
 	if root.String() != `<foo myname="new"><bar class="shine"/></foo>` {
+		println("OK:", root.String())
 		t.Error("root's new attr do not match")
 	}
 	doc.Free()

@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	ERR_UNDEFINED_COERCE_PARAM 				    = os.NewError("unexpected parameter type in coerce")
-	ERR_UNDEFINED_SET_CONTENT_PARAM             = os.NewError("unexpected parameter type in SetContent")
-	ERR_UNDEFINED_SEARCH_PARAM             		= os.NewError("unexpected parameter type in Search")
-	ERR_CANNOT_MAKE_DUCMENT_AS_CHILD 			= os.NewError("cannot add a document node as a child")
-	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD 	= os.NewError("cannot copy a text node when adding it")
+	ERR_UNDEFINED_COERCE_PARAM               = os.NewError("unexpected parameter type in coerce")
+	ERR_UNDEFINED_SET_CONTENT_PARAM          = os.NewError("unexpected parameter type in SetContent")
+	ERR_UNDEFINED_SEARCH_PARAM               = os.NewError("unexpected parameter type in Search")
+	ERR_CANNOT_MAKE_DUCMENT_AS_CHILD         = os.NewError("cannot add a document node as a child")
+	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD = os.NewError("cannot copy a text node when adding it")
 )
 
 //xmlNode types
@@ -49,16 +49,16 @@ type Node interface {
 	MyDocument() Document
 
 	IsValid() bool
-	
+
 	//
 	NodeType() int
 	NextSibling() Node
 	PreviousSibling() Node
-	
+
 	FirstChild() Node
 	LastChild() Node
 	Attributes() map[string]*AttributeNode
-	
+
 	//
 	AddChild(interface{}) os.Error
 	AddPreviousSibling(interface{}) os.Error
@@ -82,7 +82,7 @@ type Node interface {
 
 	//
 	Duplicate(int) Node
-	
+
 	Search(interface{}) ([]Node, os.Error)
 
 	//SetParent(Node)
@@ -94,7 +94,7 @@ type Node interface {
 	//IsElement() bool
 	//IsFragment() bool
 	//
-	
+
 	//
 	Unlink()
 	Remove()
@@ -111,12 +111,12 @@ type Node interface {
 var ErrTooLarge = os.NewError("Output buffer too large")
 
 //pre-allocate a buffer for serializing the document
-const initialOutputBufferSize = 100*1024 //100K
+const initialOutputBufferSize = 600 * 1024 //100K
 
 type XmlNode struct {
 	Ptr *C.xmlNode
 	Document
-	
+
 	outputBuffer []byte
 	outputOffset int
 
@@ -127,10 +127,14 @@ func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 	if nodePtr == nil {
 		return nil
 	}
-	
-	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(nodePtr), Document: document, valid: true}
+
+	xmlNode := &XmlNode{
+		Ptr:      (*C.xmlNode)(nodePtr),
+		Document: document,
+		valid:    true,
+	}
 	nodeType := C.getNodeType((*C.xmlNode)(nodePtr))
-	
+
 	switch nodeType {
 	default:
 		node = xmlNode
@@ -173,7 +177,7 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
-			for _, node := range(nodes) {
+			for _, node := range nodes {
 				if err = xmlNode.addChild(node); err != nil {
 					break
 				}
@@ -189,7 +193,7 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
-			for _, node := range(nodes) {
+			for _, node := range nodes {
 				if err = xmlNode.addPreviousSibling(node); err != nil {
 					break
 				}
@@ -205,7 +209,7 @@ func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
-			for _, node := range(nodes) {
+			for _, node := range nodes {
 				if err = xmlNode.addNextSibling(node); err != nil {
 					break
 				}
@@ -252,12 +256,12 @@ func (xmlNode *XmlNode) Path() (path string) {
 }
 
 func (xmlNode *XmlNode) NextSibling() Node {
-	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.next);
+	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.next)
 	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
 }
 
 func (xmlNode *XmlNode) PreviousSibling() Node {
-	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.prev);
+	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.prev)
 	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
 }
 
@@ -359,7 +363,7 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err os.Error) {
 	case *xpath.Expression:
 		xpathCtx := xmlNode.Document.DocXPathCtx()
 		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
-		for _, nodePtr := range(nodePtrs) {
+		for _, nodePtr := range nodePtrs {
 			result = append(result, NewNode(nodePtr, xmlNode.Document))
 		}
 	}
@@ -368,34 +372,34 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err os.Error) {
 
 /*
 func (xmlNode *XmlNode) Replace(interface{}) error {
-	
+
 }
 func (xmlNode *XmlNode) Swap(interface{}) error {
-	
+
 }
 func (xmlNode *XmlNode) SetParent(Node) {
-	
+
 }
 func (xmlNode *XmlNode) IsComment() bool {
-	
+
 }
 func (xmlNode *XmlNode) IsCData() bool {
-	
+
 }
 func (xmlNode *XmlNode) IsXml() bool {
-	
+
 }
 func (xmlNode *XmlNode) IsHtml() bool {
-	
+
 }
 func (xmlNode *XmlNode) IsText() bool {
-	
+
 }
 func (xmlNode *XmlNode) IsElement() bool {
-	
+
 }
 func (xmlNode *XmlNode) IsFragment() bool {
-	
+
 }
 */
 
@@ -425,24 +429,24 @@ func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
 	return
 }
 
-
 func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
 	xmlNode.outputOffset = 0
 	if len(xmlNode.outputBuffer) == 0 {
 		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
 	}
-	objPtr := unsafe.Pointer(xmlNode)
-	nodePtr      := unsafe.Pointer(xmlNode.Ptr)
+	nodePtr := unsafe.Pointer(xmlNode.Ptr)
 	if len(encoding) == 0 {
 		encoding = xmlNode.Document.OutputEncoding()
 	}
 	encodingPtr := unsafe.Pointer(&(encoding[0]))
-	ret := int(C.xmlSaveNode(objPtr, nodePtr, encodingPtr, C.int(format)))
+	bufferPtr := unsafe.Pointer(&xmlNode.outputBuffer[0])
+	bufferLen := len(xmlNode.outputBuffer)
+	ret := int(C.xmlSaveNode(bufferPtr, C.int(bufferLen), nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
 		println("output error!!!")
 		return nil
 	}
-	return xmlNode.outputBuffer[:xmlNode.outputOffset]
+	return xmlNode.outputBuffer[:ret]
 }
 
 func (xmlNode *XmlNode) ToXml(encoding []byte) []byte {
@@ -467,7 +471,7 @@ func (xmlNode *XmlNode) String() string {
 }
 
 func (xmlNode *XmlNode) Content() string {
-	contentPtr := C.xmlNodeGetContent(xmlNode.Ptr);
+	contentPtr := C.xmlNodeGetContent(xmlNode.Ptr)
 	charPtr := (*C.char)(unsafe.Pointer(contentPtr))
 	defer C.xmlFreeChars(charPtr)
 	return C.GoString(charPtr)
@@ -493,7 +497,7 @@ func (xmlNode *XmlNode) addChild(node Node) (err os.Error) {
 	}
 	nodePtr := node.NodePtr()
 	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-	
+
 	childPtr := C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
 		//check the retured pointer
@@ -512,7 +516,7 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err os.Error) {
 	}
 	nodePtr := node.NodePtr()
 	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-	
+
 	childPtr := C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
 		//check the retured pointer
@@ -531,7 +535,7 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err os.Error) {
 	}
 	nodePtr := node.NodePtr()
 	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-	
+
 	childPtr := C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
 		//check the retured pointer
@@ -542,13 +546,13 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err os.Error) {
 	return
 }
 
-
+/*
 //export xmlNodeWriteCallback
 func xmlNodeWriteCallback(obj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
 	node := (*XmlNode)(obj)
 	dataLen := int(data_len)
 
-	if node.outputOffset + dataLen > cap(node.outputBuffer) {
+	if node.outputOffset+dataLen > cap(node.outputBuffer) {
 		node.outputBuffer = grow(node.outputBuffer, dataLen)
 	}
 	if dataLen > 0 {
@@ -560,16 +564,17 @@ func xmlNodeWriteCallback(obj unsafe.Pointer, data unsafe.Pointer, data_len C.in
 
 func grow(buffer []byte, n int) (newBuffer []byte) {
 	newBuffer = makeSlice(2*cap(buffer) + n)
-    copy(newBuffer, buffer)
+	copy(newBuffer, buffer)
 	return
 }
 
 func makeSlice(n int) []byte {
-    // If the make fails, give a known error.
-    defer func() {
-        if recover() != nil {
-            panic(ErrTooLarge)
-        }
-    }()
-    return make([]byte, n)
+	// If the make fails, give a known error.
+	defer func() {
+		if recover() != nil {
+			panic(ErrTooLarge)
+		}
+	}()
+	return make([]byte, n)
 }
+*/
