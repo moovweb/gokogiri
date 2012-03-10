@@ -11,7 +11,7 @@ import (
 	"unsafe"
 	"os"
 	"gokogiri/xpath"
-//	"runtime/debug"
+	//	"runtime/debug"
 )
 
 type Document interface {
@@ -30,28 +30,28 @@ type Document interface {
 
 //xml parse option
 const (
-	XML_PARSE_RECOVER   = 1 << 0 //relaxed parsing
-    XML_PARSE_NOERROR   = 1 << 5  //suppress error reports 
-    XML_PARSE_NOWARNING = 1 << 6  //suppress warning reports 
-    XML_PARSE_NONET     = 1 << 11 //forbid network access
+	XML_PARSE_RECOVER   = 1 << 0  //relaxed parsing
+	XML_PARSE_NOERROR   = 1 << 5  //suppress error reports 
+	XML_PARSE_NOWARNING = 1 << 6  //suppress warning reports 
+	XML_PARSE_NONET     = 1 << 11 //forbid network access
 )
 
 //default parsing option: relax parsing
-var DefaultParseOption = 	XML_PARSE_RECOVER | 
-    						XML_PARSE_NONET|
-    						XML_PARSE_NOERROR|
-    						XML_PARSE_NOWARNING
+var DefaultParseOption = XML_PARSE_RECOVER |
+	XML_PARSE_NONET |
+	XML_PARSE_NOERROR |
+	XML_PARSE_NOWARNING
 
 //xml save option
 const (
-	XML_SAVE_FORMAT     = 1<<0	/* format save output */
-	XML_SAVE_NO_DECL    = 1<<1	/* drop the xml declaration */
-	XML_SAVE_NO_EMPTY	= 1<<2 /* no empty tags */
-	XML_SAVE_NO_XHTML	= 1<<3 /* disable XHTML1 specific rules */
-	XML_SAVE_XHTML	    = 1<<4 /* force XHTML1 specific rules */
-	XML_SAVE_AS_XML     = 1<<5 /* force XML serialization on HTML doc */
-	XML_SAVE_AS_HTML    = 1<<6 /* force HTML serialization on XML doc */
-	XML_SAVE_WSNONSIG   = 1<<7  /* format with non-significant whitespace */
+	XML_SAVE_FORMAT   = 1 << 0 /* format save output */
+	XML_SAVE_NO_DECL  = 1 << 1 /* drop the xml declaration */
+	XML_SAVE_NO_EMPTY = 1 << 2 /* no empty tags */
+	XML_SAVE_NO_XHTML = 1 << 3 /* disable XHTML1 specific rules */
+	XML_SAVE_XHTML    = 1 << 4 /* force XHTML1 specific rules */
+	XML_SAVE_AS_XML   = 1 << 5 /* force XML serialization on HTML doc */
+	XML_SAVE_AS_HTML  = 1 << 6 /* force HTML serialization on XML doc */
+	XML_SAVE_WSNONSIG = 1 << 7 /* format with non-significant whitespace */
 )
 
 //libxml2 use "utf-8" by default, and so do we
@@ -61,12 +61,12 @@ var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
 
 type XmlDocument struct {
 	Ptr *C.xmlDoc
-	*XmlNode	
-	InEncoding []byte
-	OutEncoding []byte
+	*XmlNode
+	InEncoding    []byte
+	OutEncoding   []byte
 	UnlinkedNodes []unsafe.Pointer
-	XPathCtx *xpath.XPath
-	Type int
+	XPathCtx      *xpath.XPath
+	Type          int
 
 	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
 }
@@ -82,11 +82,13 @@ func NewDocument(p unsafe.Pointer, inEncoding, outEncoding, buffer []byte) (doc 
 	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
 	if len(buffer) == 0 {
 		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
+	} else {
+		xmlNode.outputBuffer = buffer
 	}
 	docPtr := (*C.xmlDoc)(p)
 	doc = &XmlDocument{Ptr: docPtr, XmlNode: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding}
 	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
-	doc.XPathCtx = xpath.NewXPath(p) 
+	doc.XPathCtx = xpath.NewXPath(p)
 	doc.Type = xmlNode.NodeType()
 	doc.fragments = make([]*DocumentFragment, 0, initialFragments)
 	xmlNode.Document = doc
@@ -96,16 +98,20 @@ func NewDocument(p unsafe.Pointer, inEncoding, outEncoding, buffer []byte) (doc 
 func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (doc *XmlDocument, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
-	
+
 	if contentLen > 0 {
 		var contentPtr, urlPtr, encodingPtr unsafe.Pointer
-		
-		contentPtr   = unsafe.Pointer(&content[0])
-		if len(url) > 0      { urlPtr       = unsafe.Pointer(&url[0]) }
-		if len(inEncoding) > 0 { encodingPtr  = unsafe.Pointer(&inEncoding[0]) }
-		
+
+		contentPtr = unsafe.Pointer(&content[0])
+		if len(url) > 0 {
+			urlPtr = unsafe.Pointer(&url[0])
+		}
+		if len(inEncoding) > 0 {
+			encodingPtr = unsafe.Pointer(&inEncoding[0])
+		}
+
 		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
-		
+
 		if docPtr == nil {
 			err = ERR_FAILED_TO_PARSE_XML
 		} else {
@@ -124,7 +130,7 @@ func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (do
 	return
 }
 
-func CreateEmptyDocument(inEncoding , outEncoding, outBuffer []byte) (doc *XmlDocument) {
+func CreateEmptyDocument(inEncoding, outEncoding, outBuffer []byte) (doc *XmlDocument) {
 	docPtr := C.newEmptyXmlDoc()
 	doc = NewDocument(unsafe.Pointer(docPtr), inEncoding, outEncoding, outBuffer)
 	return
@@ -225,14 +231,14 @@ func (document *XmlDocument) String() string {
 func (document *XmlDocument) Free() {
 	//must clear the fragments first
 	//because the nodes are put in the unlinked list
-	for _, fragment := range(document.fragments) {
+	for _, fragment := range document.fragments {
 		fragment.Remove()
 	}
 
-	for _, nodePtr := range(document.UnlinkedNodes) {
+	for _, nodePtr := range document.UnlinkedNodes {
 		C.xmlFreeNode((*C.xmlNode)(nodePtr))
 	}
-	
+
 	document.XPathCtx.Free()
 	C.xmlFreeDoc(document.Ptr)
 }
