@@ -78,10 +78,14 @@ const initialUnlinkedNodes = 8
 const initialFragments = 2
 
 //create a document
-func NewDocument(p unsafe.Pointer, inEncoding, outEncoding, buffer []byte) (doc *XmlDocument) {
+func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding, buffer []byte) (doc *XmlDocument) {
 	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
-	if len(buffer) == 0 {
-		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
+	adjustedLen := contentLen + contentLen>>1  //1.5 of the input len
+	if adjustedLen < initialOutputBufferSize { //min len
+		adjustedLen = initialOutputBufferSize
+	}
+	if len(buffer) < adjustedLen {
+		xmlNode.outputBuffer = make([]byte, adjustedLen)
 	} else {
 		xmlNode.outputBuffer = buffer
 	}
@@ -115,7 +119,7 @@ func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, 
 		if docPtr == nil {
 			err = ERR_FAILED_TO_PARSE_XML
 		} else {
-			doc = NewDocument(unsafe.Pointer(docPtr), inEncoding, outEncoding, outBuffer)
+			doc = NewDocument(unsafe.Pointer(docPtr), contentLen, inEncoding, outEncoding, outBuffer)
 		}
 
 	} else {
@@ -132,7 +136,7 @@ func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (do
 
 func CreateEmptyDocument(inEncoding, outEncoding, outBuffer []byte) (doc *XmlDocument) {
 	docPtr := C.newEmptyXmlDoc()
-	doc = NewDocument(unsafe.Pointer(docPtr), inEncoding, outEncoding, outBuffer)
+	doc = NewDocument(unsafe.Pointer(docPtr), 0, inEncoding, outEncoding, outBuffer)
 	return
 }
 

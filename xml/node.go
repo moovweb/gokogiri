@@ -111,7 +111,7 @@ type Node interface {
 var ErrTooLarge = os.NewError("Output buffer too large")
 
 //pre-allocate a buffer for serializing the document
-const initialOutputBufferSize = 600 * 1024 //100K
+const initialOutputBufferSize = 100 * 1024 //100K
 
 type XmlNode struct {
 	Ptr *C.xmlNode
