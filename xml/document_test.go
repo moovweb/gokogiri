@@ -130,6 +130,9 @@ func RunDocumentParseTest(t *testing.T, name string) (error *string) {
 		formattedOutput := offset + strings.Join(strings.Split("["+doc.String()+"]", "\n"), "\n"+offset)
 		formattedExpectedOutput := offset + strings.Join(strings.Split("["+string(output)+"]", "\n"), "\n"+offset)
 		errorMessage = fmt.Sprintf("%v-- Got --\n%v\n%v-- Expected --\n%v\n", offset, formattedOutput, offset, formattedExpectedOutput)
+		testOutput := filepath.Join(name, "test_output.txt")
+		ioutil.WriteFile(testOutput, []byte(doc.String()), uint32(0666))
+		errorMessage += fmt.Sprintf("%v Output test output to: %v\n", offset, testOutput)
 	}
 	doc.Free()
 
