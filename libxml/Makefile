@@ -14,5 +14,5 @@ clean:
 	make -f libxml.mak clean
 	set -e; for d in $(subdirs); do make -C $$d clean ; done
 
-test:
-	set -e; make test
+runtest:
+	set -e; cd test; make test
