@@ -43,6 +43,17 @@ const (
 	XML_DOCB_DOCUMENT_NODE = 21
 )
 
+const (
+	XML_SAVE_FORMAT   = 1   // format save output
+	XML_SAVE_NO_DECL  = 2   //drop the xml declaration
+	XML_SAVE_NO_EMPTY = 4   //no empty tags
+	XML_SAVE_NO_XHTML = 8   //disable XHTML1 specific rules
+	XML_SAVE_XHTML    = 16  //force XHTML1 specific rules
+	XML_SAVE_AS_XML   = 32  //force XML serialization on HTML doc
+	XML_SAVE_AS_HTML  = 64  //force HTML serialization on XML doc
+	XML_SAVE_WSNONSIG = 128 //format with non-significant whitespace
+)
+
 type Node interface {
 	NodePtr() unsafe.Pointer
 	ResetNodePtr()
@@ -435,12 +446,19 @@ func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
 		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
 	}
 	nodePtr := unsafe.Pointer(xmlNode.Ptr)
+
+	var encodingPtr unsafe.Pointer
 	if len(encoding) == 0 {
 		encoding = xmlNode.Document.OutputEncoding()
 	}
-	encodingPtr := unsafe.Pointer(&(encoding[0]))
+	if len(encoding) > 0 {
+		encodingPtr = unsafe.Pointer(&(encoding[0]))
+	} else {
+		encodingPtr = nil
+	}
 	bufferPtr := unsafe.Pointer(&xmlNode.outputBuffer[0])
 	bufferLen := len(xmlNode.outputBuffer)
+	format |= XML_SAVE_FORMAT
 	ret := int(C.xmlSaveNode(bufferPtr, C.int(bufferLen), nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
 		println("output error!!!")
