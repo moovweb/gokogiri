@@ -8,18 +8,22 @@ func TestAddChild(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
 	expectedDoc :=
-`<?xml version="1.0" encoding="utf-8"?>
+		`<?xml version="1.0" encoding="utf-8"?>
 <foo/>
 `
 	expectedDocAfterAdd :=
-`<?xml version="1.0" encoding="utf-8"?>
-<foo><bar/></foo>
+		`<?xml version="1.0" encoding="utf-8"?>
+<foo>
+  <bar/>
+</foo>
 `
 	expectedNodeAfterAdd :=
-`<foo><bar/></foo>`
+		`<foo>
+  <bar/>
+</foo>`
 
 	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
-	
+
 	if err != nil {
 		t.Error("parsing error:", err.String())
 		return
@@ -29,10 +33,13 @@ func TestAddChild(t *testing.T) {
 	}
 	doc.Root().AddChild("<bar></bar>")
 	if doc.String() != expectedDocAfterAdd {
-		println(doc.String())
+		println("got:\n", doc.String())
+		println("expected:\n", expectedDocAfterAdd)
 		t.Error("the output of the xml doc after AddChild does not match")
 	}
 	if doc.Root().String() != expectedNodeAfterAdd {
+		println("got:\n", doc.Root().String())
+		println("expected:\n", expectedNodeAfterAdd)
 		t.Error("the output of the xml root after AddChild does not match")
 	}
 	doc.Free()
@@ -42,7 +49,7 @@ func TestAddPreviousSibling(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
 	expected :=
-`<?xml version="1.0" encoding="utf-8"?>
+		`<?xml version="1.0" encoding="utf-8"?>
 <bar/>
 <cat/>
 <foo/>
@@ -65,7 +72,7 @@ func TestAddNextSibling(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
 	expected :=
-`<?xml version="1.0" encoding="utf-8"?>
+		`<?xml version="1.0" encoding="utf-8"?>
 <foo/>
 <bar/>
 `
@@ -87,7 +94,7 @@ func TestSetContent(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
 	expected :=
-`<?xml version="1.0" encoding="utf-8"?>
+		`<?xml version="1.0" encoding="utf-8"?>
 <foo>&lt;fun&gt;&lt;/fun&gt;</foo>
 `
 	doc, err := Parse([]byte("<foo><bar/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
@@ -105,13 +112,14 @@ func TestSetContent(t *testing.T) {
 	doc.Free()
 }
 
-
 func TestSetChildren(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
-	
+
 	expected :=
-`<?xml version="1.0" encoding="utf-8"?>
-<foo><fun/></foo>
+		`<?xml version="1.0" encoding="utf-8"?>
+<foo>
+  <fun/>
+</foo>
 `
 	doc, err := Parse([]byte("<foo><bar1/><bar2/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
@@ -119,11 +127,12 @@ func TestSetChildren(t *testing.T) {
 		t.Error("parsing error:", err.String())
 		return
 	}
-	
+
 	root := doc.Root()
 	root.SetChildren("<fun></fun>")
 	if doc.String() != expected {
-		println(doc.String())
+		println("got:\n", doc.String())
+		println("expected:\n", expected)
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
@@ -133,7 +142,7 @@ func TestReplace(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
 	expected :=
-`<?xml version="1.0" encoding="utf-8"?>
+		`<?xml version="1.0" encoding="utf-8"?>
 <fun/>
 <cool/>
 `
@@ -185,7 +194,7 @@ func TestSearch(t *testing.T) {
 		t.Error("parsing error:", err.String())
 		return
 	}
-	
+
 	root := doc.Root()
 	result, _ := root.Search(".//*[@class]")
 	if len(result) != 2 {
@@ -203,6 +212,6 @@ func TestSearch(t *testing.T) {
 	if len(result) != 2 {
 		t.Error("search with value at doc does not match")
 	}
-	
+
 	doc.Free()
 }

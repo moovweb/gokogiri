@@ -23,14 +23,25 @@ func TestSetValue(t *testing.T) {
 		t.Error("child's attributes do not match")
 	}
 	attributes["myname"].SetValue("new")
-	if root.String() != `<foo id="a" myname="new"><bar class="shine"/></foo>` {
-		println("OK:", root.String())
+	expected :=
+		`<foo id="a" myname="new">
+  <bar class="shine"/>
+</foo>`
+	if root.String() != expected {
+		println("got:\n", root.String())
+		println("expected:\n", expected)
 		t.Error("root's new attr do not match")
 	}
 	attributes["id"].Remove()
-	if root.String() != `<foo myname="new"><bar class="shine"/></foo>` {
-		println("OK:", root.String())
-		t.Error("root's new attr do not match")
+	expected =
+		`<foo myname="new">
+  <bar class="shine"/>
+</foo>`
+
+	if root.String() != expected {
+		println("got:\n", root.String())
+		println("expected:\n", expected)
+		t.Error("root's remove attr do not match")
 	}
 	doc.Free()
 }

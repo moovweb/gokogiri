@@ -42,18 +42,6 @@ var DefaultParseOption = XML_PARSE_RECOVER |
 	XML_PARSE_NOERROR |
 	XML_PARSE_NOWARNING
 
-//xml save option
-const (
-	XML_SAVE_FORMAT   = 1 << 0 /* format save output */
-	XML_SAVE_NO_DECL  = 1 << 1 /* drop the xml declaration */
-	XML_SAVE_NO_EMPTY = 1 << 2 /* no empty tags */
-	XML_SAVE_NO_XHTML = 1 << 3 /* disable XHTML1 specific rules */
-	XML_SAVE_XHTML    = 1 << 4 /* force XHTML1 specific rules */
-	XML_SAVE_AS_XML   = 1 << 5 /* force XML serialization on HTML doc */
-	XML_SAVE_AS_HTML  = 1 << 6 /* force HTML serialization on XML doc */
-	XML_SAVE_WSNONSIG = 1 << 7 /* format with non-significant whitespace */
-)
-
 //libxml2 use "utf-8" by default, and so do we
 const DefaultEncoding = "utf-8"
 
