@@ -227,7 +227,8 @@ func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
-			for _, node := range nodes {
+			for i := len(nodes)-1; i >= 0; i-- {
+				node := nodes[i]
 				if err = xmlNode.addNextSibling(node); err != nil {
 					break
 				}

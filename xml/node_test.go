@@ -4,6 +4,11 @@ import "testing"
 import "fmt"
 import "gokogiri/help"
 
+func badOutput(actual string, expected string) {
+	fmt.Printf("Got:\n[%v]\n", actual)
+	fmt.Printf("Expected:\n[%v]\n", expected)
+}
+
 func TestAddChild(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
@@ -75,6 +80,7 @@ func TestAddNextSibling(t *testing.T) {
 		`<?xml version="1.0" encoding="utf-8"?>
 <foo/>
 <bar/>
+<baz/>
 `
 	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
@@ -82,9 +88,9 @@ func TestAddNextSibling(t *testing.T) {
 		t.Error("parsing error:", err.String())
 		return
 	}
-	doc.Root().AddNextSibling("<bar></bar>")
+	doc.Root().AddNextSibling("<bar></bar><baz></baz>")
 	if doc.String() != expected {
-		println(doc.String())
+		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
