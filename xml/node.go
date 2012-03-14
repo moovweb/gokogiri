@@ -125,7 +125,6 @@ type Node interface {
 
 var emptyStringBytes = []byte{0}
 
-
 //run out of memory
 var ErrTooLarge = os.NewError("Output buffer too large")
 
@@ -490,7 +489,7 @@ func (xmlNode *XmlNode) Name() (name string) {
 		p := unsafe.Pointer(xmlNode.Ptr.name)
 		name = C.GoString((*C.char)(p))
 	}
-	return ""
+	return
 }
 
 func (xmlNode *XmlNode) SetName(name string) {
