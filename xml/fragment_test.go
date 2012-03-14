@@ -5,6 +5,26 @@ import (
 	"gokogiri/help"
 )
 
+func TestParseDocumentFragmentBasic(t *testing.T) {
+	defer help.CheckXmlMemoryLeaks(t)
+
+	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	if err != nil {
+		t.Error("parsing error:", err.String())
+		return
+	}
+	docFragment, err := doc.ParseFragment([]byte("hi"), nil, DefaultParseOption)
+	if err != nil {
+		t.Error(err.String())
+		doc.Free()
+		return
+	}
+	if (docFragment.Children.Length() != 1) {
+		t.Error("the number of children from the fragment does not match")
+	}
+	doc.Free()
+}
+
 func TestParseDocumentFragment(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
