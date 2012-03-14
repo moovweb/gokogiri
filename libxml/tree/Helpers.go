@@ -2,7 +2,7 @@ package tree
 /* 
 #include <libxml/tree.h>
 //xmlFree is not really a function but a macro in libxml2, so we have to define a function like the following and thus cgo can use it
-void xmlFreeChars(void* buf) { xmlFree((xmlChar*)buf); } 
+void xmlFreeChars2(void* buf) { xmlFree((xmlChar*)buf); } 
 */
 import "C"
 import "unsafe"
@@ -19,5 +19,5 @@ func String2XmlChar(str string) *C.xmlChar {
 }
 
 func XmlFreeChars(chars unsafe.Pointer) {
-	C.xmlFreeChars(chars)
+	C.xmlFreeChars2(chars)
 }
