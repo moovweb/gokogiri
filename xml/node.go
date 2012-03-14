@@ -89,8 +89,9 @@ type Node interface {
 	SetName(string)
 
 	//
-	Attribute(string) string
-	SetAttribute(string, string) *AttributeNode
+	Attr(string) string
+	SetAttr(string, string) string
+	Attribute(string) *AttributeNode
 
 	//
 	Path() string
@@ -362,12 +363,39 @@ func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
 	return
 }
 
-func (xmlNode *XmlNode) Attribute(name string) (val string) {
+func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
+	if xmlNode.NodeType() != XML_ELEMENT_NODE {
+		return
+	}
 	if len(name) == 0 {
 		return
 	}
 	nameBytes := []byte(name)
 	namePtr := unsafe.Pointer(&nameBytes[0])
+	attrPtr := C.xmlHasNsProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), nil)
+	if attrPtr == nil {
+		return
+	} else {
+		node := NewNode(unsafe.Pointer(attrPtr), xmlNode.Document)
+		if node, ok := node.(*AttributeNode); ok {
+			attribute = node
+		}
+	}
+	return
+}
+
+func (xmlNode *XmlNode) Attr(name string) (val string) {
+	if xmlNode.NodeType() != XML_ELEMENT_NODE {
+		return
+	}
+	if len(name) == 0 {
+		return
+	}
+	var namePtr unsafe.Pointer = nil
+	if len(name) > 0 {
+		nameBytes := []byte(name)
+		namePtr = unsafe.Pointer(&nameBytes[0])
+	}
 	valPtr := C.xmlGetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr))
 	if valPtr == nil {
 		return
@@ -378,37 +406,26 @@ func (xmlNode *XmlNode) Attribute(name string) (val string) {
 	return
 }
 
-func (xmlNode *XmlNode) SetAttribute(name, value string) (attribute *AttributeNode) {
-	if len(name) == 0 {
+func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
+	val = value
+	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
 	}
-	nameBytes := []byte(name)
-	namePtr := unsafe.Pointer(&nameBytes[0])
-	prop := C.xmlHasProp(xmlNode.Ptr, (*C.xmlChar)(namePtr))
-	if prop != nil && prop.children != nil {
-		c := prop.children
-		for c != nil {
-			nextC := c
-			child := NewNode(unsafe.Pointer(c), xmlNode.Document)
-			if child != nil {
-				child.Remove()
-			}
-			c = nextC
-		}
-	}
-
-	if len(value) == 0 {
-		prop = C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), nil)
+	var nameBytes []byte
+	if len(name) == 0 {
+		nameBytes = make([]byte, 1)
+		nameBytes[0] = 0
 	} else {
-		valueBytes := []byte(name)
-		valuePtr := unsafe.Pointer(&valueBytes[0])
-		prop = C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
+		nameBytes = []byte(name)
 	}
-	if prop != nil {
-		node := NewNode(unsafe.Pointer(prop), xmlNode.Document)
-		if node, ok := node.(*AttributeNode); ok {
-			attribute = node
-		}
+	namePtr := unsafe.Pointer(&nameBytes[0])
+	
+	if len(value) == 0 {
+		C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), nil)
+	} else {
+		valueBytes := []byte(value)
+		valuePtr := unsafe.Pointer(&valueBytes[0])
+		C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
 	}
 	return
 }
