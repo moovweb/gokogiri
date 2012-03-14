@@ -123,6 +123,9 @@ type Node interface {
 	Content() string
 }
 
+var emptyStringBytes = []byte{0}
+
+
 //run out of memory
 var ErrTooLarge = os.NewError("Output buffer too large")
 
@@ -307,10 +310,12 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err os.Error) {
 	case string:
 		err = xmlNode.SetContent([]byte(data))
 	case []byte:
+		contentBytes := emptyStringBytes
 		if len(data) > 0 {
-			contentPtr := unsafe.Pointer(&data[0])
-			C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), contentPtr)
+			contentBytes = append(data, 0)
 		}
+		contentPtr := unsafe.Pointer(&contentBytes[0])
+		C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), contentPtr)
 	}
 	return
 }
@@ -367,10 +372,10 @@ func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
 	}
-	if len(name) == 0 {
-		return
+	nameBytes := emptyStringBytes
+	if len(name) > 0 {
+		nameBytes = append([]byte(name), 0)
 	}
-	nameBytes := []byte(name)
 	namePtr := unsafe.Pointer(&nameBytes[0])
 	attrPtr := C.xmlHasNsProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), nil)
 	if attrPtr == nil {
@@ -388,14 +393,11 @@ func (xmlNode *XmlNode) Attr(name string) (val string) {
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
 	}
-	if len(name) == 0 {
-		return
-	}
-	var namePtr unsafe.Pointer = nil
+	nameBytes := emptyStringBytes
 	if len(name) > 0 {
-		nameBytes := []byte(name)
-		namePtr = unsafe.Pointer(&nameBytes[0])
+		nameBytes = append([]byte(name), 0)
 	}
+	namePtr := unsafe.Pointer(&nameBytes[0])
 	valPtr := C.xmlGetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr))
 	if valPtr == nil {
 		return
@@ -411,22 +413,19 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
 	}
-	var nameBytes []byte
-	if len(name) == 0 {
-		nameBytes = make([]byte, 1)
-		nameBytes[0] = 0
-	} else {
-		nameBytes = []byte(name)
+	nameBytes := emptyStringBytes
+	if len(name) > 0 {
+		nameBytes = append([]byte(name), 0)
 	}
 	namePtr := unsafe.Pointer(&nameBytes[0])
-	
-	if len(value) == 0 {
-		C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), nil)
-	} else {
-		valueBytes := []byte(value)
-		valuePtr := unsafe.Pointer(&valueBytes[0])
-		C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
+
+	valueBytes := emptyStringBytes
+	if len(value) > 0 {
+		valueBytes = append([]byte(value), 0)
 	}
+	valuePtr := unsafe.Pointer(&valueBytes[0])
+
+	C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
 	return
 }
 
@@ -497,6 +496,7 @@ func (xmlNode *XmlNode) Name() (name string) {
 func (xmlNode *XmlNode) SetName(name string) {
 	if len(name) > 0 {
 		nameBytes := []byte(name)
+		nameBytes = append(nameBytes, 0)
 		namePtr := unsafe.Pointer(&nameBytes[0])
 		C.xmlNodeSetName(xmlNode.Ptr, (*C.xmlChar)(namePtr))
 	}
