@@ -5,10 +5,6 @@ package xpath
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
 
-void xmlXPathContextSetNode(xmlXPathContext *ctx, xmlNode *new_node) { 
-	ctx->node = new_node;
-}
-
 xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
   	return nodeset->nodeTab[index];
 }
@@ -50,7 +46,7 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nod
 	if nodePtr == nil {
 		return
 	}
-	C.xmlXPathContextSetNode(xpath.ContextPtr, (*C.xmlNode)(nodePtr))
+	xpath.ContextPtr.node = (*C.xmlNode)(nodePtr)
 	if xpath.ResultPtr != nil {
 		C.xmlXPathFreeObject(xpath.ResultPtr)
 	}
