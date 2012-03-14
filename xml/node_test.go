@@ -67,7 +67,7 @@ func TestAddPreviousSibling(t *testing.T) {
 	}
 	err = doc.Root().AddPreviousSibling("<bar></bar><cat></cat>")
 	if doc.String() != expected {
-		println(doc.String())
+		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
@@ -112,7 +112,7 @@ func TestSetContent(t *testing.T) {
 	root := doc.Root()
 	root.SetContent("<fun></fun>")
 	if doc.String() != expected {
-		println(doc.String())
+		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
