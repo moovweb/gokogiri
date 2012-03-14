@@ -12,7 +12,7 @@ func (attrNode *AttributeNode) Value() string {
 	return attrNode.Content()
 }
 
-func (attrNode *AttributeNode) SetValue(val string) {
+func (attrNode *AttributeNode) SetValue(val interface{}) {
 	attrNode.SetContent(val)
 }
 

@@ -96,10 +96,15 @@ func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, 
 
 		contentPtr = unsafe.Pointer(&content[0])
 		if len(url) > 0 {
+			url = append(url, 0)
 			urlPtr = unsafe.Pointer(&url[0])
 		}
 		if len(inEncoding) > 0 {
+			inEncoding = append(inEncoding, 0)
 			encodingPtr = unsafe.Pointer(&inEncoding[0])
+		}
+		if len(outEncoding) > 0 {
+			outEncoding = append(outEncoding, 0)
 		}
 
 		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
@@ -175,7 +180,7 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode) {
 	var tagPtr unsafe.Pointer
 	if len(tag) > 0 {
-		tagBytes := []byte(tag)
+		tagBytes := append([]byte(tag), 0)
 		tagPtr = unsafe.Pointer(&tagBytes[0])
 	}
 	newNodePtr := C.xmlNewNode(nil, (*C.xmlChar)(tagPtr))

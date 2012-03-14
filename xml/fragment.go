@@ -37,7 +37,10 @@ func parsefragment(document Document, content, encoding, url []byte, options int
 	var contentPtr, urlPtr unsafe.Pointer
 	contentPtr   = unsafe.Pointer(&content[0])
 	contentLen   := len(content)
-	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
+	if len(url) > 0  { 
+		url = append(url, 0)
+		urlPtr = unsafe.Pointer(&url[0]) 
+	}
 	
 	rootElementPtr := C.xmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 	

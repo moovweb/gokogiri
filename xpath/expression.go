@@ -15,7 +15,7 @@ func Compile(xpath string) (expr *Expression) {
 		return
 	}
 	
-	xpathBytes := []byte(xpath)
+	xpathBytes := append([]byte(xpath), 0)
 	xpathPtr := unsafe.Pointer(&xpathBytes[0])
 	ptr := C.xmlXPathCompile((*C.xmlChar)(xpathPtr))
 	if ptr == nil {

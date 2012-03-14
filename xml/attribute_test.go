@@ -77,6 +77,9 @@ func TestSetAttribute(t *testing.T) {
 		println("expected:\n", "")
 		t.Error("root's attr should have empty val")
 	}
+	if root.Attribute("id3") == nil {
+		t.Error("root's attr should not be nil")
+	}
 	doc.Free()
 }
 
