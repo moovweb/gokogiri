@@ -202,7 +202,7 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err os.Error) {
 				}
 			}
 		}
-	case *XmlNode:
+	case Node:
 		err = xmlNode.addChild(t)
 	}
 	return
@@ -218,8 +218,8 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err os.Error) {
 				}
 			}
 		}
-	case *XmlNode:
-		err = xmlNode.addChild(t)
+	case Node:
+		err = xmlNode.addPreviousSibling(t)
 	}
 	return
 }
@@ -234,8 +234,8 @@ func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err os.Error) {
 				}
 			}
 		}
-	case *XmlNode:
-		err = xmlNode.addChild(t)
+	case Node:
+		err = xmlNode.addNextSibling(t)
 	}
 	return
 }
