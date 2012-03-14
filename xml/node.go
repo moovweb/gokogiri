@@ -66,9 +66,13 @@ type Node interface {
 	NextSibling() Node
 	PreviousSibling() Node
 
+	Parent() Node
 	FirstChild() Node
 	LastChild() Node
 	Attributes() map[string]*AttributeNode
+
+	//
+	Coerce(interface{}) ([]Node, os.Error)
 
 	//
 	AddChild(interface{}) os.Error
@@ -76,9 +80,12 @@ type Node interface {
 	AddNextSibling(interface{}) os.Error
 	InsertBefore(interface{}) os.Error
 	InsertAfter(interface{}) os.Error
+	InsertBegin(interface{}) os.Error
+	InsertEnd(interface{}) os.Error
 	SetInnerHtml(interface{}) os.Error
 	SetChildren(interface{}) os.Error
 	Replace(interface{}) os.Error
+	Wrap(string) os.Error
 	//Swap(interface{}) os.Error
 	//
 	////
@@ -122,8 +129,6 @@ type Node interface {
 	String() string
 	Content() string
 }
-
-var emptyStringBytes = []byte{0}
 
 //run out of memory
 var ErrTooLarge = os.NewError("Output buffer too large")
@@ -188,6 +193,10 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 		}
 	}
 	return
+}
+
+func (xmlNode *XmlNode) Coerce(data interface{}) (nodes []Node, err os.Error) {
+	return xmlNode.coerce(data)
 }
 
 //
@@ -291,6 +300,10 @@ func (node *XmlNode) LastChild() Node {
 	return NewNode(unsafe.Pointer(node.Ptr.last), node.Document)
 }
 
+func (node *XmlNode) Parent() Node {
+	return NewNode(unsafe.Pointer(node.Ptr.parent), node.Document)
+}
+
 func (xmlNode *XmlNode) ResetChildren() {
 	var p unsafe.Pointer
 	for childPtr := xmlNode.Ptr.children; childPtr != nil; {
@@ -319,12 +332,32 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err os.Error) {
 	return
 }
 
-func (xmlNode *XmlNode) InsertBefore(data interface{}) os.Error {
-	return xmlNode.AddPreviousSibling(data)
+func (xmlNode *XmlNode) InsertBefore(data interface{}) (err os.Error) {
+	err = xmlNode.AddPreviousSibling(data)
+	return
 }
 
-func (xmlNode *XmlNode) InsertAfter(data interface{}) os.Error {
-	return xmlNode.AddNextSibling(data)
+func (xmlNode *XmlNode) InsertAfter(data interface{}) (err os.Error) {
+	err = xmlNode.AddNextSibling(data)
+	return
+}
+
+func (xmlNode *XmlNode) InsertBegin(data interface{}) (err os.Error) {
+	if parent := xmlNode.Parent(); parent != nil {
+		if last := parent.LastChild(); last != nil {
+			err = last.AddPreviousSibling(data)
+		}
+	}
+	return
+}
+
+func (xmlNode *XmlNode) InsertEnd(data interface{}) (err os.Error) {
+	if parent := xmlNode.Parent(); parent != nil {
+		if first := parent.FirstChild(); first != nil {
+			err = first.AddPreviousSibling(data)
+		}
+	}
+	return
 }
 
 func (xmlNode *XmlNode) SetChildren(data interface{}) (err os.Error) {
@@ -334,7 +367,7 @@ func (xmlNode *XmlNode) SetChildren(data interface{}) (err os.Error) {
 	}
 	xmlNode.ResetChildren()
 	err = xmlNode.AddChild(nodes)
-	return
+	return nil
 }
 
 func (xmlNode *XmlNode) SetInnerHtml(data interface{}) (err os.Error) {
@@ -631,6 +664,16 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err os.Error) {
 		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
 		//then we should invalid this node, because we do not want to have a dangling pointer
 		node.Remove()
+	}
+	return
+}
+
+func (xmlNode *XmlNode) Wrap(data string) (err os.Error) {
+	newNodes, err := xmlNode.coerce(data)
+	if err == nil && len(newNodes) > 0 {
+		newParent := newNodes[0]
+		xmlNode.addNextSibling(newParent)
+		newParent.AddChild(xmlNode)
 	}
 	return
 }
