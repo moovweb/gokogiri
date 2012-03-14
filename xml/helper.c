@@ -81,17 +81,32 @@ xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int op
 xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
 	xmlNodePtr root_element = NULL;
 	xmlParserErrors errCode;
-	printf("buffer_len = %d\n", buffer_len);
 	errCode = xmlParseInNodeContext((xmlNodePtr)doc, buffer, buffer_len, options, &root_element);
 	if (errCode != XML_ERR_OK) {
 		if (error_buffer != NULL && error_buffer_len > 0) {
 			char *c_error_buffer = (char*)error_buffer;
 			snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
 		}
-		printf("errorcode %d %d\n", errCode, root_element);
+		printf("errorcode %d\n", errCode);
 		return NULL;
 	} 
 	return root_element;
+}
+
+xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+	xmlDoc* tmpDoc = NULL;
+	xmlNode* tmpRoot = NULL;
+	tmpDoc = xmlReadMemory((char*)buffer, buffer_len, (char*)url, ((xmlDoc*)doc)->encoding, options);
+	if (tmpDoc == NULL) {
+		return NULL;
+	}
+	tmpRoot = xmlDocGetRootElement(tmpDoc);
+	if (tmpRoot == NULL) {
+		return NULL;
+	}
+	tmpRoot = xmlDocCopyNode(tmpRoot, doc, 1);
+	xmlFreeDoc(tmpDoc);
+	return tmpRoot;
 }
 
 void xmlSetContent(void *n, void *content) {
