@@ -81,11 +81,14 @@ xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int op
 xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
 	xmlNodePtr root_element = NULL;
 	xmlParserErrors errCode;
-	
+	printf("buffer_len = %d\n", buffer_len);
 	errCode = xmlParseInNodeContext((xmlNodePtr)doc, buffer, buffer_len, options, &root_element);
 	if (errCode != XML_ERR_OK) {
-		char *c_error_buffer = (char*)error_buffer;
-		snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
+		if (error_buffer != NULL && error_buffer_len > 0) {
+			char *c_error_buffer = (char*)error_buffer;
+			snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
+		}
+		printf("errorcode %d %d\n", errCode, root_element);
 		return NULL;
 	} 
 	return root_element;
