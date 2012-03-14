@@ -23,6 +23,7 @@ type Document interface {
 	AddUnlinkedNode(unsafe.Pointer)
 	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
 	CreateElementNode(string) *ElementNode
+	CreateCData(string) *CDataNode
 	Free()
 	String() string
 	BookkeepFragment(*DocumentFragment)
@@ -46,6 +47,7 @@ var DefaultParseOption = XML_PARSE_RECOVER |
 const DefaultEncoding = "utf-8"
 
 var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
+var emptyStringBytes = []byte{0}
 
 type XmlDocument struct {
 	Ptr *C.xmlDoc
@@ -186,6 +188,22 @@ func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode
 	newNodePtr := C.xmlNewNode(nil, (*C.xmlChar)(tagPtr))
 	newNode := NewNode(unsafe.Pointer(newNodePtr), document)
 	element = newNode.(*ElementNode)
+	return
+}
+
+func (document *XmlDocument) CreateCData(data string) (cdata *CDataNode) {
+	var dataPtr unsafe.Pointer
+	dataLen := len(data)
+	if dataLen > 0 {
+		dataBytes := []byte(data)
+		dataPtr = unsafe.Pointer(&dataBytes[0])
+	} else {
+		dataPtr = unsafe.Pointer(&emptyStringBytes[0])
+	}
+	nodePtr := C.xmlNewCDataBlock(document.Ptr, (*C.xmlChar)(dataPtr), C.int(dataLen))
+	if nodePtr != nil {
+		cdata = NewNode(unsafe.Pointer(nodePtr), document).(*CDataNode)
+	}
 	return
 }
 
