@@ -64,10 +64,16 @@ func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, 
 
 		contentPtr = unsafe.Pointer(&content[0])
 		if len(url) > 0 {
+			url = append(url, 0)
 			urlPtr = unsafe.Pointer(&url[0])
 		}
 		if len(inEncoding) > 0 {
+			inEncoding = append(inEncoding, 0)
 			encodingPtr = unsafe.Pointer(&inEncoding[0])
+		}
+
+		if len(outEncoding) > 0 {
+			outEncoding = append(outEncoding, 0)
 		}
 
 		docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
@@ -110,7 +116,7 @@ func (doc *HtmlDocument) MetaEncoding() string {
 func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err os.Error) {
 	var encodingPtr unsafe.Pointer = nil
 	if len(encoding) > 0 {
-		encodingBytes := []byte(encoding)
+		encodingBytes := append([]byte(encoding), 0)
 		encodingPtr = unsafe.Pointer(&encodingBytes[0])
 	}
 	ret := int(C.htmlSetMetaEncoding((*C.xmlDoc)(doc.DocPtr()), (*C.xmlChar)(encodingPtr)))
