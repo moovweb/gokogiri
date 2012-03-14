@@ -4,12 +4,36 @@ import "testing"
 import "fmt"
 import "gokogiri/help"
 
-func badOutput(actual string, expected string) {
-	fmt.Printf("Got:\n[%v]\n", actual)
-	fmt.Printf("Expected:\n[%v]\n", expected)
-}
 
 func TestAddChild(t *testing.T) {
+
+	docAssertion := func (doc *XmlDocument) (string, string, string) {
+		expectedDocAfterAdd :=
+		`<?xml version="1.0" encoding="utf-8"?>
+<foo>
+  <bar/>
+</foo>
+`
+		doc.Root().AddChild("<bar></bar>")
+
+		return doc.String(), expectedDocAfterAdd, "output of the xml doc after AddChild does not match"
+	}
+
+	nodeAssertion := func (doc *XmlDocument) (string, string, string) {
+		expectedNodeAfterAdd :=
+		`<foo>
+  <bar/>
+</foo>`
+
+		return doc.Root().String(), expectedNodeAfterAdd, "the output of the xml root after AddChild does not match"
+	}
+
+
+	RunTest(t, "node", "add_child", nil, docAssertion, nodeAssertion)
+
+}
+
+func TestAddChildz(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
 
 	expectedDoc :=
@@ -27,24 +51,21 @@ func TestAddChild(t *testing.T) {
   <bar/>
 </foo>`
 
-	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	doc := parseInput(t, "<foo></foo>")
 
-	if err != nil {
-		t.Error("parsing error:", err.String())
-		return
-	}
 	if doc.String() != expectedDoc {
+		badOutput(doc.String(), expectedDoc)
 		t.Error("the output of the xml doc does not match")
 	}
+
 	doc.Root().AddChild("<bar></bar>")
+
 	if doc.String() != expectedDocAfterAdd {
-		println("got:\n", doc.String())
-		println("expected:\n", expectedDocAfterAdd)
+		badOutput(doc.String(), expectedDocAfterAdd)
 		t.Error("the output of the xml doc after AddChild does not match")
 	}
 	if doc.Root().String() != expectedNodeAfterAdd {
-		println("got:\n", doc.Root().String())
-		println("expected:\n", expectedNodeAfterAdd)
+		badOutput(doc.Root().String(), expectedNodeAfterAdd)
 		t.Error("the output of the xml root after AddChild does not match")
 	}
 	doc.Free()
@@ -59,13 +80,14 @@ func TestAddPreviousSibling(t *testing.T) {
 <cat/>
 <foo/>
 `
-	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	doc := parseInput(t, "<foo></foo>")
+
+	err := doc.Root().AddPreviousSibling("<bar></bar><cat></cat>")
 
 	if err != nil {
-		t.Error("parsing error:", err.String())
-		return
+		t.Errorf("Error adding previous sibling:\n%v\n", err.String())
 	}
-	err = doc.Root().AddPreviousSibling("<bar></bar><cat></cat>")
+
 	if doc.String() != expected {
 		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
@@ -82,13 +104,10 @@ func TestAddNextSibling(t *testing.T) {
 <bar/>
 <baz/>
 `
-	doc, err := Parse([]byte("<foo></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	doc := parseInput(t, "<foo></foo>")
 
-	if err != nil {
-		t.Error("parsing error:", err.String())
-		return
-	}
 	doc.Root().AddNextSibling("<bar></bar><baz></baz>")
+
 	if doc.String() != expected {
 		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
@@ -103,18 +122,16 @@ func TestSetContent(t *testing.T) {
 		`<?xml version="1.0" encoding="utf-8"?>
 <foo>&lt;fun&gt;&lt;/fun&gt;</foo>
 `
-	doc, err := Parse([]byte("<foo><bar/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	doc := parseInput(t, "<foo><bar/></foo>")
 
-	if err != nil {
-		t.Error("parsing error:", err.String())
-		return
-	}
 	root := doc.Root()
 	root.SetContent("<fun></fun>")
+
 	if doc.String() != expected {
 		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}
+
 	doc.Free()
 }
 
@@ -127,18 +144,13 @@ func TestSetChildren(t *testing.T) {
   <fun/>
 </foo>
 `
-	doc, err := Parse([]byte("<foo><bar1/><bar2/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
-
-	if err != nil {
-		t.Error("parsing error:", err.String())
-		return
-	}
+	doc := parseInput(t, "<foo><bar1/><bar2/></foo>")
 
 	root := doc.Root()
 	root.SetChildren("<fun></fun>")
+
 	if doc.String() != expected {
-		println("got:\n", doc.String())
-		println("expected:\n", expected)
+		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}
 	doc.Free()
@@ -152,19 +164,19 @@ func TestReplace(t *testing.T) {
 <fun/>
 <cool/>
 `
-	doc, err := Parse([]byte("<foo><bar/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	doc := parseInput(t, "<foo><bar/></foo>")
 
-	if err != nil {
-		t.Error("parsing error:", err.String())
-		return
-	}
 	root := doc.Root()
 	root.Replace("<fun></fun><cool/>")
+
 	if doc.String() != expected {
+		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}
+
 	root = doc.Root()
 	if root.String() != "<fun/>" {
+		badOutput(root.String(), "<fun/>")
 		t.Error("the output of the xml root does not match")
 	}
 	doc.Free()

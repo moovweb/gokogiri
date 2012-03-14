@@ -10,7 +10,7 @@ import (
 )
 
 func TestDocuments(t *testing.T) {
-	tests, err := collectTests()
+	tests, err := collectTests("document")
 
 	if len(err) > 0 {
 		t.Errorf(err)
@@ -42,7 +42,7 @@ func TestDocuments(t *testing.T) {
 }
 
 func _TestBufferedDocuments(t *testing.T) {
-	tests, err := collectTests()
+	tests, err := collectTests("document")
 
 	if len(err) > 0 {
 		t.Errorf(err)
@@ -143,50 +143,10 @@ func RunDocumentParseTest(t *testing.T, name string) (error *string) {
 
 }
 
-func collectTests() (names []string, error string) {
-	testPath := "tests"
-	entries, err := ioutil.ReadDir(testPath)
-
-	if err != nil {
-		return nil, fmt.Sprintf("Couldn't read tests:\n%v\n", err.String())
-	}
-
-	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name, "_") || strings.HasPrefix(entry.Name, ".") {
-			continue
-		}
-
-		if entry.IsDirectory() {
-			names = append(names, filepath.Join(testPath, entry.Name))
-		}
-	}
-
-	return
-}
-
-func getTestData(name string) (input []byte, output []byte, error string) {
-	var errorMessage string
-	offset := "\t"
-
-	input, err := ioutil.ReadFile(filepath.Join(name, "input.txt"))
-
-	if err != nil {
-		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) input:\n%v\n", offset, name, offset+err.String())
-	}
-
-	output, err = ioutil.ReadFile(filepath.Join(name, "output.txt"))
-
-	if err != nil {
-		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) output:\n%v\n", offset, name, offset+err.String())
-	}
-
-	return input, output, errorMessage
-}
-
 func BenchmarkDocParsing(b *testing.B) {
 	b.StopTimer()
 
-	tests, err := collectTests()
+	tests, err := collectTests("document")
 
 	if len(err) > 0 {
 		fmt.Printf(err)
@@ -228,7 +188,7 @@ func BenchmarkDocParsing(b *testing.B) {
 func BenchmarkBufferedDocParsing(b *testing.B) {
 	b.StopTimer()
 
-	tests, err := collectTests()
+	tests, err := collectTests("document")
 
 	if len(err) > 0 {
 		fmt.Printf(err)
