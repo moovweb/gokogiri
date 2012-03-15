@@ -32,6 +32,22 @@ func TestAddChild(t *testing.T) {
 
 }
 
+func addChildBenchLogic(b *testing.B, doc *XmlDocument) {
+	root := doc.Root()
+	
+	for i := 0; i < b.N; i++ {
+		root.AddChild("<bar></bar>")
+	}
+}
+
+func BenchmarkAddChild(b *testing.B) {
+	RunBenchmark(b, "document", "big_un", addChildBenchLogic) // Run against big doc
+}
+
+func BenchmarkAddChildBigDoc(b *testing.B) {
+	RunBenchmark(b, "node", "add_child", addChildBenchLogic)
+}
+
 func TestAddPreviousSibling(t *testing.T) {
 
 	testLogic := func(t *testing.T, doc *XmlDocument) {

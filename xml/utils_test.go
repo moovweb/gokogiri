@@ -7,6 +7,7 @@ import (
 	"testing"
 	"strings"
 	"gokogiri/help"
+	"os"
 	)
 
 func badOutput(actual string, expected string) {
@@ -30,7 +31,11 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(t *test
 
 	//println("Got raw input/output")
 
-	doc := parseInput(t, input)
+	doc, err := parseInput(input)
+
+	if err != nil {
+		t.Error(err.String())
+	}
 
 	//println("parsed input")
 
@@ -57,8 +62,35 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(t *test
 	doc.Free()
 }
 
+func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b *testing.B, doc *XmlDocument) ) {
+	b.StopTimer()
 
-func parseInput(t *testing.T, input interface{}) *XmlDocument {
+//	defer help.CheckXmlMemoryLeaks(b)
+
+	input, _, error := getTestData(filepath.Join("tests", suite, name))
+
+	if len(error) > 0 {
+		panic(fmt.Sprintf("Error gathering test data for %v:\n%v\n", name, error))
+	}
+
+
+	doc, err := parseInput(input)
+
+	if err != nil {
+		panic("Error:" + err.String())
+	}
+
+	b.StartTimer()
+
+	if specificLogic != nil {
+		specificLogic(b, doc)
+	}
+	
+	doc.Free()
+}
+
+
+func parseInput(input interface{}) (*XmlDocument, os.Error) {
 	var realInput []byte
 
 	switch thisInput := input.(type) {
@@ -67,17 +99,16 @@ func parseInput(t *testing.T, input interface{}) *XmlDocument {
 	case string:
 		realInput = []byte(thisInput)
 	default:
-		t.Errorf("Unrecognized parsing input!")
+		return nil, os.NewError("Unrecognized parsing input!")
 	}
 
 	doc, err := Parse(realInput, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
 	if err != nil {
-		t.Error("parsing error:", err.String())
-		return nil
+		return nil, os.NewError(fmt.Sprintf("parsing error:%v\n", err.String()))
 	}
 	
-	return doc
+	return doc, nil
 }
 
 func getTestData(name string) (input []byte, output []byte, error string) {

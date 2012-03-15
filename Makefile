@@ -17,3 +17,6 @@ clean:
 
 nuke:
 	set -e; for d in $(DIRS); do make nuke -C $$d ; done
+bench:
+	set -e; for d in $(DIRS); do make bench -C $$d; done
+
