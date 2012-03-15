@@ -14,8 +14,10 @@ func badOutput(actual string, expected string) {
 	fmt.Printf("Expected:\n[%v]\n", expected)
 }
 
-func RunTest(t *testing.T, suite string, name string, specificLogic func(doc *XmlDocument), extraAssertions ...func(doc *XmlDocument) (string, string, string) ) {
+func RunTest(t *testing.T, suite string, name string, specificLogic func(t *testing.T, doc *XmlDocument), extraAssertions ...func(doc *XmlDocument) (string, string, string) ) {
 	defer help.CheckXmlMemoryLeaks(t)
+
+	//println("Initiating test:" + suite + ":" + name)
 
 	input, output, error := getTestData(filepath.Join("tests", suite, name))
 
@@ -26,11 +28,17 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(doc *Xm
 
 	expected := string(output)
 
-	doc := parseInput(t, input)	
+	//println("Got raw input/output")
+
+	doc := parseInput(t, input)
+
+	//println("parsed input")
 
 	if specificLogic != nil {
-		specificLogic(doc)
+		specificLogic(t, doc)
 	}
+
+	//println("ran test logic")
 
 	if doc.String() != expected {
 		badOutput(doc.String(), expected)
