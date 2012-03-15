@@ -103,7 +103,7 @@ func TestSetChildren(t *testing.T) {
 	RunTest(t, "node", "set_children", testLogic)
 }
 
-func BenchmarkSetChildren(b *testing.B) {
+func _BenchmarkSetChildren(b *testing.B) {
 	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
 			println("a")
 		root := doc.Root()

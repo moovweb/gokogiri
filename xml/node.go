@@ -3,7 +3,7 @@ package xml
 //#include "helper.h"
 //#include <string.h>
 import "C"
-import "fmt"
+
 import (
 	"os"
 	"unsafe"
@@ -312,7 +312,6 @@ func (xmlNode *XmlNode) ResetChildren() {
 		p = unsafe.Pointer(childPtr)
 		C.xmlUnlinkNode((*C.xmlNode)(p))
 		xmlNode.Document.AddUnlinkedNode(p)
-		fmt.Printf("Unlinked Child ptr: %v\n", p)
 		childPtr = nextPtr
 	}
 }
