@@ -6,7 +6,7 @@ package xml
 #include "helper.h"
 */
 import "C"
-
+import "fmt"
 import (
 	"unsafe"
 	"os"
@@ -166,6 +166,7 @@ func (document *XmlDocument) DocXPathCtx() (ctx *xpath.XPath) {
 }
 
 func (document *XmlDocument) AddUnlinkedNode(nodePtr unsafe.Pointer) {
+	fmt.Printf("Adding node to unlink list: %v\n", nodePtr)
 	document.UnlinkedNodes = append(document.UnlinkedNodes, nodePtr)
 }
 
@@ -251,6 +252,7 @@ func (document *XmlDocument) Free() {
 	}
 
 	for _, nodePtr := range document.UnlinkedNodes {
+		fmt.Printf("Freeing ptr %v\n", nodePtr)
 		C.xmlFreeNode((*C.xmlNode)(nodePtr))
 	}
 

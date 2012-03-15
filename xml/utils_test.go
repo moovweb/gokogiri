@@ -87,6 +87,8 @@ func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b 
 	}
 	
 	doc.Free()
+
+	println("----------- END OF BENCHMARK -----------")
 }
 
 

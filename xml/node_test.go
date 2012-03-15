@@ -81,6 +81,19 @@ func TestSetContent(t *testing.T) {
 	RunTest(t, "node", "set_content", testLogic)
 }
 
+func BenchmarkSetContent(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+			root := doc.Root()
+			for i := 0; i < b.N; i++ {
+				root.SetContent("<fun></fun>")
+			}
+	}
+
+	RunBenchmark(b, "node", "set_content", benchmarkLogic)
+}
+
+
 func TestSetChildren(t *testing.T) {
 	testLogic := func(t *testing.T, doc *XmlDocument) {
 		root := doc.Root()
@@ -89,6 +102,24 @@ func TestSetChildren(t *testing.T) {
 
 	RunTest(t, "node", "set_children", testLogic)
 }
+
+func BenchmarkSetChildren(b *testing.B) {
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+			println("a")
+		root := doc.Root()
+			println("b")
+//		for i := 0; i < b.N; i++ {
+//		for i := 0; i < 1000; i++ {
+//		for i := 0; i < 200; i++ {
+		for i := 0; i < 2; i++ {
+			root.SetChildren("<fun></fun>")		
+		}
+			println("c")
+	}
+
+	RunBenchmark(b, "node", "set_children", benchmarkLogic)
+}
+
 
 func TestReplace(t *testing.T) {
 
