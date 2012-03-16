@@ -22,12 +22,6 @@ var ErrEmptyFragment = os.NewError("empty xml fragment")
 const initChildrenNumber = 4
 
 func parsefragment(document Document, content, encoding, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
-	//deal with trivial cases
-	if len(content) == 0 {
-		err = ErrEmptyFragment
-		return
-	}
-
 	//wrap the content before parsing
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)
@@ -60,10 +54,6 @@ func parsefragment(document Document, content, encoding, url []byte, options int
 }
 
 func ParseFragment(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (fragment *DocumentFragment, err os.Error) {
-	if len(content) == 0 {
-		err = ErrEmptyFragment
-		return
-	}
 	document := CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
 	fragment, err = parsefragment(document, content, inEncoding, url, options)
 	return
