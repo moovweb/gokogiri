@@ -7,6 +7,7 @@
 #include <libxml/HTMLparser.h>
 #include <libxml/xmlsave.h>
 #include <libxml/xpath.h>
+#include <libxml/debugXML.h>
 
 xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int errror_buffer_len);
 xmlNode* xmlParseFragment(void* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len);
