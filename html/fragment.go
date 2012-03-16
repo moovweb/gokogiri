@@ -54,13 +54,7 @@ func parsefragment(document xml.Document, content, encoding, url []byte, options
 
 	fragment = &xml.DocumentFragment{}
 	fragment.Node = root
-
-	nodes := make([]xml.Node, 0, initChildrenNumber)
-	child := root.FirstChild()
-	for ; child != nil; child = child.NextSibling() {
-		nodes = append(nodes, child)
-	}
-	fragment.Children = xml.NewNodeSet(document, nodes)
+	
 	document.BookkeepFragment(fragment)
 	return
 }
