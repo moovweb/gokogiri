@@ -9,7 +9,6 @@ import (
 
 type DocumentFragment struct {
 	Node
-	Children *NodeSet
 }
 
 var (
@@ -56,13 +55,6 @@ func parsefragment(document Document, content, encoding, url []byte, options int
 
 	fragment = &DocumentFragment{}
 	fragment.Node = root
-
-	nodes := make([]Node, 0, initChildrenNumber)
-	child := root.FirstChild()
-	for ; child != nil; child = child.NextSibling() {
-		nodes = append(nodes, child)
-	}
-	fragment.Children = NewNodeSet(document, nodes)
 	document.BookkeepFragment(fragment)
 	return
 }
@@ -78,6 +70,14 @@ func ParseFragment(content, inEncoding, url []byte, options int, outEncoding, ou
 }
 
 func (fragment *DocumentFragment) Remove() {
-	fragment.Children.Remove()
 	fragment.Node.Remove()
+}
+
+func (fragment *DocumentFragment) Children() []Node {
+	nodes := make([]Node, 0, initChildrenNumber)
+	child := fragment.FirstChild()
+	for ; child != nil; child = child.NextSibling() {
+		nodes = append(nodes, child)
+	}
+	return nodes
 }
