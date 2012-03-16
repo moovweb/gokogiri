@@ -39,3 +39,127 @@ func BenchmarkSearch(b *testing.B) {
 
 	RunBenchmark(b, "node", "search", benchmarkLogic)
 }
+
+
+func BenchmarkBigDocDeepSearchyTagName(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//div")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocPunctuatedDeepSearch(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//*[@class='filters']//div")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocDeepSearchByClass(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//*[@class]")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocDeepSearchByClassContains(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//*[contains(@class, 'header')]")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+
+func BenchmarkBigDocDeepSearchBySemanticClass(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//*[contains(concat(concat(' ', @class), ' '), concat(concat(' ','header'), ' '))]")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocDeepSearchByText(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//*[text()='hey']")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocDeepSearchByTextContains(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//*[contains(text(),'hey')]")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocSearchAncestorAxes(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+		elem, _ := doc.Search("//*[@id='ppp']")
+		for i := 0; i < b.N; i++ {
+			elem[0].Search("ancestor::html")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocSearchLongTraverseUpToRoot(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+		elem, _ := doc.Search("//*[@id='ppp']")
+
+		for i := 0; i < b.N; i++ {
+			elem[0].Search("../../../../../../../../..")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+func BenchmarkBigDocSearchShortTraverseUpToRoot(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+		elem, _ := doc.Search("//*[@id='ppp']")
+
+		for i := 0; i < b.N; i++ {
+			elem[0].Search("../../../..")
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
