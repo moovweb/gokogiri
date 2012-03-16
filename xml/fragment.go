@@ -81,3 +81,13 @@ func (fragment *DocumentFragment) Children() []Node {
 	}
 	return nodes
 }
+
+//just for now
+func (fragment *DocumentFragment) String() string {
+	out := ""
+	nodes := fragment.Children()
+	for _, node := range(nodes) {
+		out += node.String()
+	}
+	return out
+}
