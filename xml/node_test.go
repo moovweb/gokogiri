@@ -187,3 +187,22 @@ func BenchmarkAttributes(b *testing.B) {
 
 	RunBenchmark(b, "node", "attributes", benchmarkLogic)
 }
+
+func TestInner(t *testing.T) {
+
+	testLogic := func(t *testing.T, doc *XmlDocument) {	
+		root := doc.Root()
+		root.SetInnerHtml("<bar></bar><baz></baz>")
+	}
+
+	RunTest(t, "node", "inner", testLogic)
+}
+func TestInnerWithAttributes(t *testing.T) {
+
+	testLogic := func(t *testing.T, doc *XmlDocument) {	
+		root := doc.Root()
+		root.SetInnerHtml("<bar give='me' something='good' to='eat'></bar>")
+	}
+
+	RunTest(t, "node", "inner_with_attributes", testLogic)
+}
