@@ -69,6 +69,7 @@ type Node interface {
 	Parent() Node
 	FirstChild() Node
 	LastChild() Node
+	CountChildren() int
 	Attributes() map[string]*AttributeNode
 
 	//
@@ -180,16 +181,16 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 	case []Node:
 		nodes = t
 	case *DocumentFragment:
-		nodes = t.Children.Nodes
+		nodes = t.Children()
 	case string:
 		f, err := xmlNode.Document.ParseFragment([]byte(t), nil, DefaultParseOption)
 		if err == nil {
-			nodes = f.Children.Nodes
+			nodes = f.Children()
 		}
 	case []byte:
 		f, err := xmlNode.Document.ParseFragment(t, nil, DefaultParseOption)
 		if err == nil {
-			nodes = f.Children.Nodes
+			nodes = f.Children()
 		}
 	}
 	return
@@ -293,16 +294,20 @@ func (xmlNode *XmlNode) PreviousSibling() Node {
 	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
 }
 
-func (node *XmlNode) FirstChild() Node {
-	return NewNode(unsafe.Pointer(node.Ptr.children), node.Document)
+func (xmlNode *XmlNode) CountChildren() int {
+	return int(C.xmlLsCountNode(xmlNode.Ptr))
 }
 
-func (node *XmlNode) LastChild() Node {
-	return NewNode(unsafe.Pointer(node.Ptr.last), node.Document)
+func (xmlNode *XmlNode) FirstChild() Node {
+	return NewNode(unsafe.Pointer(xmlNode.Ptr.children), xmlNode.Document)
 }
 
-func (node *XmlNode) Parent() Node {
-	return NewNode(unsafe.Pointer(node.Ptr.parent), node.Document)
+func (xmlNode *XmlNode) LastChild() Node {
+	return NewNode(unsafe.Pointer(xmlNode.Ptr.last), xmlNode.Document)
+}
+
+func (xmlNode *XmlNode) Parent() Node {
+	return NewNode(unsafe.Pointer(xmlNode.Ptr.parent), xmlNode.Document)
 }
 
 func (xmlNode *XmlNode) ResetChildren() {
