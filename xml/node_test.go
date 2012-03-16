@@ -103,18 +103,12 @@ func TestSetChildren(t *testing.T) {
 	RunTest(t, "node", "set_children", testLogic)
 }
 
-func _BenchmarkSetChildren(b *testing.B) {
+func BenchmarkSetChildren(b *testing.B) {
 	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
-			println("a")
 		root := doc.Root()
-			println("b")
-//		for i := 0; i < b.N; i++ {
-//		for i := 0; i < 1000; i++ {
-//		for i := 0; i < 200; i++ {
-		for i := 0; i < 2; i++ {
+		for i := 0; i < b.N; i++ {
 			root.SetChildren("<fun></fun>")		
 		}
-			println("c")
 	}
 
 	RunBenchmark(b, "node", "set_children", benchmarkLogic)
@@ -137,13 +131,13 @@ func TestReplace(t *testing.T) {
 	RunTest(t, "node", "replace", testLogic, rootAssertion)
 }
 
-func _BenchmarkReplace(b *testing.B) {
+func BenchmarkReplace(b *testing.B) {
 
 	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {	
 		root := doc.Root()
-//		for i := 0; i < b.N; i++ {
-		for i := 0; i < 2; i++ {
-			root.Replace("<fun></fun><cool/>")
+		for i := 0; i < b.N; i++ {
+			root.Replace("<fun></fun>")
+			root = doc.Root() //once the node has been replaced, we need to get a new node
 		}
 	}
 

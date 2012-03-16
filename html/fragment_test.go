@@ -15,7 +15,7 @@ func TestParseDocumentFragmentText(t *testing.T) {
 		t.Error(err.String())
 		return
 	}
-	if docFragment.Children.Length() != 1 || docFragment.Children.Nodes[0].String() != "ok\r\n" {
+	if len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "ok\r\n" {
 		t.Error("the children from the fragment text do not match")
 	}
 	doc.Free()
@@ -32,7 +32,7 @@ func TestParseDocumentFragment(t *testing.T) {
 		t.Error(err.String())
 		return
 	}
-	if (len(docFragment.Children.Nodes) != 1 || docFragment.Children.Nodes[0].String() != "<div><h1></h1></div>") {
+	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div><h1></h1></div>") {
 		t.Error("the of children from the fragment do not match")
 	}
 	
@@ -51,7 +51,7 @@ func TestSearchDocumentFragment(t *testing.T) {
 		t.Error(err.String())
 		return
 	}
-	if (len(docFragment.Children.Nodes) != 1 || docFragment.Children.Nodes[0].String() != "<div class=\"cool\"><h1></h1></div>") {
+	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div class=\"cool\"><h1></h1></div>") {
 		t.Error("the of children from the fragment do not match")
 	}
 

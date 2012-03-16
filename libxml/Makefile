@@ -16,3 +16,6 @@ clean:
 
 runtest:
 	set -e; cd test; make test
+
+bench:
+	#echo "no benchmark tests for the old gokogiri"

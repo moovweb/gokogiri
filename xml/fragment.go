@@ -9,7 +9,6 @@ import (
 
 type DocumentFragment struct {
 	Node
-	Children *NodeSet
 }
 
 var (
@@ -23,12 +22,6 @@ var ErrEmptyFragment = os.NewError("empty xml fragment")
 const initChildrenNumber = 4
 
 func parsefragment(document Document, content, encoding, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
-	//deal with trivial cases
-	if len(content) == 0 {
-		err = ErrEmptyFragment
-		return
-	}
-
 	//wrap the content before parsing
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)
@@ -56,28 +49,35 @@ func parsefragment(document Document, content, encoding, url []byte, options int
 
 	fragment = &DocumentFragment{}
 	fragment.Node = root
-
-	nodes := make([]Node, 0, initChildrenNumber)
-	child := root.FirstChild()
-	for ; child != nil; child = child.NextSibling() {
-		nodes = append(nodes, child)
-	}
-	fragment.Children = NewNodeSet(document, nodes)
 	document.BookkeepFragment(fragment)
 	return
 }
 
 func ParseFragment(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (fragment *DocumentFragment, err os.Error) {
-	if len(content) == 0 {
-		err = ErrEmptyFragment
-		return
-	}
 	document := CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
 	fragment, err = parsefragment(document, content, inEncoding, url, options)
 	return
 }
 
 func (fragment *DocumentFragment) Remove() {
-	fragment.Children.Remove()
 	fragment.Node.Remove()
+}
+
+func (fragment *DocumentFragment) Children() []Node {
+	nodes := make([]Node, 0, initChildrenNumber)
+	child := fragment.FirstChild()
+	for ; child != nil; child = child.NextSibling() {
+		nodes = append(nodes, child)
+	}
+	return nodes
+}
+
+//just for now
+func (fragment *DocumentFragment) String() string {
+	out := ""
+	nodes := fragment.Children()
+	for _, node := range(nodes) {
+		out += node.String()
+	}
+	return out
 }
