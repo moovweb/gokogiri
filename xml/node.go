@@ -386,7 +386,7 @@ func (xmlNode *XmlNode) Replace(data interface{}) (err os.Error) {
 	if err != nil {
 		return
 	}
-	xmlNode.Unlink()
+	xmlNode.Remove()
 	return
 }
 
