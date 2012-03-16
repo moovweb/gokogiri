@@ -65,12 +65,29 @@ func BenchmarkBigDocPunctuatedDeepSearch(b *testing.B) {
 	RunBenchmark(b, "document", "big_un", benchmarkLogic)
 }
 
+func BenchmarkBigDocDeepSearchByID(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
+
+		for i := 0; i < b.N; i++ {
+			doc.Search("//*[@id='ppp']")
+			//nodes, _ := doc.Search("//*[@id='ppp']")
+			//fmt.Printf("%v\t", len(nodes))
+		}
+	}
+
+	RunBenchmark(b, "document", "big_un", benchmarkLogic)
+}
+
+
 func BenchmarkBigDocDeepSearchByClass(b *testing.B) {
 
 	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
 
 		for i := 0; i < b.N; i++ {
 			doc.Search("//*[@class]")
+			//nodes, _ := doc.Search("//*[@class]")
+			//fmt.Printf("%v\t", len(nodes))
 		}
 	}
 
