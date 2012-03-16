@@ -49,7 +49,7 @@ func BenchmarkAddChildBigDoc(b *testing.B) {
 }
 
 func TestAddPreviousSibling(t *testing.T) {
-
+	
 	testLogic := func(t *testing.T, doc *XmlDocument) {
 		err := doc.Root().AddPreviousSibling("<bar></bar><cat></cat>")
 
@@ -137,6 +137,20 @@ func TestReplace(t *testing.T) {
 	RunTest(t, "node", "replace", testLogic, rootAssertion)
 }
 
+func _BenchmarkReplace(b *testing.B) {
+
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {	
+		root := doc.Root()
+//		for i := 0; i < b.N; i++ {
+		for i := 0; i < 2; i++ {
+			root.Replace("<fun></fun><cool/>")
+		}
+	}
+
+	RunBenchmark(b, "node", "replace", benchmarkLogic)
+}
+
+
 func TestAttributes(t *testing.T) {
 
 	testLogic := func(t *testing.T, doc *XmlDocument) {	
@@ -161,27 +175,15 @@ func TestAttributes(t *testing.T) {
 
 }
 
-func TestSearch(t *testing.T) {
-
-	testLogic := func(t *testing.T, doc *XmlDocument) {
+func BenchmarkAttributes(b *testing.B) {
+	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {	
+		
 		root := doc.Root()
-		result, _ := root.Search(".//*[@class]")
-		if len(result) != 2 {
-			t.Error("search at root does not match")
-		}
-		result, _ = root.Search("//*[@class]")
-		if len(result) != 3 {
-			t.Error("search at root does not match")
-		}
-		result, _ = doc.Search(".//*[@class]")
-		if len(result) != 3 {
-			t.Error("search at doc does not match")
-		}
-		result, _ = doc.Search(".//*[@class='shine']")
-		if len(result) != 2 {
-			t.Error("search with value at doc does not match")
+
+		for i := 0; i < b.N; i++ {
+			root.SetAttr("garfield", "spaghetti")
 		}
 	}
 
-	RunTest(t, "node", "search", testLogic)
+	RunBenchmark(b, "node", "attributes", benchmarkLogic)
 }
