@@ -1,9 +1,10 @@
+.PHONY: build clean install test
 all: install
-compile: build
+build:
 	./build
 clean:
 	./build clean
-install: compile
+install: build
 	gb -i
 test:
 	gb -t
