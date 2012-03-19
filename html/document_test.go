@@ -3,6 +3,7 @@ package html
 import (
 	"testing"
 	"gokogiri/help"
+	"path/filepath"
 )
 
 func TestParseDocument(t *testing.T) {
@@ -62,4 +63,34 @@ func TestEmptyDocument(t *testing.T) {
 	}
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
+}
+
+
+func TestHTMLFragmentEncoding(t *testing.T) {
+	defer help.CheckXmlMemoryLeaks(t)
+
+	input, output, error := getTestData(filepath.Join("tests", "document", "html_fragment_encoding"))
+
+	if len(error) > 0 {
+		t.Errorf("Error gathering test data for %v:\n%v\n", "html_fragment_encoding", error)
+		t.FailNow()
+	}
+
+	expected := string(output)
+
+	inputEncodingBytes := []byte("utf-8")
+
+	buffer := make([]byte, 100)
+	fragment, err := ParseFragment([]byte(input), inputEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes, buffer)
+
+	if err != nil {
+		t.Error(err.String())
+	}
+
+	if fragment.String() != expected {
+		badOutput(fragment.String(), expected)
+		t.Error("the output of the xml doc does not match")
+	}
+	
+	fragment.Node.MyDocument().Free()
 }
