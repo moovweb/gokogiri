@@ -10,12 +10,12 @@ type Expression struct {
 	Ptr *C.xmlXPathCompExpr
 }
 
-func Compile(xpath string) (expr *Expression) {
-	if len(xpath) == 0 {
+func Compile(path string) (expr *Expression) {
+	if len(path) == 0 {
 		return
 	}
-	
-	xpathBytes := append([]byte(xpath), 0)
+
+	xpathBytes := append([]byte(path), 0)
 	xpathPtr := unsafe.Pointer(&xpathBytes[0])
 	ptr := C.xmlXPathCompile((*C.xmlChar)(xpathPtr))
 	if ptr == nil {
