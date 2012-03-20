@@ -1,5 +1,6 @@
 #include <string.h>
 #include "helper.h"
+#include <stdio.h>
 
 //internal callback functions
 int xml_write_callback(void *ctx, char *buffer, int len) {
@@ -79,6 +80,10 @@ xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int op
 }
 
 xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+  fprintf(stderr, "\nIN (XML) PARSE FRAGMENT\n");
+
+  xmlSubstituteEntitiesDefault(0);
+
 	xmlNodePtr root_element = NULL;
 	xmlParserErrors errCode;
 	errCode = xmlParseInNodeContext((xmlNodePtr)doc, buffer, buffer_len, options, &root_element);
@@ -94,6 +99,9 @@ xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, in
 }
 
 xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+  fprintf(stderr, "\nIN (XML) PARSE FRAGMENT AS DOC\n");
+  xmlSubstituteEntitiesDefault(0);
+
 	xmlDoc* tmpDoc = NULL;
 	xmlNode* tmpRoot = NULL;
 	tmpDoc = xmlReadMemory((char*)buffer, buffer_len, (char*)url, ((xmlDoc*)doc)->encoding, options);

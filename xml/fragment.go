@@ -23,6 +23,7 @@ const initChildrenNumber = 4
 
 func parsefragment(document Document, content, encoding, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//wrap the content before parsing
+	println("GO : in xml / parsefragment()")
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)
 

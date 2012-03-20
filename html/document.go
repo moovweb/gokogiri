@@ -13,6 +13,7 @@ import (
 	"unsafe"
 	"os"
 	"gokogiri/xml"
+	"fmt"
 )
 
 //xml parse option
@@ -104,6 +105,7 @@ func CreateEmptyDocument(inEncoding, outEncoding, outBuffer []byte) (doc *HtmlDo
 }
 
 func (document *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
+	fmt.Printf("GO : in html/ParseFragment\n")
 	fragment, err = parsefragment(document, input, document.InputEncoding(), url, options)
 	return
 }

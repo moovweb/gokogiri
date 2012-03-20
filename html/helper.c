@@ -1,8 +1,13 @@
 #include "helper.h"
 #include "../xml/helper.h"
 #include <string.h>
+#include <stdio.h>
+
 
 htmlDocPtr htmlParse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len) {
+  fprintf(stderr, "\nIN (HTML) PARSE\n");
+          xmlSubstituteEntitiesDefault(1);
+
 	const char *c_buffer       = (char*)buffer;
 	const char *c_url          = (char*)url;
 	const char *c_encoding     = (char*)encoding;
@@ -30,6 +35,9 @@ htmlDocPtr htmlParse(void *buffer, int buffer_len, void *url, void *encoding, in
 }
 
 xmlNode* htmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+  fprintf(stderr, "\nIN (HTML) PARSE FRAGMENT\n");
+    xmlSubstituteEntitiesDefault(1);
+
 	xmlNode* root_element = NULL;
 	xmlParserErrors errCode;
 	errCode = xmlParseInNodeContext((xmlNodePtr)doc, buffer, buffer_len, options, &root_element);

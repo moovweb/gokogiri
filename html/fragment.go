@@ -7,6 +7,7 @@ import (
 	"os"
 	"bytes"
 	"gokogiri/xml"
+	"fmt"
 )
 
 var fragmentWrapperStart = []byte("<html><body>")
@@ -18,6 +19,8 @@ var ErrEmptyFragment = os.NewError("empty html fragment")
 const initChildrenNumber = 4
 
 func parsefragment(document xml.Document, content, encoding, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {	
+	fmt.Printf("GO : in html / parsefragment()\n")
+
 	containBody := (bytes.Index(content, bodySigBytes) >= 0)
 	
 	//wrap the content
