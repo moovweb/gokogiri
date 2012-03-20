@@ -26,6 +26,7 @@ type Document interface {
 	CreateCData(string) *CDataNode
 	Free()
 	String() string
+	Root() *ElementNode
 	BookkeepFragment(*DocumentFragment)
 }
 
