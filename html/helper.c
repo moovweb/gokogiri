@@ -40,3 +40,19 @@ xmlNode* htmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, i
 	} 
 	return root_element;
 }
+
+xmlNode* htmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+	xmlDoc* tmpDoc = NULL;
+	xmlNode* tmpRoot = NULL;
+	tmpDoc = htmlReadMemory((char*)buffer, buffer_len, (char*)url, ((xmlDoc*)doc)->encoding, options);
+	if (tmpDoc == NULL) {
+		return NULL;
+	}
+	tmpRoot = xmlDocGetRootElement(tmpDoc);
+	if (tmpRoot == NULL) {
+		return NULL;
+	}
+	tmpRoot = xmlDocCopyNode(tmpRoot, doc, 1);
+	xmlFreeDoc(tmpDoc);
+	return tmpRoot;
+}
