@@ -129,6 +129,7 @@ type Node interface {
 	ToHtml([]byte) []byte
 	String() string
 	Content() string
+	InnerHtml() string
 }
 
 //run out of memory
@@ -603,6 +604,15 @@ func (xmlNode *XmlNode) Content() string {
 	charPtr := (*C.char)(unsafe.Pointer(contentPtr))
 	defer C.xmlFreeChars(charPtr)
 	return C.GoString(charPtr)
+}
+
+func (xmlNode *XmlNode) InnerHtml() string {
+	out := ""
+	
+	for child := xmlNode.FirstChild(); child != nil; child = child.NextSibling() {
+		out += child.String()
+	}
+	return out
 }
 
 func (xmlNode *XmlNode) Unlink() {
