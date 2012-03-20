@@ -52,7 +52,7 @@ var emptyStringBytes = []byte{0}
 
 type XmlDocument struct {
 	Ptr *C.xmlDoc
-	*XmlNode
+	Node
 	InEncoding    []byte
 	OutEncoding   []byte
 	UnlinkedNodes []unsafe.Pointer
@@ -81,7 +81,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding, buff
 		xmlNode.outputBuffer = buffer
 	}
 	docPtr := (*C.xmlDoc)(p)
-	doc = &XmlDocument{Ptr: docPtr, XmlNode: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding}
+	doc = &XmlDocument{Ptr: docPtr, Node: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding}
 	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
 	doc.XPathCtx = xpath.NewXPath(p)
 	doc.Type = xmlNode.NodeType()
