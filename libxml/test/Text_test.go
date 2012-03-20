@@ -6,6 +6,7 @@ import (
 	"testing"
 	"strings"
 	"gokogiri/libxml/help"
+	"fmt"
 )
 
 func TestTextNodeContent(t *testing.T) {
@@ -43,6 +44,30 @@ func TestTextNodeWrap(t *testing.T) {
 	if !strings.Contains(doc.String(), "<wrapper>hi</wrapper>") {
 		t.Error("Should have wrapped")
 	}
+	doc.Free()
+
+	help.XmlCleanUpParser()
+	if help.XmlMemoryAllocation() != 0 {
+		t.Errorf("Memeory leaks %d!!!", help.XmlMemoryAllocation())
+		help.XmlMemoryLeakReport()
+	}
+}
+
+func TestTextNodeContentWCarriageReturns(t *testing.T) {
+
+	innerContent := "800.867.5309"
+	rawContent := fmt.Sprintf("<html>\r\n%v\r\n</html>", innerContent)
+
+	doc := tree.HtmlParseString(rawContent, "UTF-8")
+	//doc.SetMetaEncoding(outputEncoding)
+
+	textNode := doc.RootElement()
+	actualContent := textNode.String()
+
+	if actualContent != innerContent {
+		t.Errorf("Should be equal to the string:[%v]\n Got:[%v]\n", innerContent, actualContent)
+	}
+
 	doc.Free()
 
 	help.XmlCleanUpParser()
