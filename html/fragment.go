@@ -29,7 +29,7 @@ func parsefragment(document xml.Document, content, encoding, url []byte, options
 	contentLen   := len(content)
 	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
 	
-	htmlPtr := C.htmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+	htmlPtr := C.htmlParseFragmentAsDoc(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 	
 
 	//Note we've parsed the fragment within the given document 
