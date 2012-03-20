@@ -1,0 +1,10 @@
+.PHONY: all clean build test install
+all: install
+clean:
+	./build clean
+build:
+	./build
+test:
+	gb -t
+install:
+	gb -i
