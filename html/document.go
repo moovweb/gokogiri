@@ -49,16 +49,16 @@ var ERR_FAILED_TO_PARSE_HTML = os.NewError("failed to parse html input")
 var emptyStringBytes = []byte{0}
 
 //create a document
-func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding, outBuffer []byte) (doc *HtmlDocument) {
+func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	doc = &HtmlDocument{}
-	doc.XmlDocument = xml.NewDocument(p, contentLen, inEncoding, outEncoding, outBuffer)
+	doc.XmlDocument = xml.NewDocument(p, contentLen, inEncoding, outEncoding)
 	node := doc.Node.(*xml.XmlNode)
 	node.Document = doc
 	return
 }
 
 //parse a string to document
-func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (doc *HtmlDocument, err os.Error) {
+func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 
@@ -84,25 +84,19 @@ func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, 
 		if docPtr == nil {
 			err = ERR_FAILED_TO_PARSE_HTML
 		} else {
-			doc = NewDocument(unsafe.Pointer(docPtr), contentLen, inEncoding, outEncoding, outBuffer)
+			doc = NewDocument(unsafe.Pointer(docPtr), contentLen, inEncoding, outEncoding)
 		}
 	}
 	if docPtr == nil {
-		doc = CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
+		doc = CreateEmptyDocument(inEncoding, outEncoding)
 	}
 	return
 }
 
-//parse a string to document
-func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err os.Error) {
-	doc, err = ParseWithBuffer(content, inEncoding, url, options, outEncoding, nil)
-	return
-}
-
-func CreateEmptyDocument(inEncoding, outEncoding, outBuffer []byte) (doc *HtmlDocument) {
+func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	C.xmlInitParser()
 	docPtr := C.htmlNewDoc(nil, nil)
-	doc = NewDocument(unsafe.Pointer(docPtr), 0, inEncoding, outEncoding, outBuffer)
+	doc = NewDocument(unsafe.Pointer(docPtr), 0, inEncoding, outEncoding)
 	return
 }
 
@@ -128,7 +122,6 @@ func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err os.Error) {
 	}
 	return
 }
-
 
 func (document *HtmlDocument) Root() (element *xml.ElementNode) {
 	p := unsafe.Pointer(document.Ptr)
