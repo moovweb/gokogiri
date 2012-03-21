@@ -41,7 +41,7 @@ func TestDocuments(t *testing.T) {
 	}
 }
 
-func _TestBufferedDocuments(t *testing.T) {
+func TestBufferedDocuments(t *testing.T) {
 	tests, err := collectTests("document")
 
 	if len(err) > 0 {
@@ -85,15 +85,15 @@ func RunParseDocumentWithBufferTest(t *testing.T, name string) (error *string) {
 		errorMessage += dataError
 	}
 
-	buffer := make([]byte, 1000000)
+	buffer := make([]byte, 500000)
 
-	doc, err := ParseWithBuffer(input, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes, buffer)
+	doc, err := Parse(input, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
 	if err != nil {
 		errorMessage = fmt.Sprintf("parsing error:%v\n", err)
 	}
 
-	if doc.String() != string(output) {
+	if string(doc.ToXml(nil, buffer)) != string(output) {
 		formattedOutput := offset + strings.Join(strings.Split("["+doc.String()+"]", "\n"), "\n"+offset)
 		formattedExpectedOutput := offset + strings.Join(strings.Split("["+string(output)+"]", "\n"), "\n"+offset)
 		errorMessage = fmt.Sprintf("%v-- Got --\n%v\n%v-- Expected --\n%v\n", offset, formattedOutput, offset, formattedExpectedOutput)
@@ -143,7 +143,7 @@ func RunDocumentParseTest(t *testing.T, name string) (error *string) {
 
 }
 
-func BenchmarkDocParsing(b *testing.B) {
+func BenchmarkDocOutput(b *testing.B) {
 	b.StopTimer()
 
 	tests, err := collectTests("document")
@@ -153,7 +153,7 @@ func BenchmarkDocParsing(b *testing.B) {
 		return
 	}
 
-	data := make([][]byte, 0)
+	docs := make([]*XmlDocument, 0)
 
 	for _, testName := range tests {
 
@@ -163,29 +163,26 @@ func BenchmarkDocParsing(b *testing.B) {
 			fmt.Printf(dataError)
 			return
 		}
+		doc, err := Parse(input, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
-		data = append(data, input)
+		if err != nil {
+			fmt.Printf("parsing error:%v\n", err)
+			return
+		}
+		docs = append(docs, doc)
 	}
 
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-
 		for index, _ := range tests {
-
-			_, err := Parse(data[index], DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
-
-			if err != nil {
-				fmt.Printf("parsing error:%v\n", err)
-				return
-			}
-
+			_ = docs[index].String()
 		}
 	}
 
 }
 
-func BenchmarkBufferedDocParsing(b *testing.B) {
+func BenchmarkDocOutputToBuffer(b *testing.B) {
 	b.StopTimer()
 
 	tests, err := collectTests("document")
@@ -195,7 +192,7 @@ func BenchmarkBufferedDocParsing(b *testing.B) {
 		return
 	}
 
-	data := make([][]byte, 0)
+	docs := make([]*XmlDocument, 0)
 
 	for _, testName := range tests {
 
@@ -205,11 +202,16 @@ func BenchmarkBufferedDocParsing(b *testing.B) {
 			fmt.Printf(dataError)
 			return
 		}
+		doc, err := Parse(input, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
-		data = append(data, input)
+		if err != nil {
+			fmt.Printf("parsing error:%v\n", err)
+			return
+		}
+		docs = append(docs, doc)
 	}
 
-	buffer := make([]byte, 100)
+	buffer := make([]byte, 500*1024)
 
 	b.StartTimer()
 
@@ -217,12 +219,7 @@ func BenchmarkBufferedDocParsing(b *testing.B) {
 
 		for index, _ := range tests {
 
-			_, err := ParseWithBuffer(data[index], DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes, buffer)
-
-			if err != nil {
-				fmt.Printf("parsing error:%v\n", err)
-				return
-			}
+			_ = docs[index].ToXml(nil, buffer)
 
 		}
 	}
