@@ -11,6 +11,7 @@ xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
 */
 import "C"
 import "unsafe"
+import . "gokogiri/util"
 
 type XPath struct {
 	ContextPtr *C.xmlXPathContext
@@ -28,13 +29,13 @@ func NewXPath(docPtr unsafe.Pointer) (xpath *XPath) {
 func (xpath *XPath) RegisterNamespace(prefix, href string) bool {
 	var prefixPtr unsafe.Pointer = nil
 	if len(prefix) > 0 {
-		prefixBytes := append([]byte(prefix), 0)
+		prefixBytes := AppendCStringTerminator([]byte(prefix))
 		prefixPtr = unsafe.Pointer(&prefixBytes[0])
 	}
 	
 	var hrefPtr unsafe.Pointer = nil
 	if len(href) > 0 {
-		hrefBytes := append([]byte(href), 0)
+		hrefBytes := AppendCStringTerminator([]byte(href))
 		hrefPtr = unsafe.Pointer(&hrefBytes[0])
 	}
 

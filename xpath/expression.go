@@ -5,6 +5,7 @@ package xpath
 */
 import "C"
 import "unsafe"
+import . "gokogiri/util"
 
 type Expression struct {
 	Ptr *C.xmlXPathCompExpr
@@ -15,7 +16,7 @@ func Compile(path string) (expr *Expression) {
 		return
 	}
 
-	xpathBytes := append([]byte(path), 0)
+	xpathBytes := AppendCStringTerminator([]byte(path))
 	xpathPtr := unsafe.Pointer(&xpathBytes[0])
 	ptr := C.xmlXPathCompile((*C.xmlChar)(xpathPtr))
 	if ptr == nil {
