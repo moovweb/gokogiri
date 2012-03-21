@@ -13,6 +13,7 @@ import (
 	"unsafe"
 	"os"
 	"gokogiri/xml"
+	. "gokogiri/util"
 )
 
 //xml parse option
@@ -59,6 +60,9 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 
 //parse a string to document
 func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err os.Error) {
+	inEncoding  = AppendCStringTerminator(inEncoding)
+	outEncoding = AppendCStringTerminator(outEncoding)
+
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 
@@ -67,16 +71,11 @@ func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (do
 
 		contentPtr = unsafe.Pointer(&content[0])
 		if len(url) > 0 {
-			url = append(url, 0)
+			url = AppendCStringTerminator(url)
 			urlPtr = unsafe.Pointer(&url[0])
 		}
 		if len(inEncoding) > 0 {
-			inEncoding = append(inEncoding, 0)
 			encodingPtr = unsafe.Pointer(&inEncoding[0])
-		}
-
-		if len(outEncoding) > 0 {
-			outEncoding = append(outEncoding, 0)
 		}
 
 		docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
@@ -113,7 +112,7 @@ func (doc *HtmlDocument) MetaEncoding() string {
 func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err os.Error) {
 	var encodingPtr unsafe.Pointer = nil
 	if len(encoding) > 0 {
-		encodingBytes := append([]byte(encoding), 0)
+		encodingBytes := AppendCStringTerminator([]byte(encoding))
 		encodingPtr = unsafe.Pointer(&encodingBytes[0])
 	}
 	ret := int(C.htmlSetMetaEncoding((*C.xmlDoc)(doc.DocPtr()), (*C.xmlChar)(encodingPtr)))
@@ -131,11 +130,8 @@ func (document *HtmlDocument) Root() (element *xml.ElementNode) {
 }
 
 func (document *HtmlDocument) CreateElementNode(tag string) (element *xml.ElementNode) {
-	var tagPtr unsafe.Pointer
-	if len(tag) > 0 {
-		tagBytes := append([]byte(tag), 0)
-		tagPtr = unsafe.Pointer(&tagBytes[0])
-	}
+	tagBytes := GetCString([]byte(tag))
+	tagPtr := unsafe.Pointer(&tagBytes[0])
 	newNodePtr := C.xmlNewNode(nil, (*C.xmlChar)(tagPtr))
 	newNode := xml.NewNode(unsafe.Pointer(newNodePtr), document)
 	element = newNode.(*xml.ElementNode)

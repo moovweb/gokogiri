@@ -96,8 +96,8 @@ func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (do
 		var contentPtr, urlPtr, encodingPtr unsafe.Pointer
 		contentPtr = unsafe.Pointer(&content[0])
 		
-		url = AppendCStringTerminator(url)
 		if len(url) > 0 {
+			url = AppendCStringTerminator(url)
 			urlPtr = unsafe.Pointer(&url[0])
 		}
 		if len(inEncoding) > 0 {
