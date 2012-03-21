@@ -57,15 +57,15 @@ func TestTextNodeContentWCarriageReturns(t *testing.T) {
 
 	innerContent := "800.867.5309"
 	rawContent := fmt.Sprintf("<html>\r\n%v\r\n</html>", innerContent)
+	expectedContent := fmt.Sprintf("<html><body><p>\r\n%v\r\n</p></body></html>", innerContent)
 
 	doc := tree.HtmlParseString(rawContent, "UTF-8")
-	//doc.SetMetaEncoding(outputEncoding)
 
 	textNode := doc.RootElement()
-	actualContent := textNode.String()
+	actualContent := textNode.DumpHTML()
 
-	if actualContent != innerContent {
-		t.Errorf("Should be equal to the string:[%v]\n Got:[%v]\n", innerContent, actualContent)
+	if actualContent != expectedContent {
+		t.Errorf("Should be equal to the string:[%v]\n Got:[%v]\n", expectedContent, actualContent)
 	}
 
 	doc.Free()
