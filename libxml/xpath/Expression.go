@@ -8,7 +8,7 @@ import (
 	"C"
 )
 import "unsafe"
-import . "gokogiri0/libxml/tree"
+import . "gokogiri/libxml/tree"
 
 type Expression struct {
 	ptr C.xmlXPathCompExprPtr

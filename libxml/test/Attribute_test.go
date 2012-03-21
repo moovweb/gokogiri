@@ -1,8 +1,8 @@
 package test
 
 import (
-	"gokogiri0/libxml"
-	"gokogiri0/libxml/help"
+	"gokogiri/libxml"
+	"gokogiri/libxml/help"
 	"testing"
 	"strings"
 )

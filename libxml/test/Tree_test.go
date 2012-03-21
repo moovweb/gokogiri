@@ -1,10 +1,10 @@
 package test
 
 import (
-	"gokogiri0/libxml"
+	"gokogiri/libxml"
 	"testing"
-	"gokogiri0/libxml/tree"
-	"gokogiri0/libxml/help"
+	"gokogiri/libxml/tree"
+	"gokogiri/libxml/help"
 	"strings"
 )
 /*
@@ -186,7 +186,7 @@ func TestParallelAddingAfter(t *testing.T) {
 		help.XmlMemoryLeakReport()
 	}
 }
-
+/*
 func TestParallelNodeDuplicate(t *testing.T) {
 	testFunc := func(done chan bool) {
 		doc := libxml.XmlParseString("<root><parent><brother>hi</brother></parent></root>")
@@ -212,7 +212,7 @@ func TestParallelNodeDuplicate(t *testing.T) {
 	}
 
 }
-
+*/
 func TestParallelSetContent(t *testing.T) {
 	testFunc := func(done chan bool) {
 		doc := libxml.XmlParseString("<root>hi</root>")

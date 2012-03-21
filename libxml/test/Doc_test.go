@@ -1,9 +1,9 @@
 package test
 
 import (
-	"gokogiri0/libxml"
-	"gokogiri0/libxml/help"
-	"gokogiri0/libxml/tree"
+	"gokogiri/libxml"
+	"gokogiri/libxml/help"
+	"gokogiri/libxml/tree"
 	"testing"
 )
 

@@ -13,7 +13,7 @@ FetchNodeSet(xmlXPathObject *obj) {
 import "C"
 import "unsafe"
 import "fmt"
-import . "gokogiri0/libxml/tree"
+import . "gokogiri/libxml/tree"
 
 type XPath struct {
 	context C.xmlXPathContextPtr

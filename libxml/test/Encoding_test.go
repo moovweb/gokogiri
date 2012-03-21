@@ -3,8 +3,8 @@ package test
 
 import (
 	//"libxml"
-	"gokogiri0/libxml/help"
-	"gokogiri0/libxml/tree"
+	"gokogiri/libxml/help"
+	"gokogiri/libxml/tree"
 	"testing"
 	"io/ioutil"
 	//"strings"
