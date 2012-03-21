@@ -127,6 +127,7 @@ type Node interface {
 	////
 	ToXml([]byte, []byte) []byte
 	ToHtml([]byte, []byte) []byte
+	ToBuffer([]byte) []byte
 	String() string
 	Content() string
 	InnerHtml() string
@@ -325,7 +326,6 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err os.Error) {
 	case string:
 		err = xmlNode.SetContent([]byte(data))
 	case []byte:
-		println("calling here")
 		contentBytes := emptyStringBytes
 		if len(data) > 0 {
 			contentBytes = append(data, 0)
@@ -586,14 +586,21 @@ func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) []byte {
 	return xmlNode.to_s(XML_SAVE_AS_HTML, encoding, outputBuffer)
 }
 
-func (xmlNode *XmlNode) String() string {
-	buffer := make([]byte, initialOutputBufferSize)
+func (xmlNode *XmlNode) ToBuffer(outputBuffer []byte) []byte {
+	if outputBuffer == nil {
+		outputBuffer = make([]byte, initialOutputBufferSize)
+	}
 	var b []byte
 	if docType := xmlNode.Document.DocType(); docType == XML_HTML_DOCUMENT_NODE {
-		b = xmlNode.ToHtml(nil, buffer)
+		b = xmlNode.ToHtml(nil, outputBuffer)
 	} else {
-		b = xmlNode.ToXml(nil, buffer)
+		b = xmlNode.ToXml(nil, outputBuffer)
 	}
+	return b
+}
+
+func (xmlNode *XmlNode) String() string {
+	b := xmlNode.ToBuffer(nil)
 	if b == nil {
 		return ""
 	}
