@@ -1,4 +1,4 @@
-DIRS = util help xpath xml html
+DIRS = util help xpath xml html libxml
 
 all: install
 
@@ -7,7 +7,7 @@ build:
 
 test:
 	set -e; for d in $(DIRS); do make test -C $$d ; done
-	#set -e; cd libxml; make runtest
+	set -e; cd libxml; make runtest
 
 install:
 	set -e; for d in $(DIRS); do make install -C $$d ; done
