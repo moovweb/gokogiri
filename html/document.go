@@ -101,7 +101,7 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 }
 
 func (document *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
-	fragment, err = parsefragment(document, input, document.InputEncoding(), url, options)
+	fragment, err = parsefragmentInDocument(document, input, url, options)
 	return
 }
 
