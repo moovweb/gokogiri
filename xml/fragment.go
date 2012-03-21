@@ -53,8 +53,8 @@ func parsefragment(document Document, content, encoding, url []byte, options int
 	return
 }
 
-func ParseFragment(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (fragment *DocumentFragment, err os.Error) {
-	document := CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
+func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *DocumentFragment, err os.Error) {
+	document := CreateEmptyDocument(inEncoding, outEncoding)
 	fragment, err = parsefragment(document, content, inEncoding, url, options)
 	return
 }
@@ -76,7 +76,7 @@ func (fragment *DocumentFragment) Children() []Node {
 func (fragment *DocumentFragment) String() string {
 	out := ""
 	nodes := fragment.Children()
-	for _, node := range(nodes) {
+	for _, node := range nodes {
 		out += node.String()
 	}
 	return out

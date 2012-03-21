@@ -125,8 +125,8 @@ type Node interface {
 	ResetChildren()
 	//Free()
 	////
-	ToXml([]byte) []byte
-	ToHtml([]byte) []byte
+	ToXml([]byte, []byte) []byte
+	ToHtml([]byte, []byte) []byte
 	String() string
 	Content() string
 	InnerHtml() string
@@ -136,15 +136,11 @@ type Node interface {
 var ErrTooLarge = os.NewError("Output buffer too large")
 
 //pre-allocate a buffer for serializing the document
-const initialOutputBufferSize = 100 * 1024 //100K
+const initialOutputBufferSize = 500 * 1024 //100K
 
 type XmlNode struct {
 	Ptr *C.xmlNode
 	Document
-
-	outputBuffer []byte
-	outputOffset int
-
 	valid bool
 }
 
@@ -238,7 +234,7 @@ func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err os.Error) {
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
-			for i := len(nodes)-1; i >= 0; i-- {
+			for i := len(nodes) - 1; i >= 0; i-- {
 				node := nodes[i]
 				if err = xmlNode.addNextSibling(node); err != nil {
 					break
@@ -329,6 +325,7 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err os.Error) {
 	case string:
 		err = xmlNode.SetContent([]byte(data))
 	case []byte:
+		println("calling here")
 		contentBytes := emptyStringBytes
 		if len(data) > 0 {
 			contentBytes = append(data, 0)
@@ -551,13 +548,8 @@ func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
 	return
 }
 
-func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
-	xmlNode.outputOffset = 0
-	if len(xmlNode.outputBuffer) == 0 {
-		xmlNode.outputBuffer = make([]byte, initialOutputBufferSize)
-	}
+func (xmlNode *XmlNode) to_s(format int, encoding, outputBuffer []byte) []byte {
 	nodePtr := unsafe.Pointer(xmlNode.Ptr)
-
 	var encodingPtr unsafe.Pointer
 	if len(encoding) == 0 {
 		encoding = xmlNode.Document.OutputEncoding()
@@ -567,31 +559,40 @@ func (xmlNode *XmlNode) to_s(format int, encoding []byte) []byte {
 	} else {
 		encodingPtr = nil
 	}
-	bufferPtr := unsafe.Pointer(&xmlNode.outputBuffer[0])
-	bufferLen := len(xmlNode.outputBuffer)
+	bufferPtr := unsafe.Pointer(&outputBuffer[0])
+	bufferLen := len(outputBuffer)
+
 	format |= XML_SAVE_FORMAT
 	ret := int(C.xmlSaveNode(bufferPtr, C.int(bufferLen), nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
 		println("output error!!!")
 		return nil
 	}
-	return xmlNode.outputBuffer[:ret]
+
+	return outputBuffer[:ret]
 }
 
-func (xmlNode *XmlNode) ToXml(encoding []byte) []byte {
-	return xmlNode.to_s(XML_SAVE_AS_XML, encoding)
+func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) []byte {
+	if outputBuffer == nil {
+		outputBuffer = make([]byte, initialOutputBufferSize)
+	}
+	return xmlNode.to_s(XML_SAVE_AS_XML, encoding, outputBuffer)
 }
 
-func (xmlNode *XmlNode) ToHtml(encoding []byte) []byte {
-	return xmlNode.to_s(XML_SAVE_AS_HTML, encoding)
+func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) []byte {
+	if outputBuffer == nil {
+		outputBuffer = make([]byte, initialOutputBufferSize)
+	}
+	return xmlNode.to_s(XML_SAVE_AS_HTML, encoding, outputBuffer)
 }
 
 func (xmlNode *XmlNode) String() string {
+	buffer := make([]byte, initialOutputBufferSize)
 	var b []byte
 	if docType := xmlNode.Document.DocType(); docType == XML_HTML_DOCUMENT_NODE {
-		b = xmlNode.ToHtml(nil)
+		b = xmlNode.ToHtml(nil, buffer)
 	} else {
-		b = xmlNode.ToXml(nil)
+		b = xmlNode.ToXml(nil, buffer)
 	}
 	if b == nil {
 		return ""
@@ -608,7 +609,7 @@ func (xmlNode *XmlNode) Content() string {
 
 func (xmlNode *XmlNode) InnerHtml() string {
 	out := ""
-	
+
 	for child := xmlNode.FirstChild(); child != nil; child = child.NextSibling() {
 		out += child.String()
 	}

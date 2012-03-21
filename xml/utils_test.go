@@ -8,14 +8,14 @@ import (
 	"strings"
 	"gokogiri/help"
 	"os"
-	)
+)
 
 func badOutput(actual string, expected string) {
 	fmt.Printf("Got:\n[%v]\n", actual)
 	fmt.Printf("Expected:\n[%v]\n", expected)
 }
 
-func RunTest(t *testing.T, suite string, name string, specificLogic func(t *testing.T, doc *XmlDocument), extraAssertions ...func(doc *XmlDocument) (string, string, string) ) {
+func RunTest(t *testing.T, suite string, name string, specificLogic func(t *testing.T, doc *XmlDocument), extraAssertions ...func(doc *XmlDocument) (string, string, string)) {
 	defer help.CheckXmlMemoryLeaks(t)
 
 	//println("Initiating test:" + suite + ":" + name)
@@ -42,15 +42,11 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(t *test
 	if specificLogic != nil {
 		specificLogic(t, doc)
 	}
-
-	//println("ran test logic")
-
-	if doc.String() != expected {
+	if string(doc.ToXml(nil, nil)) != expected {
 		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}
-
-	for _, extraAssertion := range(extraAssertions) {
+	for _, extraAssertion := range extraAssertions {
 		actual, expected, message := extraAssertion(doc)
 
 		if actual != expected {
@@ -58,21 +54,20 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(t *test
 			t.Error(message)
 		}
 	}
-	
+
 	doc.Free()
 }
 
-func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b *testing.B, doc *XmlDocument) ) {
+func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b *testing.B, doc *XmlDocument)) {
 	b.StopTimer()
 
-//	defer help.CheckXmlMemoryLeaks(b)
+	//	defer help.CheckXmlMemoryLeaks(b)
 
 	input, _, error := getTestData(filepath.Join("tests", suite, name))
 
 	if len(error) > 0 {
 		panic(fmt.Sprintf("Error gathering test data for %v:\n%v\n", name, error))
 	}
-
 
 	doc, err := parseInput(input)
 
@@ -85,12 +80,11 @@ func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b 
 	if specificLogic != nil {
 		specificLogic(b, doc)
 	}
-	
+
 	doc.Free()
 
-//	println("----------- END OF BENCHMARK -----------")
+	//	println("----------- END OF BENCHMARK -----------")
 }
-
 
 func parseInput(input interface{}) (*XmlDocument, os.Error) {
 	var realInput []byte
@@ -109,7 +103,7 @@ func parseInput(input interface{}) (*XmlDocument, os.Error) {
 	if err != nil {
 		return nil, os.NewError(fmt.Sprintf("parsing error:%v\n", err.String()))
 	}
-	
+
 	return doc, nil
 }
 
