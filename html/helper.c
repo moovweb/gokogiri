@@ -41,10 +41,10 @@ xmlNode* htmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, i
 	return root_element;
 }
 
-xmlNode* htmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+xmlNode* htmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len) {
 	xmlDoc* tmpDoc = NULL;
 	xmlNode* tmpRoot = NULL;
-	tmpDoc = htmlReadMemory((char*)buffer, buffer_len, (char*)url, ((xmlDoc*)doc)->encoding, options);
+	tmpDoc = htmlReadMemory((char*)buffer, buffer_len, (char*)url, (char*)encoding, options);
 	if (tmpDoc == NULL) {
 		return NULL;
 	}
