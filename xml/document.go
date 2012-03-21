@@ -58,6 +58,7 @@ type XmlDocument struct {
 	UnlinkedNodes []unsafe.Pointer
 	XPathCtx      *xpath.XPath
 	Type          int
+	InputLen      int
 
 	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
 }
@@ -69,19 +70,11 @@ const initialUnlinkedNodes = 8
 const initialFragments = 2
 
 //create a document
-func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding, buffer []byte) (doc *XmlDocument) {
+func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *XmlDocument) {
 	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
-	adjustedLen := contentLen + contentLen>>1  //1.5 of the input len
-	if adjustedLen < initialOutputBufferSize { //min len
-		adjustedLen = initialOutputBufferSize
-	}
-	if len(buffer) < adjustedLen {
-		xmlNode.outputBuffer = make([]byte, adjustedLen)
-	} else {
-		xmlNode.outputBuffer = buffer
-	}
+
 	docPtr := (*C.xmlDoc)(p)
-	doc = &XmlDocument{Ptr: docPtr, Node: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding}
+	doc = &XmlDocument{Ptr: docPtr, Node: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding, InputLen: contentLen}
 	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
 	doc.XPathCtx = xpath.NewXPath(p)
 	doc.Type = xmlNode.NodeType()
@@ -90,7 +83,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding, buff
 	return
 }
 
-func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, outBuffer []byte) (doc *XmlDocument, err os.Error) {
+func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err os.Error) {
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 
@@ -115,24 +108,18 @@ func ParseWithBuffer(content, inEncoding, url []byte, options int, outEncoding, 
 		if docPtr == nil {
 			err = ERR_FAILED_TO_PARSE_XML
 		} else {
-			doc = NewDocument(unsafe.Pointer(docPtr), contentLen, inEncoding, outEncoding, outBuffer)
+			doc = NewDocument(unsafe.Pointer(docPtr), contentLen, inEncoding, outEncoding)
 		}
 
 	} else {
-		doc = CreateEmptyDocument(inEncoding, outEncoding, outBuffer)
+		doc = CreateEmptyDocument(inEncoding, outEncoding)
 	}
 	return
 }
 
-//parse a string to document
-func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err os.Error) {
-	doc, err = ParseWithBuffer(content, inEncoding, url, options, outEncoding, nil)
-	return
-}
-
-func CreateEmptyDocument(inEncoding, outEncoding, outBuffer []byte) (doc *XmlDocument) {
+func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *XmlDocument) {
 	docPtr := C.newEmptyXmlDoc()
-	doc = NewDocument(unsafe.Pointer(docPtr), 0, inEncoding, outEncoding, outBuffer)
+	doc = NewDocument(unsafe.Pointer(docPtr), 0, inEncoding, outEncoding)
 	return
 }
 
@@ -208,6 +195,21 @@ func (document *XmlDocument) CreateCData(data string) (cdata *CDataNode) {
 	return
 }
 
+func (document *XmlDocument) Free() {
+	//must clear the fragments first
+	//because the nodes are put in the unlinked list
+	for _, fragment := range document.fragments {
+		fragment.Remove()
+	}
+
+	for _, nodePtr := range document.UnlinkedNodes {
+		C.xmlFreeNode((*C.xmlNode)(nodePtr))
+	}
+
+	document.XPathCtx.Free()
+	C.xmlFreeDoc(document.Ptr)
+}
+
 /*
 func (document *XmlDocument) ToXml() string {
 	document.outputOffset = 0
@@ -244,17 +246,3 @@ func (document *XmlDocument) String() string {
 	return document.ToXml()
 }
 */
-func (document *XmlDocument) Free() {
-	//must clear the fragments first
-	//because the nodes are put in the unlinked list
-	for _, fragment := range document.fragments {
-		fragment.Remove()
-	}
-
-	for _, nodePtr := range document.UnlinkedNodes {
-		C.xmlFreeNode((*C.xmlNode)(nodePtr))
-	}
-
-	document.XPathCtx.Free()
-	C.xmlFreeDoc(document.Ptr)
-}
