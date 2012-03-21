@@ -42,7 +42,7 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(t *test
 	if specificLogic != nil {
 		specificLogic(t, doc)
 	}
-	if string(doc.ToXml(nil, nil)) != expected {
+	if doc.String() != expected {
 		badOutput(doc.String(), expected)
 		t.Error("the output of the xml doc does not match")
 	}

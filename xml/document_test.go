@@ -93,7 +93,7 @@ func RunParseDocumentWithBufferTest(t *testing.T, name string) (error *string) {
 		errorMessage = fmt.Sprintf("parsing error:%v\n", err)
 	}
 
-	if string(doc.ToXml(nil, buffer)) != string(output) {
+	if string(doc.ToBuffer(buffer)) != string(output) {
 		formattedOutput := offset + strings.Join(strings.Split("["+doc.String()+"]", "\n"), "\n"+offset)
 		formattedExpectedOutput := offset + strings.Join(strings.Split("["+string(output)+"]", "\n"), "\n"+offset)
 		errorMessage = fmt.Sprintf("%v-- Got --\n%v\n%v-- Expected --\n%v\n", offset, formattedOutput, offset, formattedExpectedOutput)
@@ -219,7 +219,7 @@ func BenchmarkDocOutputToBuffer(b *testing.B) {
 
 		for index, _ := range tests {
 
-			_ = docs[index].ToXml(nil, buffer)
+			_ = docs[index].ToBuffer(buffer)
 
 		}
 	}
