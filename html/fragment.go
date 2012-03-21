@@ -5,11 +5,11 @@ import "C"
 import (
 	"unsafe"
 	"os"
-	"bytes"
 	"gokogiri/xml"
 )
 
-var fragmentWrapperStart = []byte("<html><body>")
+var fragmentWrapperStart = []byte("<div>")
+var fragmentWrapperEnd = []byte("</div>")
 var bodySigBytes = []byte("<body")
 
 var ErrFailParseFragment = os.NewError("failed to parse html fragment")
@@ -18,10 +18,9 @@ var ErrEmptyFragment = os.NewError("empty html fragment")
 const initChildrenNumber = 4
 
 func parsefragment(document xml.Document, content, encoding, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {	
-	containBody := (bytes.Index(content, bodySigBytes) >= 0)
-	
 	//wrap the content
 	content = append(fragmentWrapperStart, content...)
+	content = append(content, fragmentWrapperEnd...)
 
 	//set up pointers before calling the C function
 	var contentPtr, urlPtr unsafe.Pointer
@@ -29,23 +28,12 @@ func parsefragment(document xml.Document, content, encoding, url []byte, options
 	contentLen   := len(content)
 	if len(url) > 0  { urlPtr = unsafe.Pointer(&url[0]) }
 	
-	htmlPtr := C.htmlParseFragmentAsDoc(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+	rootPtr := C.htmlParseFragment(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 	
 
 	//Note we've parsed the fragment within the given document 
 	//the root is not the root of the document; rather it's the root of the subtree from the fragment
-	html := xml.NewNode(unsafe.Pointer(htmlPtr), document)
-
-	if html == nil {
-		err = ErrFailParseFragment
-		return
-	}
-	root := html
-	if !containBody {
-		root = html.FirstChild()
-		html.Remove() //remove html otherwise it's leaked
-	}
-
+	root := xml.NewNode(unsafe.Pointer(rootPtr), document)
 	fragment = &xml.DocumentFragment{}
 	fragment.Node = root
 
