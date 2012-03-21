@@ -5,10 +5,13 @@ import "C"
 import (
 	"unsafe"
 	"os"
+	. "gokogiri/util"
 )
 
 type DocumentFragment struct {
 	Node
+	InEncoding    []byte
+	OutEncoding   []byte
 }
 
 var (
@@ -21,21 +24,26 @@ var ErrEmptyFragment = os.NewError("empty xml fragment")
 
 const initChildrenNumber = 4
 
-func parsefragment(document Document, content, encoding, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+func parsefragmentInDocument(document Document, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
 	//wrap the content before parsing
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)
 
 	//set up pointers before calling the C function
-	var contentPtr, urlPtr unsafe.Pointer
+	var contentPtr, urlPtr, encodingPtr unsafe.Pointer
 	contentPtr = unsafe.Pointer(&content[0])
 	contentLen := len(content)
 	if len(url) > 0 {
-		url = append(url, 0)
+		url = AppendCStringTerminator(url)
 		urlPtr = unsafe.Pointer(&url[0])
 	}
 
-	rootElementPtr := C.xmlParseFragmentAsDoc(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+	inEncoding := document.InputEncoding()
+	if len(inEncoding) > 0 {
+		encodingPtr = unsafe.Pointer(&inEncoding[0])
+	}
+
+	rootElementPtr := C.xmlParseFragmentAsDoc(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 
 	//Note we've parsed the fragment within the given document 
 	//the root is not the root of the document; rather it's the root of the subtree from the fragment
@@ -53,9 +61,17 @@ func parsefragment(document Document, content, encoding, url []byte, options int
 	return
 }
 
-func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *DocumentFragment, err os.Error) {
+func parsefragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *DocumentFragment, err os.Error) {
 	document := CreateEmptyDocument(inEncoding, outEncoding)
-	fragment, err = parsefragment(document, content, inEncoding, url, options)
+	fragment, err = parsefragmentInDocument(document, content, url, options)
+	return
+}
+
+func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *DocumentFragment, err os.Error) {
+	inEncoding  = AppendCStringTerminator(inEncoding)
+	outEncoding = AppendCStringTerminator(outEncoding)
+
+	fragment, err = parsefragment(content, inEncoding, url, options, outEncoding)
 	return
 }
 
@@ -72,12 +88,28 @@ func (fragment *DocumentFragment) Children() []Node {
 	return nodes
 }
 
-//just for now
-func (fragment *DocumentFragment) String() string {
-	out := ""
-	nodes := fragment.Children()
-	for _, node := range nodes {
-		out += node.String()
+func (fragment *DocumentFragment) ToBuffer(outputBuffer []byte) []byte {
+	if outputBuffer == nil {
+		outputBuffer = make([]byte, initialOutputBufferSize)
 	}
-	return out
+	offset := 0
+	nodes := fragment.Children()
+	var b []byte
+	for _, node := range nodes {
+		if docType := node.MyDocument().DocType(); docType == XML_HTML_DOCUMENT_NODE {
+			b = node.ToHtml(fragment.OutEncoding, outputBuffer[offset:])
+		} else {
+			b = node.ToXml(fragment.OutEncoding, outputBuffer[offset:])
+		}
+		offset += len(b)
+	}
+	return outputBuffer[:offset]
+}
+
+func (fragment *DocumentFragment) String() string {
+	b := fragment.ToBuffer(nil)
+	if b == nil {
+		return ""
+	}
+	return string(b)
 }

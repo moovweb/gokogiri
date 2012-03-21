@@ -11,6 +11,7 @@ import (
 	"unsafe"
 	"os"
 	"gokogiri/xpath"
+	. "gokogiri/util"
 	//	"runtime/debug"
 )
 
@@ -48,7 +49,6 @@ var DefaultParseOption = XML_PARSE_RECOVER |
 const DefaultEncoding = "utf-8"
 
 var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
-var emptyStringBytes = []byte{0}
 
 type XmlDocument struct {
 	Ptr *C.xmlDoc
@@ -71,8 +71,10 @@ const initialFragments = 2
 
 //create a document
 func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *XmlDocument) {
-	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
+	inEncoding  = AppendCStringTerminator(inEncoding)
+	outEncoding = AppendCStringTerminator(outEncoding)
 
+	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
 	docPtr := (*C.xmlDoc)(p)
 	doc = &XmlDocument{Ptr: docPtr, Node: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding, InputLen: contentLen}
 	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
@@ -84,23 +86,22 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 }
 
 func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err os.Error) {
+	inEncoding  = AppendCStringTerminator(inEncoding)
+	outEncoding = AppendCStringTerminator(outEncoding)
+
 	var docPtr *C.xmlDoc
 	contentLen := len(content)
 
 	if contentLen > 0 {
 		var contentPtr, urlPtr, encodingPtr unsafe.Pointer
-
 		contentPtr = unsafe.Pointer(&content[0])
+		
+		url = AppendCStringTerminator(url)
 		if len(url) > 0 {
-			url = append(url, 0)
 			urlPtr = unsafe.Pointer(&url[0])
 		}
 		if len(inEncoding) > 0 {
-			inEncoding = append(inEncoding, 0)
 			encodingPtr = unsafe.Pointer(&inEncoding[0])
-		}
-		if len(outEncoding) > 0 {
-			outEncoding = append(outEncoding, 0)
 		}
 
 		docPtr = C.xmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
@@ -124,7 +125,7 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *XmlDocument) {
 }
 
 func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
-	fragment, err = parsefragment(document, input, document.InputEncoding(), url, options)
+	fragment, err = parsefragmentInDocument(document, input, url, options)
 	return
 }
 
@@ -168,11 +169,8 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 }
 
 func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode) {
-	var tagPtr unsafe.Pointer
-	if len(tag) > 0 {
-		tagBytes := append([]byte(tag), 0)
-		tagPtr = unsafe.Pointer(&tagBytes[0])
-	}
+	tagBytes := GetCString([]byte(tag))
+	tagPtr := unsafe.Pointer(&tagBytes[0])
 	newNodePtr := C.xmlNewNode(nil, (*C.xmlChar)(tagPtr))
 	newNode := NewNode(unsafe.Pointer(newNodePtr), document)
 	element = newNode.(*ElementNode)
@@ -180,14 +178,9 @@ func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode
 }
 
 func (document *XmlDocument) CreateCData(data string) (cdata *CDataNode) {
-	var dataPtr unsafe.Pointer
 	dataLen := len(data)
-	if dataLen > 0 {
-		dataBytes := []byte(data)
-		dataPtr = unsafe.Pointer(&dataBytes[0])
-	} else {
-		dataPtr = unsafe.Pointer(&emptyStringBytes[0])
-	}
+	dataBytes := GetCString([]byte(data))
+	dataPtr := unsafe.Pointer(&dataBytes[0])
 	nodePtr := C.xmlNewCDataBlock(document.Ptr, (*C.xmlChar)(dataPtr), C.int(dataLen))
 	if nodePtr != nil {
 		cdata = NewNode(unsafe.Pointer(nodePtr), document).(*CDataNode)
