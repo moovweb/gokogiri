@@ -39,6 +39,11 @@ func TestParseDocumentFragment(t *testing.T) {
 		doc.Free()
 		return
 	}
+	if docFragment.String() != "<foo/><!-- comment here --><bar>fun</bar>" {
+		t.Error("fragment output is wrong\n")
+		doc.Free()
+		return
+	}
 	if (len(docFragment.Children()) != 3) {
 		t.Error("the number of children from the fragment does not match")
 	}
