@@ -93,10 +93,10 @@ xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, in
 	return root_element;
 }
 
-xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len) {
+xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len) {
 	xmlDoc* tmpDoc = NULL;
 	xmlNode* tmpRoot = NULL;
-	tmpDoc = xmlReadMemory((char*)buffer, buffer_len, (char*)url, ((xmlDoc*)doc)->encoding, options);
+	tmpDoc = xmlReadMemory((char*)buffer, buffer_len, (char*)url, (char*)encoding, options);
 	if (tmpDoc == NULL) {
 		return NULL;
 	}
