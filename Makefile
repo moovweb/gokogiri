@@ -1,4 +1,4 @@
-DIRS = help xpath xml html libxml
+DIRS = util help xpath xml html
 
 all: install
 
