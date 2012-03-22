@@ -5,7 +5,6 @@ all: install
 install:
 	set -e; for d in $(subdirs); do make -C $$d install ; done
 	make -f libxml.mak install
-
 nuke:
 	make -f libxml.mak nuke
 	set -e; for d in $(subdirs); do make -C $$d nuke ; done
@@ -19,3 +18,4 @@ runtest:
 
 bench:
 	#echo "no benchmark tests for the old gokogiri"
+

@@ -16,3 +16,4 @@ CGOFILES=\
 	XPath.go\
 
 include $(GOROOT)/src/Make.pkg
+
