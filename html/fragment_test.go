@@ -42,6 +42,29 @@ func TestParseDocumentFragment(t *testing.T) {
 	
 }
 
+func TestParseDocumentFragment2(t *testing.T) {
+	docStr := `<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+<body>
+  </body>
+</html>`
+	doc, err := Parse([]byte(docStr), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	if err != nil {
+		println(err.String())
+	}
+	docFragment, err := doc.ParseFragment([]byte("<div>cool & fun</div>"), nil, DefaultParseOption)
+	if err != nil {
+		t.Error(err.String())
+		return
+	}
+	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div><h1></h1></div>") {
+		t.Error("the of children from the fragment do not match")
+	}
+	
+	doc.Free()
+	help.CheckXmlMemoryLeaks(t)
+}
+
 func TestSearchDocumentFragment(t *testing.T) {
 	doc, err := Parse([]byte("<div class='cool'></div>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
