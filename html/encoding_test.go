@@ -4,18 +4,18 @@ import (
 	"testing"
 	"io/ioutil"
 	"bytes"
-	"http"
 	"gokogiri/help"
 )
 
 func TestParseDocument_CP1252(t *testing.T) {
-	httpClient := &http.Client{}
-	response, _ := httpClient.Get("http://florist.1800flowers.com/store.php?id=123")
-	responseBytes, _ := ioutil.ReadAll(response.Body)
-	
-	doc, err := Parse(responseBytes, []byte("windows-1252"), nil, DefaultParseOption, DefaultEncodingBytes)
+	input, err := ioutil.ReadFile("./tests/document/encoding/input.html")
 	if err != nil {
-		println("err:", err.String())
+		t.Error("err:", err.String())
+		return
+	}
+	doc, err := Parse(input, []byte("windows-1252"), nil, DefaultParseOption, DefaultEncodingBytes)
+	if err != nil {
+		t.Error("err:", err.String())
 		return
 	}
 	out := doc.String()
@@ -27,13 +27,14 @@ func TestParseDocument_CP1252(t *testing.T) {
 }
 
 func TestParseDocumentWithInOutEncodings(t *testing.T) {
-	httpClient := &http.Client{}
-	response, _ := httpClient.Get("http://florist.1800flowers.com/store.php?id=123")
-	responseBytes, _ := ioutil.ReadAll(response.Body)
-	
-	doc, err := Parse(responseBytes, []byte("windows-1252"), nil, DefaultParseOption, []byte("windows-1252"))
+	input, err := ioutil.ReadFile("./tests/document/encoding/input.html")
 	if err != nil {
-		println("err:", err.String())
+		t.Error("err:", err.String())
+		return
+	}
+	doc, err := Parse(input, []byte("windows-1252"), nil, DefaultParseOption, []byte("windows-1252"))
+	if err != nil {
+		t.Error("err:", err.String())
 		return
 	}
 	out := doc.String()
@@ -43,3 +44,4 @@ func TestParseDocumentWithInOutEncodings(t *testing.T) {
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
 }
+
