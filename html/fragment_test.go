@@ -16,6 +16,7 @@ func TestParseDocumentFragmentText(t *testing.T) {
 		return
 	}
 	if len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "ok\r\n" {
+		println(docFragment.String())
 		t.Error("the children from the fragment text do not match")
 	}
 	doc.Free()

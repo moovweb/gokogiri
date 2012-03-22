@@ -100,7 +100,12 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 }
 
 func (document *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
-	fragment, err = parsefragmentInDocument(document, input, url, options)
+	root := document.Root()
+	if root == nil {
+		fragment, err = parsefragment(document, nil, input, url, options)
+	} else {
+		fragment, err = parsefragment(document, root.XmlNode, input, url, options)
+	}
 	return
 }
 
@@ -125,7 +130,9 @@ func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err os.Error) {
 func (document *HtmlDocument) Root() (element *xml.ElementNode) {
 	p := unsafe.Pointer(document.Ptr)
 	nodePtr := C.xmlDocGetRootElement((*C.xmlDoc)(p))
-	element = xml.NewNode(unsafe.Pointer(nodePtr), document).(*xml.ElementNode)
+	if nodePtr != nil {
+		element = xml.NewNode(unsafe.Pointer(nodePtr), document).(*xml.ElementNode)
+	}
 	return
 }
 
