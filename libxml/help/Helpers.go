@@ -1,5 +1,6 @@
 package help
 /* 
+#cgo pkg-config: libxml-2.0
 #include <stdio.h>
 #include <libxml/xmlversion.h> 
 #include <libxml/parser.h> 
