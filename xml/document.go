@@ -26,6 +26,7 @@ type Document interface {
 
 	DocPtr() unsafe.Pointer
 	DocType() int
+	DocRef() Document
 	InputEncoding() []byte
 	OutputEncoding() []byte
 	DocXPathCtx() *xpath.XPath
@@ -56,7 +57,8 @@ const DefaultEncoding = "utf-8"
 var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
 
 type XmlDocument struct {
-	Ptr *C.xmlDoc
+	Ptr           *C.xmlDoc
+	Me            Document
 	Node
 	InEncoding    []byte
 	OutEncoding   []byte
@@ -64,8 +66,8 @@ type XmlDocument struct {
 	XPathCtx      *xpath.XPath
 	Type          int
 	InputLen      int
-
-	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
+	
+	fragments     []*DocumentFragment //save the pointers to free them when the doc is freed
 }
 
 //default encoding in byte slice
@@ -86,6 +88,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	doc.XPathCtx = xpath.NewXPath(p)
 	doc.Type = xmlNode.NodeType()
 	doc.fragments = make([]*DocumentFragment, 0, initialFragments)
+	doc.Me = doc
 	xmlNode.Document = doc
 	return
 }
@@ -136,6 +139,11 @@ func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {
 
 func (document *XmlDocument) DocType() (t int) {
 	t = document.Type
+	return
+}
+
+func (document *XmlDocument) DocRef() (d Document) {
+	d = document.Me
 	return
 }
 
@@ -212,7 +220,6 @@ func (document *XmlDocument) CreateCommentNode(data string) (cdata *CommentNode)
 	}
 	return
 }
-
 */
 
 func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {

@@ -152,7 +152,6 @@ func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 	if nodePtr == nil {
 		return nil
 	}
-
 	xmlNode := &XmlNode{
 		Ptr:      (*C.xmlNode)(nodePtr),
 		Document: document,
@@ -261,7 +260,7 @@ func (xmlNode *XmlNode) IsValid() bool {
 }
 
 func (xmlNode *XmlNode) MyDocument() (document Document) {
-	document = xmlNode.Document
+	document = xmlNode.Document.DocRef()
 	return
 }
 

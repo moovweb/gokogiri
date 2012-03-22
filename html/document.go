@@ -53,6 +53,7 @@ var emptyStringBytes = []byte{0}
 func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	doc = &HtmlDocument{}
 	doc.XmlDocument = xml.NewDocument(p, contentLen, inEncoding, outEncoding)
+	doc.Me = doc
 	node := doc.Node.(*xml.XmlNode)
 	node.Document = doc
 	return
@@ -123,41 +124,6 @@ func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err os.Error) {
 	ret := int(C.htmlSetMetaEncoding((*C.xmlDoc)(doc.DocPtr()), (*C.xmlChar)(encodingPtr)))
 	if ret == -1 {
 		err = ErrSetMetaEncoding
-	}
-	return
-}
-
-func (document *HtmlDocument) Root() (element *xml.ElementNode) {
-	p := unsafe.Pointer(document.Ptr)
-	nodePtr := C.xmlDocGetRootElement((*C.xmlDoc)(p))
-	if nodePtr != nil {
-		element = xml.NewNode(unsafe.Pointer(nodePtr), document).(*xml.ElementNode)
-	}
-	return
-}
-
-func (document *HtmlDocument) CreateElementNode(tag string) (element *xml.ElementNode) {
-	tagBytes := GetCString([]byte(tag))
-	tagPtr := unsafe.Pointer(&tagBytes[0])
-	newNodePtr := C.xmlNewNode(nil, (*C.xmlChar)(tagPtr))
-	newNode := xml.NewNode(unsafe.Pointer(newNodePtr), document)
-	element = newNode.(*xml.ElementNode)
-	return
-}
-
-func (document *HtmlDocument) CreateCData(data string) (cdata *xml.CDataNode) {
-	var dataPtr unsafe.Pointer
-	dataLen := len(data)
-	if dataLen > 0 {
-		dataBytes := []byte(data)
-		dataPtr = unsafe.Pointer(&dataBytes[0])
-	} else {
-		dataPtr = unsafe.Pointer(&emptyStringBytes[0])
-	}
-	p := unsafe.Pointer(document.Ptr)
-	nodePtr := C.xmlNewCDataBlock((*C.xmlDoc)(p), (*C.xmlChar)(dataPtr), C.int(dataLen))
-	if nodePtr != nil {
-		cdata = xml.NewNode(unsafe.Pointer(nodePtr), document).(*xml.CDataNode)
 	}
 	return
 }
