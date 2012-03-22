@@ -16,15 +16,20 @@ import (
 )
 
 type Document interface {
+	/* Nokogiri APIs */
+	CreateElementNode(string) *ElementNode
+	CreateCDataNode(string) *CDataNode
+	CreateTextNode(string) *TextNode
+	//CreateCommentNode(string) *CommentNode
+	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
+
+
 	DocPtr() unsafe.Pointer
 	DocType() int
 	InputEncoding() []byte
 	OutputEncoding() []byte
 	DocXPathCtx() *xpath.XPath
 	AddUnlinkedNode(unsafe.Pointer)
-	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
-	CreateElementNode(string) *ElementNode
-	CreateCData(string) *CDataNode
 	Free()
 	String() string
 	Root() *ElementNode
@@ -124,11 +129,6 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *XmlDocument) {
 	return
 }
 
-func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
-	fragment, err = parsefragmentInDocument(document, input, url, options)
-	return
-}
-
 func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {
 	ptr = unsafe.Pointer(document.Ptr)
 	return
@@ -164,7 +164,9 @@ func (document *XmlDocument) BookkeepFragment(fragment *DocumentFragment) {
 
 func (document *XmlDocument) Root() (element *ElementNode) {
 	nodePtr := C.xmlDocGetRootElement(document.Ptr)
-	element = NewNode(unsafe.Pointer(nodePtr), document).(*ElementNode)
+	if nodePtr != nil {
+		element = NewNode(unsafe.Pointer(nodePtr), document).(*ElementNode)
+	}
 	return
 }
 
@@ -177,13 +179,48 @@ func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode
 	return
 }
 
-func (document *XmlDocument) CreateCData(data string) (cdata *CDataNode) {
+func (document *XmlDocument) CreateTextNode(data string) (text *TextNode) {
+	dataBytes := GetCString([]byte(data))
+	dataPtr := unsafe.Pointer(&dataBytes[0])
+	nodePtr := C.xmlNewText((*C.xmlChar)(dataPtr))
+	if nodePtr != nil {
+		nodePtr.doc = (*_Ctype_struct__xmlDoc)(document.DocPtr())
+		text = NewNode(unsafe.Pointer(nodePtr), document).(*TextNode)
+	}
+	return
+}
+
+func (document *XmlDocument) CreateCDataNode(data string) (cdata *CDataNode) {
 	dataLen := len(data)
 	dataBytes := GetCString([]byte(data))
 	dataPtr := unsafe.Pointer(&dataBytes[0])
 	nodePtr := C.xmlNewCDataBlock(document.Ptr, (*C.xmlChar)(dataPtr), C.int(dataLen))
 	if nodePtr != nil {
 		cdata = NewNode(unsafe.Pointer(nodePtr), document).(*CDataNode)
+	}
+	return
+}
+
+/*
+func (document *XmlDocument) CreateCommentNode(data string) (cdata *CommentNode) {
+	dataLen := len(data)
+	dataBytes := GetCString([]byte(data))
+	dataPtr := unsafe.Pointer(&dataBytes[0])
+	nodePtr := C.xmlNewCDataBlock(document.Ptr, (*C.xmlChar)(dataPtr), C.int(dataLen))
+	if nodePtr != nil {
+		cdata = NewNode(unsafe.Pointer(nodePtr), document).(*CDataNode)
+	}
+	return
+}
+
+*/
+
+func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+	root := document.Root()
+	if root == nil {
+		fragment, err = parsefragment(document, nil, input, url, options)
+	} else {
+		fragment, err = parsefragment(document, root.XmlNode, input, url, options)
 	}
 	return
 }

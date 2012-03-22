@@ -62,6 +62,8 @@ type Node interface {
 
 	IsValid() bool
 
+	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
+
 	//
 	NodeType() int
 	NextSibling() Node
@@ -182,12 +184,12 @@ func (xmlNode *XmlNode) coerce(data interface{}) (nodes []Node, err os.Error) {
 	case *DocumentFragment:
 		nodes = t.Children()
 	case string:
-		f, err := xmlNode.Document.ParseFragment([]byte(t), nil, DefaultParseOption)
+		f, err := xmlNode.MyDocument().ParseFragment([]byte(t), nil, DefaultParseOption)
 		if err == nil {
 			nodes = f.Children()
 		}
 	case []byte:
-		f, err := xmlNode.Document.ParseFragment(t, nil, DefaultParseOption)
+		f, err := xmlNode.MyDocument().ParseFragment(t, nil, DefaultParseOption)
 		if err == nil {
 			nodes = f.Children()
 		}
@@ -687,6 +689,10 @@ func (xmlNode *XmlNode) Wrap(data string) (err os.Error) {
 	return
 }
 
+func (xmlNode *XmlNode) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+	fragment, err = parsefragment(xmlNode.Document, xmlNode, input, url, options)
+	return
+}
 /*
 //export xmlNodeWriteCallback
 func xmlNodeWriteCallback(obj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {

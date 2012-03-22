@@ -13,6 +13,10 @@ func TestParseDocumentFragmentBasic(t *testing.T) {
 		t.Error("parsing error:", err.String())
 		return
 	}
+	root := doc.Root()
+	if root != nil {
+	println("root:", root.String())
+}
 	docFragment, err := doc.ParseFragment([]byte("hi"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
