@@ -58,11 +58,20 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 		}
 	} else {
 		//wrap the content
-		content = append(fragmentWrapperStart, content...)
-		content = append(content, fragmentWrapperEnd...)
-		contentPtr = unsafe.Pointer(&content[0])
-		contentLen := len(content)
+		newContent := append(fragmentWrapperStart, content...)
+		newContent = append(newContent, fragmentWrapperEnd...)
+		contentPtr = unsafe.Pointer(&newContent[0])
+		contentLen := len(newContent)
 		rootElementPtr := C.htmlParseFragment(node.NodePtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+		if rootElementPtr == nil {
+			//try to parse it as a doc
+			fragment, err = parsefragment(document, nil, content, url, options) 
+			return
+		}
+		if rootElementPtr == nil {
+			err = ErrFailParseFragment
+			return
+		}
 		root = xml.NewNode(unsafe.Pointer(rootElementPtr), document)
 	}
 
