@@ -52,12 +52,12 @@ func TestParseDocumentFragment2(t *testing.T) {
 	if err != nil {
 		println(err.String())
 	}
-	docFragment, err := doc.ParseFragment([]byte("<div>cool & fun</div>"), nil, DefaultParseOption)
+	docFragment, err := doc.ParseFragment([]byte("<script>cool & fun</script>"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.String())
 		return
 	}
-	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div><h1></h1></div>") {
+	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<script>cool & fun</script>") {
 		t.Error("the of children from the fragment do not match")
 	}
 	
