@@ -7,6 +7,7 @@ echo Running goinstall \
 
 else
 echo Building \
+&& echo "(in util)" gomake $1 && cd util && gomake $1 && cd - > /dev/null \
 && echo "(in xpath)" gomake $1 && cd xpath && gomake $1 && cd - > /dev/null \
 && echo "(in xml)" gomake $1 && cd xml && gomake $1 && cd - > /dev/null \
 && echo "(in html)" gomake $1 && cd html && gomake $1 && cd - > /dev/null \
