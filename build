@@ -11,7 +11,12 @@ echo Building \
 && echo "(in xpath)" gomake $1 && cd xpath && gomake $1 && cd - > /dev/null \
 && echo "(in xml)" gomake $1 && cd xml && gomake $1 && cd - > /dev/null \
 && echo "(in html)" gomake $1 && cd html && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/tree)" gomake $1 && cd libxml/tree && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/help)" gomake $1 && cd libxml/help && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/test)" gomake $1 && cd libxml/test && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml/xpath)" gomake $1 && cd libxml/xpath && gomake $1 && cd - > /dev/null \
 && echo "(in help)" gomake $1 && cd help && gomake $1 && cd - > /dev/null \
+&& echo "(in libxml)" gomake $1 && cd libxml && gomake $1 && cd - > /dev/null \
 
 fi
 
