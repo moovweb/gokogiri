@@ -7,4 +7,4 @@ clean:
 install: build
 	gb -i
 test:
-	gb -t
+	#gb -t
