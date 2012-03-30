@@ -3,6 +3,10 @@
 
 include $(GOROOT)/src/Make.inc
 
+XML_CONFIG=$(shell which xml2-config)
+CGO_LDFLAGS=$(shell $(XML_CONFIG) --libs)
+CGO_CFLAGS=$(shell $(XML_CONFIG) --cflags)
+
 TARG=gokogiri/libxml/xpath
 GOFILES=\
 
@@ -11,29 +15,5 @@ CGOFILES=\
 	Expression.go\
 	XPath.go\
 
-
-# gb: this is the local install
-GBROOT=../..
-
-# gb: compile/link against local install
-GCIMPORTS+= -I $(GBROOT)/_obj
-LDIMPORTS+= -L $(GBROOT)/_obj
-
-# gb: compile/link against GOPATH entries
-GOPATHSEP=:
-ifeq ($(GOHOSTOS),windows)
-GOPATHSEP=;
-endif
-GCIMPORTS+=-I $(subst $(GOPATHSEP),/pkg/$(GOOS)_$(GOARCH) -I , $(GOPATH))/pkg/$(GOOS)_$(GOARCH)
-LDIMPORTS+=-L $(subst $(GOPATHSEP),/pkg/$(GOOS)_$(GOARCH) -L , $(GOPATH))/pkg/$(GOOS)_$(GOARCH)
-
-# gb: copy to local install
-$(GBROOT)/_obj/$(TARG).a: _obj/$(TARG).a
-	mkdir -p $(dir $@); cp -f $< $@
-
-package: $(GBROOT)/_obj/$(TARG).a
-
 include $(GOROOT)/src/Make.pkg
 
-# gb: local dependencies
-_obj/$(TARG).a: $(GBROOT)/_obj/gokogiri/libxml/tree.a
