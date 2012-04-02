@@ -59,6 +59,19 @@ func TestAddPreviousSibling(t *testing.T) {
 	RunTest(t, "node", "add_previous_sibling", testLogic)
 }
 
+func TestAddPreviousSibling2(t *testing.T) {
+
+	testLogic := func(t *testing.T, doc *XmlDocument) {
+		err := doc.Root().FirstChild().AddPreviousSibling("COOL")
+
+		if err != nil {
+			t.Errorf("Error adding previous sibling:\n%v\n", err.String())
+		}
+	}
+
+	RunTest(t, "node", "add_previous_sibling2", testLogic)
+}
+
 func TestAddNextSibling(t *testing.T) {
 
 	testLogic := func(t *testing.T, doc *XmlDocument) {
