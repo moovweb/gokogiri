@@ -649,13 +649,16 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err os.Error) {
 	nodePtr := node.NodePtr()
 	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
 
-	childPtr := C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
-		//check the retured pointer
-		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
-		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.Remove()
-	}
+	C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	/*
+		childPtr := C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
+			//check the retured pointer
+			//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
+			//then we should invalid this node, because we do not want to have a dangling pointer
+			//xmlNode.Document.AddUnlinkedNode(unsafe.Pointer(nodePtr))
+		}
+	*/
 	return
 }
 
@@ -667,14 +670,16 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err os.Error) {
 	}
 	nodePtr := node.NodePtr()
 	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-
-	childPtr := C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
-		//check the retured pointer
-		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
-		//then we should invalid this node, because we do not want to have a dangling pointer
-		node.Remove()
-	}
+	C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	/*
+		childPtr := C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
+			//check the retured pointer
+			//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
+			//then we should invalid this node, because we do not want to have a dangling pointer
+			//node.Remove()
+		}
+	*/
 	return
 }
 
