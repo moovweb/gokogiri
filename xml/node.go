@@ -628,15 +628,31 @@ func (xmlNode *XmlNode) addChild(node Node) (err os.Error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
 
-	childPtr := C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-	if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
-		//check the retured pointer
-		//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
-		//then we should invalid this node, because we do not want to have a dangling pointer
+	parentPtr := xmlNode.Ptr.parent
+	isNodeAccestor := false
+	for ; parentPtr != nil; parentPtr = parentPtr.parent {
+		p := unsafe.Pointer(parentPtr)
+		if p == nodePtr {
+			isNodeAccestor = true
+		}
+	}
+	if !isNodeAccestor {
+		C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
+		C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	} else {
 		node.Remove()
 	}
+
+	/*
+		childPtr := C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
+			//check the retured pointer
+			//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
+			//then we should invalid this node, because we do not want to have a dangling pointer
+			node.Remove()
+		}
+	*/
 	return
 }
 
