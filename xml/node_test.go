@@ -30,6 +30,33 @@ func TestAddChild(t *testing.T) {
 
 }
 
+func TestAddAncestorAsChild(t *testing.T) {
+	docAssertion := func(doc *XmlDocument) (string, string, string) {
+		expectedDocAfterAdd :=
+			`<?xml version="1.0" encoding="utf-8"?>
+<foo/>
+`
+
+		foo := doc.Root()
+		bar := foo.FirstChild()
+		holiday := bar.FirstChild()
+		fun := holiday.FirstChild()
+		fun.AddChild(bar)
+
+		return doc.String(), expectedDocAfterAdd, "output of the xml doc after AddChild does not match"
+	}
+
+	nodeAssertion := func(doc *XmlDocument) (string, string, string) {
+		expectedNodeAfterAdd :=
+			`<foo/>`
+
+		return doc.Root().String(), expectedNodeAfterAdd, "the output of the xml root after AddChild does not match"
+	}
+
+	RunTest(t, "node", "add_ancestor", nil, docAssertion, nodeAssertion)
+
+}
+
 func addChildBenchLogic(b *testing.B, doc *XmlDocument) {
 	root := doc.Root()
 
