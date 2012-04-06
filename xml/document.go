@@ -23,7 +23,6 @@ type Document interface {
 	//CreateCommentNode(string) *CommentNode
 	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
 
-
 	DocPtr() unsafe.Pointer
 	DocType() int
 	DocRef() Document
@@ -57,34 +56,33 @@ const DefaultEncoding = "utf-8"
 var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
 
 type XmlDocument struct {
-	Ptr           *C.xmlDoc
-	Me            Document
+	Ptr *C.xmlDoc
+	Me  Document
 	Node
 	InEncoding    []byte
 	OutEncoding   []byte
-	UnlinkedNodes []unsafe.Pointer
+	UnlinkedNodes map[*C.xmlNode]bool
 	XPathCtx      *xpath.XPath
 	Type          int
 	InputLen      int
-	
-	fragments     []*DocumentFragment //save the pointers to free them when the doc is freed
+
+	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
 }
 
 //default encoding in byte slice
 var DefaultEncodingBytes = []byte(DefaultEncoding)
 
-const initialUnlinkedNodes = 8
 const initialFragments = 2
 
 //create a document
 func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *XmlDocument) {
-	inEncoding  = AppendCStringTerminator(inEncoding)
+	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
 	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p)}
 	docPtr := (*C.xmlDoc)(p)
 	doc = &XmlDocument{Ptr: docPtr, Node: xmlNode, InEncoding: inEncoding, OutEncoding: outEncoding, InputLen: contentLen}
-	doc.UnlinkedNodes = make([]unsafe.Pointer, 0, initialUnlinkedNodes)
+	doc.UnlinkedNodes = make(map[*C.xmlNode]bool)
 	doc.XPathCtx = xpath.NewXPath(p)
 	doc.Type = xmlNode.NodeType()
 	doc.fragments = make([]*DocumentFragment, 0, initialFragments)
@@ -94,7 +92,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 }
 
 func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err os.Error) {
-	inEncoding  = AppendCStringTerminator(inEncoding)
+	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
 	var docPtr *C.xmlDoc
@@ -103,7 +101,7 @@ func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (do
 	if contentLen > 0 {
 		var contentPtr, urlPtr, encodingPtr unsafe.Pointer
 		contentPtr = unsafe.Pointer(&content[0])
-		
+
 		if len(url) > 0 {
 			url = AppendCStringTerminator(url)
 			urlPtr = unsafe.Pointer(&url[0])
@@ -163,7 +161,8 @@ func (document *XmlDocument) DocXPathCtx() (ctx *xpath.XPath) {
 }
 
 func (document *XmlDocument) AddUnlinkedNode(nodePtr unsafe.Pointer) {
-	document.UnlinkedNodes = append(document.UnlinkedNodes, nodePtr)
+	p := (*C.xmlNode)(nodePtr)
+	document.UnlinkedNodes[p] = true
 }
 
 func (document *XmlDocument) BookkeepFragment(fragment *DocumentFragment) {
@@ -238,11 +237,11 @@ func (document *XmlDocument) Free() {
 	for _, fragment := range document.fragments {
 		fragment.Remove()
 	}
-
-	for _, nodePtr := range document.UnlinkedNodes {
-		C.xmlFreeNode((*C.xmlNode)(nodePtr))
+	var p *C.xmlNode
+	for p, _ = range document.UnlinkedNodes {
+		C.xmlFreeNode(p)
+		document.UnlinkedNodes[p] = false, false
 	}
-
 	document.XPathCtx.Free()
 	C.xmlFreeDoc(document.Ptr)
 }
