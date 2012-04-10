@@ -610,8 +610,9 @@ func (xmlNode *XmlNode) InnerHtml() string {
 }
 
 func (xmlNode *XmlNode) Unlink() {
-	C.xmlUnlinkNode(xmlNode.Ptr)
-	xmlNode.Document.AddUnlinkedNode(unsafe.Pointer(xmlNode.Ptr))
+	if int(C.xmlUnlinkNodeWithCheck(xmlNode.Ptr)) != 0 {
+		xmlNode.Document.AddUnlinkedNode(unsafe.Pointer(xmlNode.Ptr))
+	}
 }
 
 func (xmlNode *XmlNode) Remove() {
