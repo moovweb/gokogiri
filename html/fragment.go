@@ -51,9 +51,10 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 			return
 		}
 		root = html
-		
+
 		if !containBody {
 			root = html.FirstChild()
+			html.AddPreviousSibling(root)
 			html.Remove() //remove html otherwise it's leaked
 		}
 	} else {
