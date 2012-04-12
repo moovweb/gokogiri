@@ -3,11 +3,11 @@ package html
 //#include "helper.h"
 import "C"
 import (
-	"unsafe"
-	"os"
-	"gokogiri/xml"
-	. "gokogiri/util"
 	"bytes"
+	"errors"
+	. "gokogiri/util"
+	"gokogiri/xml"
+	"unsafe"
 )
 
 var fragmentWrapperStart = []byte("<div>")
@@ -15,12 +15,12 @@ var fragmentWrapperEnd = []byte("</div>")
 var fragmentWrapper = []byte("<html><body>")
 var bodySigBytes = []byte("<body")
 
-var ErrFailParseFragment = os.NewError("failed to parse html fragment")
-var ErrEmptyFragment = os.NewError("empty html fragment")
+var ErrFailParseFragment = errors.New("failed to parse html fragment")
+var ErrEmptyFragment = errors.New("empty html fragment")
 
 const initChildrenNumber = 4
 
-func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
+func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte, options int) (fragment *xml.DocumentFragment, err error) {
 	//set up pointers before calling the C function
 	var contentPtr, urlPtr unsafe.Pointer
 	if len(url) > 0 {
@@ -30,7 +30,7 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 	var root xml.Node
 	if node == nil {
 		containBody := (bytes.Index(content, bodySigBytes) >= 0)
-		
+
 		content = append(fragmentWrapper, content...)
 		contentPtr = unsafe.Pointer(&content[0])
 		contentLen := len(content)
@@ -66,7 +66,7 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 		rootElementPtr := C.htmlParseFragment(node.NodePtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 		if rootElementPtr == nil {
 			//try to parse it as a doc
-			fragment, err = parsefragment(document, nil, content, url, options) 
+			fragment, err = parsefragment(document, nil, content, url, options)
 			return
 		}
 		if rootElementPtr == nil {
@@ -85,8 +85,8 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 	return
 }
 
-func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *xml.DocumentFragment, err os.Error) {
-	inEncoding  = AppendCStringTerminator(inEncoding)
+func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *xml.DocumentFragment, err error) {
+	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 	document := CreateEmptyDocument(inEncoding, outEncoding)
 	fragment, err = parsefragment(document, nil, content, url, options)

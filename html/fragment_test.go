@@ -8,11 +8,11 @@ import (
 func TestParseDocumentFragmentText(t *testing.T) {
 	doc, err := Parse(nil, []byte("iso-8859-1"), nil, DefaultParseOption, []byte("iso-8859-1"))
 	if err != nil {
-		println(err.String())
+		println(err.Error())
 	}
 	docFragment, err := doc.ParseFragment([]byte("ok\r\n"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		return
 	}
 	if len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "ok\r\n" {
@@ -26,11 +26,11 @@ func TestParseDocumentFragmentText(t *testing.T) {
 func TestParseDocumentFragment(t *testing.T) {
 	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		println(err.String())
+		println(err.Error())
 	}
 	docFragment, err := doc.ParseFragment([]byte("<div><h1>"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		return
 	}
 	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div><h1></h1></div>") {
@@ -50,11 +50,11 @@ func TestParseDocumentFragment2(t *testing.T) {
 </html>`
 	doc, err := Parse([]byte(docStr), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		println(err.String())
+		println(err.Error())
 	}
 	docFragment, err := doc.ParseFragment([]byte("<script>cool & fun</script>"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		return
 	}
 	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<script>cool & fun</script>") {
@@ -68,11 +68,11 @@ func TestParseDocumentFragment2(t *testing.T) {
 func TestSearchDocumentFragment(t *testing.T) {
 	doc, err := Parse([]byte("<div class='cool'></div>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		println(err.String())
+		println(err.Error())
 	}
 	docFragment, err := doc.ParseFragment([]byte("<div class='cool'><h1>"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		return
 	}
 	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div class=\"cool\"><h1></h1></div>") {

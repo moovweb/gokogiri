@@ -1,13 +1,13 @@
 package xml
 
 import (
-	"io/ioutil"
+	"errors"
 	"fmt"
-	"path/filepath"
-	"testing"
-	"strings"
 	"gokogiri/help"
-	"os"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
+	"testing"
 )
 
 func badOutput(actual string, expected string) {
@@ -34,7 +34,7 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(t *test
 	doc, err := parseInput(input)
 
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 	}
 
 	//println("parsed input")
@@ -72,7 +72,7 @@ func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b 
 	doc, err := parseInput(input)
 
 	if err != nil {
-		panic("Error:" + err.String())
+		panic("Error:" + err.Error())
 	}
 
 	b.StartTimer()
@@ -86,7 +86,7 @@ func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b 
 	//	println("----------- END OF BENCHMARK -----------")
 }
 
-func parseInput(input interface{}) (*XmlDocument, os.Error) {
+func parseInput(input interface{}) (*XmlDocument, error) {
 	var realInput []byte
 
 	switch thisInput := input.(type) {
@@ -95,13 +95,13 @@ func parseInput(input interface{}) (*XmlDocument, os.Error) {
 	case string:
 		realInput = []byte(thisInput)
 	default:
-		return nil, os.NewError("Unrecognized parsing input!")
+		return nil, errors.New("Unrecognized parsing input!")
 	}
 
 	doc, err := Parse(realInput, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
 	if err != nil {
-		return nil, os.NewError(fmt.Sprintf("parsing error:%v\n", err.String()))
+		return nil, errors.New(fmt.Sprintf("parsing error:%v\n", err.Error()))
 	}
 
 	return doc, nil
@@ -115,13 +115,13 @@ func getTestData(name string) (input []byte, output []byte, error string) {
 	input, err := ioutil.ReadFile(inputFile)
 
 	if err != nil {
-		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) input:\n%v\n", offset, name, offset+err.String())
+		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) input:\n%v\n", offset, name, offset+err.Error())
 	}
 
 	output, err = ioutil.ReadFile(filepath.Join(name, "output.txt"))
 
 	if err != nil {
-		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) output:\n%v\n", offset, name, offset+err.String())
+		errorMessage += fmt.Sprintf("%vCouldn't read test (%v) output:\n%v\n", offset, name, offset+err.Error())
 	}
 
 	return input, output, errorMessage
@@ -132,16 +132,16 @@ func collectTests(suite string) (names []string, error string) {
 	entries, err := ioutil.ReadDir(testPath)
 
 	if err != nil {
-		return nil, fmt.Sprintf("Couldn't read tests:\n%v\n", err.String())
+		return nil, fmt.Sprintf("Couldn't read tests:\n%v\n", err.Error())
 	}
 
 	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name, "_") || strings.HasPrefix(entry.Name, ".") {
+		if strings.HasPrefix(entry.Name(), "_") || strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
 
-		if entry.IsDirectory() {
-			names = append(names, filepath.Join(testPath, entry.Name))
+		if entry.IsDir() {
+			names = append(names, filepath.Join(testPath, entry.Name()))
 		}
 	}
 

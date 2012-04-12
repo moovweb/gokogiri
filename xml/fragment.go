@@ -3,15 +3,15 @@ package xml
 //#include "helper.h"
 import "C"
 import (
-	"unsafe"
-	"os"
+	"errors"
 	. "gokogiri/util"
+	"unsafe"
 )
 
 type DocumentFragment struct {
 	Node
-	InEncoding    []byte
-	OutEncoding   []byte
+	InEncoding  []byte
+	OutEncoding []byte
 }
 
 var (
@@ -19,12 +19,12 @@ var (
 	fragmentWrapperEnd   = []byte("</root>")
 )
 
-var ErrFailParseFragment = os.NewError("failed to parse xml fragment")
-var ErrEmptyFragment = os.NewError("empty xml fragment")
+var ErrFailParseFragment = errors.New("failed to parse xml fragment")
+var ErrEmptyFragment = errors.New("empty xml fragment")
 
 const initChildrenNumber = 4
 
-func parsefragment(document Document, node *XmlNode, content, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+func parsefragment(document Document, node *XmlNode, content, url []byte, options int) (fragment *DocumentFragment, err error) {
 	//wrap the content before parsing
 	content = append(fragmentWrapperStart, content...)
 	content = append(content, fragmentWrapperEnd...)
@@ -66,13 +66,13 @@ func parsefragment(document Document, node *XmlNode, content, url []byte, option
 	fragment.Node = root
 	fragment.InEncoding = document.InputEncoding()
 	fragment.OutEncoding = document.OutputEncoding()
-	
+
 	document.BookkeepFragment(fragment)
 	return
 }
 
-func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *DocumentFragment, err os.Error) {
-	inEncoding  = AppendCStringTerminator(inEncoding)
+func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *DocumentFragment, err error) {
+	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 	document := CreateEmptyDocument(inEncoding, outEncoding)
 	fragment, err = parsefragment(document, nil, content, url, options)

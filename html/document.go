@@ -10,10 +10,10 @@ package html
 import "C"
 
 import (
-	"unsafe"
-	"os"
-	"gokogiri/xml"
+	"errors"
 	. "gokogiri/util"
+	"gokogiri/xml"
+	"unsafe"
 )
 
 //xml parse option
@@ -45,8 +45,8 @@ type HtmlDocument struct {
 var DefaultEncodingBytes = []byte(xml.DefaultEncoding)
 var emptyHtmlDocBytes = []byte(EmptyHtmlDoc)
 
-var ErrSetMetaEncoding = os.NewError("Set Meta Encoding failed")
-var ERR_FAILED_TO_PARSE_HTML = os.NewError("failed to parse html input")
+var ErrSetMetaEncoding = errors.New("Set Meta Encoding failed")
+var ERR_FAILED_TO_PARSE_HTML = errors.New("failed to parse html input")
 var emptyStringBytes = []byte{0}
 
 //create a document
@@ -60,8 +60,8 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 }
 
 //parse a string to document
-func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err os.Error) {
-	inEncoding  = AppendCStringTerminator(inEncoding)
+func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err error) {
+	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
 	var docPtr *C.xmlDoc
@@ -100,7 +100,7 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	return
 }
 
-func (document *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err os.Error) {
+func (document *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err error) {
 	root := document.Root()
 	if root == nil {
 		fragment, err = parsefragment(document, nil, input, url, options)
@@ -115,7 +115,7 @@ func (doc *HtmlDocument) MetaEncoding() string {
 	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
-func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err os.Error) {
+func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err error) {
 	var encodingPtr unsafe.Pointer = nil
 	if len(encoding) > 0 {
 		encodingBytes := AppendCStringTerminator([]byte(encoding))

@@ -8,10 +8,10 @@ package xml
 import "C"
 
 import (
-	"unsafe"
-	"os"
-	"gokogiri/xpath"
+	"errors"
 	. "gokogiri/util"
+	"gokogiri/xpath"
+	"unsafe"
 	//	"runtime/debug"
 )
 
@@ -21,7 +21,7 @@ type Document interface {
 	CreateCDataNode(string) *CDataNode
 	CreateTextNode(string) *TextNode
 	//CreateCommentNode(string) *CommentNode
-	ParseFragment([]byte, []byte, int) (*DocumentFragment, os.Error)
+	ParseFragment([]byte, []byte, int) (*DocumentFragment, error)
 
 	DocPtr() unsafe.Pointer
 	DocType() int
@@ -53,7 +53,7 @@ var DefaultParseOption = XML_PARSE_RECOVER |
 //libxml2 use "utf-8" by default, and so do we
 const DefaultEncoding = "utf-8"
 
-var ERR_FAILED_TO_PARSE_XML = os.NewError("failed to parse xml input")
+var ERR_FAILED_TO_PARSE_XML = errors.New("failed to parse xml input")
 
 type XmlDocument struct {
 	Ptr *C.xmlDoc
@@ -91,7 +91,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	return
 }
 
-func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err os.Error) {
+func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err error) {
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
@@ -221,7 +221,7 @@ func (document *XmlDocument) CreateCommentNode(data string) (cdata *CommentNode)
 }
 */
 
-func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err os.Error) {
+func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err error) {
 	root := document.Root()
 	if root == nil {
 		fragment, err = parsefragment(document, nil, input, url, options)
@@ -240,7 +240,7 @@ func (document *XmlDocument) Free() {
 	var p *C.xmlNode
 	for p, _ = range document.UnlinkedNodes {
 		C.xmlFreeNode(p)
-		document.UnlinkedNodes[p] = false, false
+		delete(document.UnlinkedNodes, p)
 	}
 	document.XPathCtx.Free()
 	C.xmlFreeDoc(document.Ptr)

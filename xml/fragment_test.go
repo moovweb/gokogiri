@@ -10,7 +10,7 @@ func TestParseDocumentFragmentBasic(t *testing.T) {
 
 	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		t.Error("parsing error:", err.String())
+		t.Error("parsing error:", err.Error())
 		return
 	}
 	root := doc.Root()
@@ -19,7 +19,7 @@ func TestParseDocumentFragmentBasic(t *testing.T) {
 }
 	docFragment, err := doc.ParseFragment([]byte("hi"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		doc.Free()
 		return
 	}
@@ -34,12 +34,12 @@ func TestParseDocumentFragment(t *testing.T) {
 
 	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		t.Error("parsing error:", err.String())
+		t.Error("parsing error:", err.Error())
 		return
 	}
 	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		doc.Free()
 		return
 	}
@@ -59,12 +59,12 @@ func TestSearchDocumentFragment(t *testing.T) {
 
 	doc, err := Parse([]byte("<moovweb><z/><s/></moovweb>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		t.Error("parsing error:", err.String())
+		t.Error("parsing error:", err.Error())
 		return
 	}
 	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		doc.Free()
 		return
 	}
@@ -97,12 +97,12 @@ func TestSearchDocumentFragmentWithEmptyDoc(t *testing.T) {
 
 	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
-		t.Error("parsing error:", err.String())
+		t.Error("parsing error:", err.Error())
 		return
 	}
 	docFragment, err := doc.ParseFragment([]byte("<foo></foo><!-- comment here --><bar>fun</bar>"), nil, DefaultParseOption)
 	if err != nil {
-		t.Error(err.String())
+		t.Error(err.Error())
 		doc.Free()
 		return
 	}

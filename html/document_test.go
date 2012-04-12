@@ -85,7 +85,7 @@ func TestHTMLFragmentEncoding(t *testing.T) {
 
 	if err != nil {
 		println("WHAT")
-		t.Error(err.String())
+		t.Error(err.Error())
 	}
 
 	if fragment.String() != expected {

@@ -79,7 +79,7 @@ func TestAddPreviousSibling(t *testing.T) {
 		err := doc.Root().AddPreviousSibling("<bar></bar><cat></cat>")
 
 		if err != nil {
-			t.Errorf("Error adding previous sibling:\n%v\n", err.String())
+			t.Errorf("Error adding previous sibling:\n%v\n", err.Error())
 		}
 	}
 
@@ -92,7 +92,7 @@ func TestAddPreviousSibling2(t *testing.T) {
 		err := doc.Root().FirstChild().AddPreviousSibling("COOL")
 
 		if err != nil {
-			t.Errorf("Error adding previous sibling:\n%v\n", err.String())
+			t.Errorf("Error adding previous sibling:\n%v\n", err.Error())
 		}
 	}
 
