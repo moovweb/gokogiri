@@ -128,8 +128,8 @@ type Node interface {
 	ResetChildren()
 	//Free()
 	////
-	ToXml([]byte, []byte) []byte
-	ToHtml([]byte, []byte) []byte
+	ToXml([]byte, []byte) ([]byte, int)
+	ToHtml([]byte, []byte) ([]byte, int)
 	ToBuffer([]byte) []byte
 	String() string
 	Content() string
@@ -140,12 +140,18 @@ type Node interface {
 var ErrTooLarge = errors.New("Output buffer too large")
 
 //pre-allocate a buffer for serializing the document
-const initialOutputBufferSize = 500 * 1024 //100K
+const initialOutputBufferSize = 10 //100K
 
 type XmlNode struct {
 	Ptr *C.xmlNode
 	Document
 	valid bool
+}
+
+type WriteBuffer struct {
+	Node   *XmlNode
+	Buffer []byte
+	Offset int
 }
 
 func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
@@ -534,7 +540,7 @@ func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
 	return
 }
 
-func (xmlNode *XmlNode) to_s(format int, encoding, outputBuffer []byte) []byte {
+func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]byte, int) {
 	nodePtr := unsafe.Pointer(xmlNode.Ptr)
 	var encodingPtr unsafe.Pointer
 	if len(encoding) == 0 {
@@ -545,44 +551,37 @@ func (xmlNode *XmlNode) to_s(format int, encoding, outputBuffer []byte) []byte {
 	} else {
 		encodingPtr = nil
 	}
-	bufferPtr := unsafe.Pointer(&outputBuffer[0])
-	bufferLen := len(outputBuffer)
+
+	wbuffer := &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
+	wbufferPtr := unsafe.Pointer(wbuffer)
 
 	format |= XML_SAVE_FORMAT
-	ret := int(C.xmlSaveNode(bufferPtr, C.int(bufferLen), nodePtr, encodingPtr, C.int(format)))
+	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
 		println("output error!!!")
-		return nil
+		return nil, 0
 	}
 
-	return outputBuffer[:ret]
+	return wbuffer.Buffer, wbuffer.Offset
 }
 
-func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) []byte {
-	if outputBuffer == nil {
-		outputBuffer = make([]byte, initialOutputBufferSize)
-	}
-	return xmlNode.to_s(XML_SAVE_AS_XML, encoding, outputBuffer)
+func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) ([]byte, int) {
+	return xmlNode.serialize(XML_SAVE_AS_XML, encoding, outputBuffer)
 }
 
-func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) []byte {
-	if outputBuffer == nil {
-		outputBuffer = make([]byte, initialOutputBufferSize)
-	}
-	return xmlNode.to_s(XML_SAVE_AS_HTML, encoding, outputBuffer)
+func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) ([]byte, int) {
+	return xmlNode.serialize(XML_SAVE_AS_HTML, encoding, outputBuffer)
 }
 
 func (xmlNode *XmlNode) ToBuffer(outputBuffer []byte) []byte {
-	if outputBuffer == nil {
-		outputBuffer = make([]byte, initialOutputBufferSize)
-	}
 	var b []byte
+	var size int
 	if docType := xmlNode.Document.DocType(); docType == XML_HTML_DOCUMENT_NODE {
-		b = xmlNode.ToHtml(nil, outputBuffer)
+		b, size = xmlNode.ToHtml(nil, outputBuffer)
 	} else {
-		b = xmlNode.ToXml(nil, outputBuffer)
+		b, size = xmlNode.ToXml(nil, outputBuffer)
 	}
-	return b
+	return b[:size]
 }
 
 func (xmlNode *XmlNode) String() string {
@@ -715,19 +714,26 @@ func (xmlNode *XmlNode) ParseFragment(input, url []byte, options int) (fragment 
 	return
 }
 
-/*
 //export xmlNodeWriteCallback
-func xmlNodeWriteCallback(obj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
-	node := (*XmlNode)(obj)
+func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
+	wbuffer := (*WriteBuffer)(wbufferObj)
+	offset := wbuffer.Offset
+
+	if offset > len(wbuffer.Buffer) {
+		panic("fatal error in xmlNodeWriteCallback")
+	}
+
+	buffer := wbuffer.Buffer[:offset]
 	dataLen := int(data_len)
 
-	if node.outputOffset+dataLen > cap(node.outputBuffer) {
-		node.outputBuffer = grow(node.outputBuffer, dataLen)
-	}
 	if dataLen > 0 {
-		destBufPtr := unsafe.Pointer(&(node.outputBuffer[node.outputOffset]))
-		C.memcpy(destBufPtr, data, C.size_t(data_len))
-		node.outputOffset += dataLen
+		if len(buffer)+dataLen > cap(buffer) {
+			newBuffer := grow(buffer, dataLen)
+			wbuffer.Buffer = newBuffer
+		}
+		destBufPtr := unsafe.Pointer(&(wbuffer.Buffer[offset]))
+		C.memcpy(destBufPtr, data, C.size_t(dataLen))
+		wbuffer.Offset += dataLen
 	}
 }
 
@@ -746,4 +752,3 @@ func makeSlice(n int) []byte {
 	}()
 	return make([]byte, n)
 }
-*/

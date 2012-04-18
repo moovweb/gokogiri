@@ -12,7 +12,7 @@
 xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int errror_buffer_len);
 xmlNode* xmlParseFragment(void* doc, void *buffer, int buffer_len, void *url, int options, void *error_buffer, int error_buffer_len);
 xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len);
-int xmlSaveNode(void *buffer, int buffer_len, void *node, void *encoding, int options);
+int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options);
 
 void xmlSetContent(void* node, void *content);
 
@@ -24,6 +24,7 @@ void xmlFreeChars(char *buffer);
 int xmlUnlinkNodeWithCheck(xmlNode *node);
 
 typedef struct XmlBufferContext {
+	void *obj;
 	char *buffer;
 	int buffer_len;
 	int data_size;

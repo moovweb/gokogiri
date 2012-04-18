@@ -3,20 +3,10 @@
 
 //internal callback functions
 int xml_write_callback(void *ctx, char *buffer, int len) {
-	XmlBufferContext *xmlBufferCtx = (XmlBufferContext*)ctx;
-	if (len > 0 && xmlBufferCtx != NULL && xmlBufferCtx->buffer_len > xmlBufferCtx->data_size) {
-		int bytesToWrite = xmlBufferCtx->buffer_len - xmlBufferCtx->data_size;
-		char *start = NULL;
-
-		if (bytesToWrite > len) {
-			bytesToWrite = len;
-		}
-		start =  xmlBufferCtx->buffer + sizeof(char)*xmlBufferCtx->data_size;
-		strncpy(start, buffer, bytesToWrite);
-		xmlBufferCtx->data_size = xmlBufferCtx->data_size + bytesToWrite;
-		return bytesToWrite;
+	if (len > 0) {
+		xmlNodeWriteCallback(ctx, buffer, len);
 	}
-  	return 0;
+  	return len;
 }
 
 int close_callback(void * ctx) {
@@ -134,28 +124,18 @@ int xmlUnlinkNodeWithCheck(xmlNode *node) {
 	return 0;
 }
 
-int xmlSaveNode(void *buffer, int buffer_len, void *node, void *encoding, int options) {
+int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
-	XmlBufferContext xmlBufferCtx;
-	int ret;
-
-	xmlBufferCtx.buffer = (char*)buffer;
-	xmlBufferCtx.buffer_len = buffer_len;
-	xmlBufferCtx.data_size = 0;
 	
 	savectx = xmlSaveToIO(
 	      (xmlOutputWriteCallback)xml_write_callback,
 	      (xmlOutputCloseCallback)close_callback,
-	      (void *)&xmlBufferCtx,
+	      wbuffer,
 	      encoding,
 	      options
 	  );
 	xmlSaveTree(savectx, (xmlNode*)node);
-	ret = xmlSaveClose(savectx);
-	if (ret <  0) {
-		return ret;
-	}
-	return xmlBufferCtx.data_size;
+	return xmlSaveClose(savectx);
 }
 
