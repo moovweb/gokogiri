@@ -93,21 +93,17 @@ func (fragment *DocumentFragment) Children() []Node {
 }
 
 func (fragment *DocumentFragment) ToBuffer(outputBuffer []byte) []byte {
-	if outputBuffer == nil {
-		outputBuffer = make([]byte, initialOutputBufferSize)
-	}
-	offset := 0
-	nodes := fragment.Children()
 	var b []byte
-	for _, node := range nodes {
+	var size int
+	for _, node := range fragment.Children() {
 		if docType := node.MyDocument().DocType(); docType == XML_HTML_DOCUMENT_NODE {
-			b = node.ToHtml(fragment.OutEncoding, outputBuffer[offset:])
+			b, size = node.ToHtml(fragment.OutEncoding, nil)
 		} else {
-			b = node.ToXml(fragment.OutEncoding, outputBuffer[offset:])
+			b, size = node.ToXml(fragment.OutEncoding, nil)
 		}
-		offset += len(b)
+		outputBuffer = append(outputBuffer, b[:size]...)
 	}
-	return outputBuffer[:offset]
+	return outputBuffer
 }
 
 func (fragment *DocumentFragment) String() string {
