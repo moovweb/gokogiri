@@ -307,6 +307,9 @@ func (xmlNode *XmlNode) LastChild() Node {
 }
 
 func (xmlNode *XmlNode) Parent() Node {
+	if C.xmlNodePtrCheck(unsafe.Pointer(xmlNode.Ptr.parent)) == C.int(0) {
+		return nil
+	}
 	return NewNode(unsafe.Pointer(xmlNode.Ptr.parent), xmlNode.Document)
 }
 
@@ -629,10 +632,17 @@ func (xmlNode *XmlNode) addChild(node Node) (err os.Error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-
 	parentPtr := xmlNode.Ptr.parent
+
+	if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+		return
+	}
+
 	isNodeAccestor := false
 	for ; parentPtr != nil; parentPtr = parentPtr.parent {
+		if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+			return
+		}
 		p := unsafe.Pointer(parentPtr)
 		if p == nodePtr {
 			isNodeAccestor = true
