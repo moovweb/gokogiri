@@ -61,6 +61,7 @@ func TestEmptyDocument(t *testing.T) {
 		println(doc.String())
 		t.Error("the output of the html doc does not match the empty xml")
 	}
+	println("sily output")
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
 }
