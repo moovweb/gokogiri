@@ -117,11 +117,17 @@ void xmlSetContent(void *n, void *content) {
 }
 
 int xmlUnlinkNodeWithCheck(xmlNode *node) {
-	if (node->parent != (void*)(-1)) {
+	if (xmlNodePtrCheck(node->parent)) {
 		xmlUnlinkNode(node);
 		return 1;
 	}
 	return 0;
+}
+
+int xmlNodePtrCheck(void *node) {
+	if (node == (void*)(-1)) 
+		return 0;
+	return 1;
 }
 
 int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {

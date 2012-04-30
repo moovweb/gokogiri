@@ -22,6 +22,7 @@ char *xmlDocDumpToString(xmlDoc *doc, void *encoding, int format);
 char *htmlDocDumpToString(xmlDoc *doc, int format);
 void xmlFreeChars(char *buffer);
 int xmlUnlinkNodeWithCheck(xmlNode *node);
+int xmlNodePtrCheck(void *node);
 
 typedef struct XmlBufferContext {
 	void *obj;
