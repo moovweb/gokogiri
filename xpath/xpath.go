@@ -1,6 +1,7 @@
 package xpath
 /* 
-#cgo pkg-config: libxml-2.0
+#cgo CFLAGS: -I../../../clibs/include/libxml2
+#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
@@ -32,7 +33,7 @@ func (xpath *XPath) RegisterNamespace(prefix, href string) bool {
 		prefixBytes := AppendCStringTerminator([]byte(prefix))
 		prefixPtr = unsafe.Pointer(&prefixBytes[0])
 	}
-	
+
 	var hrefPtr unsafe.Pointer = nil
 	if len(href) > 0 {
 		hrefBytes := AppendCStringTerminator([]byte(href))
@@ -43,7 +44,7 @@ func (xpath *XPath) RegisterNamespace(prefix, href string) bool {
 	return result == 0
 }
 
-func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nodes []unsafe.Pointer){
+func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nodes []unsafe.Pointer) {
 	if nodePtr == nil {
 		return
 	}
@@ -55,7 +56,7 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nod
 	if nodesetPtr := xpath.ResultPtr.nodesetval; nodesetPtr != nil {
 		if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
 			nodes = make([]unsafe.Pointer, nodesetSize)
-			for i := 0; i < nodesetSize; i ++ {
+			for i := 0; i < nodesetSize; i++ {
 				nodes[i] = unsafe.Pointer(C.fetchNode(nodesetPtr, C.int(i)))
 			}
 		}

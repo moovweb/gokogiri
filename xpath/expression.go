@@ -1,6 +1,5 @@
 package xpath
 /*
-#cgo pkg-config: libxml-2.0
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
 */

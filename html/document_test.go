@@ -35,8 +35,9 @@ func TestParseDocument(t *testing.T) {
 		t.Error("the output of the html doc does not match")
 	}
 
-	if string(doc.ToXml(nil, nil)) != expected_xml {
-		println("got:\n", string(doc.ToXml(nil, nil)))
+	s, _ := doc.ToXml(nil, nil)
+	if string(s) != expected_xml {
+		println("got:\n", string(s))
 		println("expected:\n", expected_xml)
 		t.Error("the xml output of the html doc does not match")
 	}
