@@ -5,7 +5,7 @@ package xpath
 */
 import "C"
 import "unsafe"
-import . "gokogiri/util"
+import . "github.com/moovweb/gokogiri/util"
 
 type Expression struct {
 	Ptr *C.xmlXPathCompExpr
