@@ -2,7 +2,7 @@ package xml
 
 import "testing"
 import "fmt"
-import "gokogiri/help"
+import "github.com/moovweb/gokogiri/help"
 
 func TestSetValue(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)
@@ -59,7 +59,7 @@ func TestSetAttribute(t *testing.T) {
 		fmt.Printf("%v, %q\n", attributes, attributes["myname"].String())
 		t.Error("root's attributes do not match")
 	}
-	
+
 	root.SetAttr("id", "cooler")
 	root.SetAttr("id2", "hot")
 	root.SetAttr("id3", "")
@@ -96,7 +96,7 @@ func TestSetEmptyAttribute(t *testing.T) {
 		fmt.Printf("%v, %q\n", attributes, attributes["myname"].String())
 		t.Error("root's attributes do not match")
 	}
-	
+
 	root.SetAttr("", "cool")
 	expected :=
 		`<foo id="a" myname="ff" ="cool">
@@ -120,4 +120,3 @@ func TestSetEmptyAttribute(t *testing.T) {
 	}
 	doc.Free()
 }
-

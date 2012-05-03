@@ -2,7 +2,7 @@ package html
 
 import (
 	"testing"
-	"gokogiri/help"
+	"github.com/moovweb/gokogiri/help"
 )
 
 func TestParseDocumentFragmentText(t *testing.T) {
@@ -33,13 +33,13 @@ func TestParseDocumentFragment(t *testing.T) {
 		t.Error(err.Error())
 		return
 	}
-	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div><h1></h1></div>") {
+	if len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div><h1></h1></div>" {
 		t.Error("the of children from the fragment do not match")
 	}
-	
+
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
-	
+
 }
 
 func TestParseDocumentFragment2(t *testing.T) {
@@ -57,10 +57,10 @@ func TestParseDocumentFragment2(t *testing.T) {
 		t.Error(err.Error())
 		return
 	}
-	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<script>cool & fun</script>") {
+	if len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<script>cool & fun</script>" {
 		t.Error("the of children from the fragment do not match")
 	}
-	
+
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
 }
@@ -75,7 +75,7 @@ func TestSearchDocumentFragment(t *testing.T) {
 		t.Error(err.Error())
 		return
 	}
-	if (len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div class=\"cool\"><h1></h1></div>") {
+	if len(docFragment.Children()) != 1 || docFragment.Children()[0].String() != "<div class=\"cool\"><h1></h1></div>" {
 		t.Error("the of children from the fragment do not match")
 	}
 
@@ -96,12 +96,12 @@ func TestSearchDocumentFragment(t *testing.T) {
 
 	if len(nodes) != 1 {
 		println(len(nodes))
-		for _, node := range(nodes) {
+		for _, node := range nodes {
 			println(node.String())
 		}
 		t.Error("the number of children from the fragment's document does not match")
 	}
-	
+
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
 }
