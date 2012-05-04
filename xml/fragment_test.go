@@ -2,7 +2,7 @@ package xml
 
 import (
 	"testing"
-	"gokogiri/help"
+	"github.com/moovweb/gokogiri/help"
 )
 
 func TestParseDocumentFragmentBasic(t *testing.T) {
@@ -15,15 +15,15 @@ func TestParseDocumentFragmentBasic(t *testing.T) {
 	}
 	root := doc.Root()
 	if root != nil {
-	println("root:", root.String())
-}
+		println("root:", root.String())
+	}
 	docFragment, err := doc.ParseFragment([]byte("hi"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.Error())
 		doc.Free()
 		return
 	}
-	if (len(docFragment.Children()) != 1) {
+	if len(docFragment.Children()) != 1 {
 		t.Error("the number of children from the fragment does not match")
 	}
 	doc.Free()
@@ -48,7 +48,7 @@ func TestParseDocumentFragment(t *testing.T) {
 		doc.Free()
 		return
 	}
-	if (len(docFragment.Children()) != 3) {
+	if len(docFragment.Children()) != 3 {
 		t.Error("the number of children from the fragment does not match")
 	}
 	doc.Free()

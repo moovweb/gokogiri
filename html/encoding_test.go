@@ -4,7 +4,7 @@ import (
 	"testing"
 	"io/ioutil"
 	"bytes"
-	"gokogiri/help"
+	"github.com/moovweb/gokogiri/help"
 )
 
 func TestParseDocument_CP1252(t *testing.T) {
@@ -44,4 +44,3 @@ func TestParseDocumentWithInOutEncodings(t *testing.T) {
 	doc.Free()
 	help.CheckXmlMemoryLeaks(t)
 }
-
