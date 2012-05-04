@@ -12,7 +12,7 @@ xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
 */
 import "C"
 import "unsafe"
-import . "github.com/moovweb/gokogiri/util"
+import . "gokogiri/util"
 
 type XPath struct {
 	ContextPtr *C.xmlXPathContext

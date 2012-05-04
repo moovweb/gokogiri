@@ -2,7 +2,7 @@ package xml
 
 import "testing"
 import "fmt"
-import "github.com/moovweb/gokogiri/help"
+import "gokogiri/help"
 
 func TestSetValue(t *testing.T) {
 	defer help.CheckXmlMemoryLeaks(t)

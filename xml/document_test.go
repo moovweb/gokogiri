@@ -2,7 +2,7 @@ package xml
 
 import (
 	"testing"
-	"github.com/moovweb/gokogiri/help"
+	"gokogiri/help"
 	"os"
 	"io/ioutil"
 	"path/filepath"

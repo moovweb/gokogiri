@@ -2,7 +2,7 @@ package html
 
 import (
 	"testing"
-	"github.com/moovweb/gokogiri/help"
+	"gokogiri/help"
 )
 
 func TestParseDocumentFragmentText(t *testing.T) {
