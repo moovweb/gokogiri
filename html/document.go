@@ -15,6 +15,8 @@ import (
 	. "gokogiri/util"
 	"gokogiri/xml"
 	"unsafe"
+
+	"time"
 )
 
 //xml parse option
@@ -40,6 +42,8 @@ var DefaultParseOption = HTML_PARSE_RECOVER |
 
 type HtmlDocument struct {
 	*xml.XmlDocument
+
+	StartTime int64
 }
 
 //default encoding in byte slice
@@ -62,6 +66,8 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 
 //parse a string to document
 func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err error) {
+	startTime := time.Now().UnixNano()
+
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
@@ -91,6 +97,8 @@ func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (do
 	if docPtr == nil {
 		doc = CreateEmptyDocument(inEncoding, outEncoding)
 	}
+
+	doc.ProfilingData["HtmlDocument.Parse"] = &xml.CountAndTime{ 1, time.Now().UnixNano() - startTime }
 	return
 }
 
