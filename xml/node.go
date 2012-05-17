@@ -9,6 +9,10 @@ import (
 	. "gokogiri/util"
 	"gokogiri/xpath"
 	"unsafe"
+
+	// the following two packages are imported for profiling stuff
+	"fmt"
+	"time"
 )
 
 var (
@@ -462,6 +466,9 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 }
 
 func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
+
+	startTime := time.Now().UnixNano()
+
 	switch data := data.(type) {
 	default:
 		err = ERR_UNDEFINED_SEARCH_PARAM
@@ -481,6 +488,12 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 			result = append(result, NewNode(nodePtr, xmlNode.Document))
 		}
 	}
+
+	endTime := time.Now().UnixNano()
+
+	SearchCount++
+	SearchTime += (endTime - startTime) / 1000
+
 	return
 }
 
@@ -761,4 +774,15 @@ func makeSlice(n int) []byte {
 		}
 	}()
 	return make([]byte, n)
+}
+
+var (
+	SearchCount int64
+	SearchTime	int64
+)
+
+func init() {
+	fmt.Println("Just loaded node.go!")
+	// SearchCount = 0
+	// SearchTime  = 0
 }
