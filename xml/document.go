@@ -14,6 +14,10 @@ import (
 	"gokogiri/xpath"
 	"unsafe"
 	//	"runtime/debug"
+
+	// for profiling
+	"time"
+	"fmt"
 )
 
 type Document interface {
@@ -35,6 +39,10 @@ type Document interface {
 	String() string
 	Root() *ElementNode
 	BookkeepFragment(*DocumentFragment)
+
+	// Profiling functions
+	StartProfiling(string)
+	StopProfiling()
 }
 
 //xml parse option
@@ -68,6 +76,11 @@ type XmlDocument struct {
 	InputLen      int
 
 	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
+
+	// profiling data
+	ProfilingData map[string]*CountAndTime
+	NowProfiling string
+	StartTime int64
 }
 
 //default encoding in byte slice
@@ -88,8 +101,32 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	doc.Type = xmlNode.NodeType()
 	doc.fragments = make([]*DocumentFragment, 0, initialFragments)
 	doc.Me = doc
+	doc.ProfilingData = make(map[string]*CountAndTime)
 	xmlNode.Document = doc
 	return
+}
+
+// for storing the number of times a function is called, and the total time
+// spent in that function
+type CountAndTime struct {
+	Count int64
+	Time int64
+}
+
+func (doc *XmlDocument) StartProfiling(fnName string) {
+	doc.NowProfiling = fnName
+
+	if doc.ProfilingData[fnName] == nil {
+		doc.ProfilingData[fnName] = &CountAndTime{ 0, 0 }
+	}
+
+	doc.ProfilingData[fnName].Count++
+	doc.StartTime = time.Now().UnixNano()
+}
+
+func (doc *XmlDocument) StopProfiling() {
+	stopTime := time.Now().UnixNano()
+	doc.ProfilingData[doc.NowProfiling].Time += (stopTime - doc.StartTime)
 }
 
 func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err error) {
@@ -243,6 +280,18 @@ func (document *XmlDocument) Free() {
 		C.xmlFreeNode(p)
 		delete(document.UnlinkedNodes, p)
 	}
+
+	// print out profiling data
+	fmt.Println("\n******** AARON'S PROFILING DATA ********")
+
+	for name, data := range document.ProfilingData {
+		fmt.Printf("Calls to %s:\t%d\n", name, data.Count)
+		fmt.Printf("μsecs spent in %s:\t%d\n\n", name, data.Time/1000)
+	}
+
+	fmt.Println("****************************************\n")
+
+
 	document.XPathCtx.Free()
 	C.xmlFreeDoc(document.Ptr)
 }

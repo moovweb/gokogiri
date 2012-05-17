@@ -12,7 +12,6 @@ import (
 
 	// the following two packages are imported for profiling stuff
 	"fmt"
-	"time"
 )
 
 var (
@@ -467,7 +466,7 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 
 func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 
-	startTime := time.Now().UnixNano()
+	xmlNode.Document.StartProfiling("Search")
 
 	switch data := data.(type) {
 	default:
@@ -489,10 +488,7 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 		}
 	}
 
-	endTime := time.Now().UnixNano()
-
-	SearchCount++
-	SearchTime += (endTime - startTime) / 1000
+	xmlNode.Document.StopProfiling()
 
 	return
 }
