@@ -211,6 +211,9 @@ func (xmlNode *XmlNode) Coerce(data interface{}) (nodes []Node, err error) {
 
 //
 func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
+
+	xmlNode.Document.StartProfiling("AddChild")
+
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
@@ -223,10 +226,16 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 	case Node:
 		err = xmlNode.addChild(t)
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
+
+	xmlNode.Document.StartProfiling("AddPreviousSibling")
+
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
@@ -239,10 +248,16 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 	case Node:
 		err = xmlNode.addPreviousSibling(t)
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
+
+	xmlNode.Document.StartProfiling("AddNextSibling")
+
 	switch t := data.(type) {
 	default:
 		if nodes, err := xmlNode.coerce(data); err == nil {
@@ -256,6 +271,9 @@ func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
 	case Node:
 		err = xmlNode.addNextSibling(t)
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
@@ -348,40 +366,70 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 }
 
 func (xmlNode *XmlNode) InsertBefore(data interface{}) (err error) {
+
+	// xmlNode.Document.StartProfiling("InsertBefore")
+
 	err = xmlNode.AddPreviousSibling(data)
+
+	// xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) InsertAfter(data interface{}) (err error) {
+
+	// xmlNode.Document.StartProfiling("InsertAfter")
+
 	err = xmlNode.AddNextSibling(data)
+
+	// xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) InsertBegin(data interface{}) (err error) {
+
+	// xmlNode.Document.StartProfiling("InsertBegin")
+
 	if parent := xmlNode.Parent(); parent != nil {
 		if last := parent.LastChild(); last != nil {
 			err = last.AddPreviousSibling(data)
 		}
 	}
+
+	// xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) InsertEnd(data interface{}) (err error) {
+
+	// xmlNode.Document.StartProfiling("InsertEnd")
+
 	if parent := xmlNode.Parent(); parent != nil {
 		if first := parent.FirstChild(); first != nil {
 			err = first.AddPreviousSibling(data)
 		}
 	}
+
+	// xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) SetChildren(data interface{}) (err error) {
+
+	xmlNode.Document.StartProfiling("SetChildren")
+
 	nodes, err := xmlNode.coerce(data)
 	if err != nil {
 		return
 	}
 	xmlNode.ResetChildren()
 	err = xmlNode.AddChild(nodes)
+
+	xmlNode.Document.StopProfiling()
+
 	return nil
 }
 
@@ -400,6 +448,9 @@ func (xmlNode *XmlNode) Replace(data interface{}) (err error) {
 }
 
 func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
+
+	xmlNode.Document.StartProfiling("Attributes")
+
 	attributes = make(map[string]*AttributeNode)
 	for prop := xmlNode.Ptr.properties; prop != nil; prop = prop.next {
 		if prop.name != nil {
@@ -412,10 +463,16 @@ func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
 			}
 		}
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
+
+	xmlNode.Document.StartProfiling("Attribute")
+
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
 	}
@@ -430,10 +487,16 @@ func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
 			attribute = node
 		}
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) Attr(name string) (val string) {
+
+	xmlNode.Document.StartProfiling("Attr")
+
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
 	}
@@ -446,10 +509,16 @@ func (xmlNode *XmlNode) Attr(name string) (val string) {
 	p := unsafe.Pointer(valPtr)
 	defer C.xmlFreeChars((*C.char)(p))
 	val = C.GoString((*C.char)(p))
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
+
+	xmlNode.Document.StartProfiling("SetAttr")
+
 	val = value
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
@@ -461,6 +530,9 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 	valuePtr := unsafe.Pointer(&valueBytes[0])
 
 	C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
@@ -543,12 +615,18 @@ func (xmlNode *XmlNode) SetName(name string) {
 }
 
 func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
+
+	xmlNode.Document.StartProfiling("Duplicate")
+
 	if xmlNode.valid {
 		dupPtr := C.xmlDocCopyNode(xmlNode.Ptr, (*C.xmlDoc)(xmlNode.Document.DocPtr()), C.int(level))
 		if dupPtr != nil {
 			dup = NewNode(unsafe.Pointer(dupPtr), xmlNode.Document)
 		}
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
@@ -627,10 +705,15 @@ func (xmlNode *XmlNode) Unlink() {
 }
 
 func (xmlNode *XmlNode) Remove() {
+
+	xmlNode.Document.StartProfiling("Remove")
+
 	if xmlNode.valid {
 		xmlNode.Unlink()
 		xmlNode.valid = false
 	}
+
+	xmlNode.Document.StopProfiling()
 }
 
 func (xmlNode *XmlNode) addChild(node Node) (err error) {

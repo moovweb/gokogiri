@@ -282,11 +282,12 @@ func (document *XmlDocument) Free() {
 	}
 
 	// print out profiling data
-	fmt.Println("\n******** AARON'S PROFILING DATA ********")
+	fmt.Println("\n******** AARON'S PROFILING DATA ********\n")
 
 	for name, data := range document.ProfilingData {
 		fmt.Printf("Calls to %s:\t%d\n", name, data.Count)
-		fmt.Printf("μsecs spent in %s:\t%d\n\n", name, data.Time/1000)
+		fmt.Printf("μsecs in %s:\t%d\n", name, data.Time/1000)
+		fmt.Println()
 	}
 
 	fmt.Println("****************************************\n")
