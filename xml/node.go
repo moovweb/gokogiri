@@ -573,15 +573,20 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 	return
 }
 
+func TimedXPathCompile(data string, doc Document) (expr *xpath.Expression) {
+	doc.StartProfiling("xpath.Compile")
+	expr = xpath.Compile(data)
+	doc.StopProfiling()
+	return
+}
+
 func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 	switch data := data.(type) {
 	default:
 		err = ERR_UNDEFINED_SEARCH_PARAM
 	case string:
-		xmlNode.Document.StartProfiling("xpath.Compile")
-		fmt.Println("XPATH STRING IS: ", data)
+		// xpathExpr := TimedXPathCompile(data, xmlNode.Document)
 		xpathExpr := xpath.Compile(data)
-		xmlNode.Document.StopProfiling()
 		if xpathExpr != nil {
 			result, err = xmlNode.Search(xpathExpr)
 			defer xpathExpr.Free()

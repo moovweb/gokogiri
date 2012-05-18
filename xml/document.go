@@ -18,6 +18,7 @@ import (
 	// for profiling
 	"time"
 	"fmt"
+	"rubex"
 )
 
 type Document interface {
@@ -297,6 +298,21 @@ func (document *XmlDocument) Free() {
 		fmt.Println()
 		total += data.Time
 	}
+
+	fmt.Printf("Calls to xpath.Compile:\t%d\n", xpath.CompileCount)
+	fmt.Printf("μsecs in xpath.Compile:\t%d\n", xpath.CompileTime/1000)
+	fmt.Println()
+	total += xpath.CompileTime
+	xpath.CompileCount = 0
+	xpath.CompileTime = 0
+
+	fmt.Printf("Calls to rubex.MustCompile:\t%d\n", rubex.MustCompileCount)
+	fmt.Printf("μsecs in rubex.MustCompile:\t%d\n", rubex.MustCompileTime/1000)
+	fmt.Println()
+	total += rubex.MustCompileTime
+	rubex.MustCompileCount = 0
+	rubex.MustCompileTime = 0
+
 	fmt.Printf("Total μsecs spent in instrumented functions: %d\n\n", total/1000)
 	fmt.Println("****************************************\n")
 
