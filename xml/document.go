@@ -260,12 +260,18 @@ func (document *XmlDocument) CreateCommentNode(data string) (cdata *CommentNode)
 */
 
 func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err error) {
+
+	// document.StartProfiling("XmlDocument.ParseFragment")
+
 	root := document.Root()
 	if root == nil {
 		fragment, err = parsefragment(document, nil, input, url, options)
 	} else {
 		fragment, err = parsefragment(document, root.XmlNode, input, url, options)
 	}
+
+	// document.StopProfiling()
+
 	return
 }
 
@@ -284,12 +290,14 @@ func (document *XmlDocument) Free() {
 	// print out profiling data
 	fmt.Println("\n******** AARON'S PROFILING DATA ********\n")
 
+	var total int64
 	for name, data := range document.ProfilingData {
 		fmt.Printf("Calls to %s:\t%d\n", name, data.Count)
 		fmt.Printf("μsecs in %s:\t%d\n", name, data.Time/1000)
 		fmt.Println()
+		total += data.Time
 	}
-
+	fmt.Printf("Total μsecs spent in instrumented functions: %d\n\n", total/1000)
 	fmt.Println("****************************************\n")
 
 

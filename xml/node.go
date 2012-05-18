@@ -158,6 +158,9 @@ type WriteBuffer struct {
 }
 
 func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
+
+	// document.StartProfiling("NewNode")
+
 	if nodePtr == nil {
 		return nil
 	}
@@ -180,6 +183,9 @@ func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 	case XML_TEXT_NODE:
 		node = &TextNode{XmlNode: xmlNode}
 	}
+
+	// document.StopProfiling()
+
 	return
 }
 
@@ -302,45 +308,72 @@ func (xmlNode *XmlNode) NodeType() (nodeType int) {
 }
 
 func (xmlNode *XmlNode) Path() (path string) {
+
+	xmlNode.Document.StartProfiling("Path")
+
 	pathPtr := C.xmlGetNodePath(xmlNode.Ptr)
 	if pathPtr != nil {
 		p := (*C.char)(unsafe.Pointer(pathPtr))
 		defer C.xmlFreeChars(p)
 		path = C.GoString(p)
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
-func (xmlNode *XmlNode) NextSibling() Node {
+func (xmlNode *XmlNode) NextSibling() (n Node) {
+	// xmlNode.Document.StartProfiling("NextSibling")
 	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.next)
-	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
+	n = NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
+	// xmlNode.Document.StopProfiling()
+	return
 }
 
-func (xmlNode *XmlNode) PreviousSibling() Node {
+func (xmlNode *XmlNode) PreviousSibling() (n Node) {
+	// xmlNode.Document.StartProfiling("PreviousSibling")
 	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.prev)
-	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
+	n = NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
+	// xmlNode.Document.StopProfiling()
+	return
 }
 
-func (xmlNode *XmlNode) CountChildren() int {
-	return int(C.xmlLsCountNode(xmlNode.Ptr))
+func (xmlNode *XmlNode) CountChildren() (i int) {
+	// xmlNode.Document.StartProfiling("CountChildren")
+	i = int(C.xmlLsCountNode(xmlNode.Ptr))
+	// xmlNode.Document.StopProfiling()
+	return
 }
 
-func (xmlNode *XmlNode) FirstChild() Node {
-	return NewNode(unsafe.Pointer(xmlNode.Ptr.children), xmlNode.Document)
+func (xmlNode *XmlNode) FirstChild() (n Node) {
+	// xmlNode.Document.StartProfiling("FirstChild")
+	n = NewNode(unsafe.Pointer(xmlNode.Ptr.children), xmlNode.Document)
+	// xmlNode.Document.StopProfiling()
+	return
 }
 
-func (xmlNode *XmlNode) LastChild() Node {
-	return NewNode(unsafe.Pointer(xmlNode.Ptr.last), xmlNode.Document)
+func (xmlNode *XmlNode) LastChild() (n Node) {
+	// xmlNode.Document.StartProfiling("LastChild")
+	n = NewNode(unsafe.Pointer(xmlNode.Ptr.last), xmlNode.Document)
+	// xmlNode.Document.StopProfiling()
+	return
 }
 
-func (xmlNode *XmlNode) Parent() Node {
+func (xmlNode *XmlNode) Parent() (n Node) {
+	// xmlNode.Document.StartProfiling("Parent")
 	if C.xmlNodePtrCheck(unsafe.Pointer(xmlNode.Ptr.parent)) == C.int(0) {
 		return nil
 	}
-	return NewNode(unsafe.Pointer(xmlNode.Ptr.parent), xmlNode.Document)
+	n = NewNode(unsafe.Pointer(xmlNode.Ptr.parent), xmlNode.Document)
+	// xmlNode.Document.StopProfiling()
+	return
 }
 
 func (xmlNode *XmlNode) ResetChildren() {
+
+	xmlNode.Document.StartProfiling("ResetChildren")
+
 	var p unsafe.Pointer
 	for childPtr := xmlNode.Ptr.children; childPtr != nil; {
 		nextPtr := childPtr.next
@@ -349,6 +382,8 @@ func (xmlNode *XmlNode) ResetChildren() {
 		xmlNode.Document.AddUnlinkedNode(p)
 		childPtr = nextPtr
 	}
+
+	xmlNode.Document.StopProfiling()
 }
 
 func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
@@ -358,9 +393,11 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	case string:
 		err = xmlNode.SetContent([]byte(data))
 	case []byte:
+		xmlNode.Document.StartProfiling("SetContent")
 		contentBytes := GetCString(data)
 		contentPtr := unsafe.Pointer(&contentBytes[0])
 		C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), contentPtr)
+		xmlNode.Document.StopProfiling()
 	}
 	return
 }
@@ -449,7 +486,7 @@ func (xmlNode *XmlNode) Replace(data interface{}) (err error) {
 
 func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
 
-	xmlNode.Document.StartProfiling("Attributes")
+	// xmlNode.Document.StartProfiling("Attributes")
 
 	attributes = make(map[string]*AttributeNode)
 	for prop := xmlNode.Ptr.properties; prop != nil; prop = prop.next {
@@ -464,14 +501,14 @@ func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
 		}
 	}
 
-	xmlNode.Document.StopProfiling()
+	// xmlNode.Document.StopProfiling()
 
 	return
 }
 
 func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
 
-	xmlNode.Document.StartProfiling("Attribute")
+	// xmlNode.Document.StartProfiling("Attribute")
 
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
@@ -488,7 +525,7 @@ func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
 		}
 	}
 
-	xmlNode.Document.StopProfiling()
+	// xmlNode.Document.StopProfiling()
 
 	return
 }
@@ -537,14 +574,15 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 }
 
 func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
-
-	xmlNode.Document.StartProfiling("Search")
-
 	switch data := data.(type) {
 	default:
 		err = ERR_UNDEFINED_SEARCH_PARAM
 	case string:
-		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
+		xmlNode.Document.StartProfiling("xpath.Compile")
+		fmt.Println("XPATH STRING IS: ", data)
+		xpathExpr := xpath.Compile(data)
+		xmlNode.Document.StopProfiling()
+		if xpathExpr != nil {
 			result, err = xmlNode.Search(xpathExpr)
 			defer xpathExpr.Free()
 		} else {
@@ -553,15 +591,14 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 	case []byte:
 		result, err = xmlNode.Search(string(data))
 	case *xpath.Expression:
+		xmlNode.Document.StartProfiling("Search")
 		xpathCtx := xmlNode.Document.DocXPathCtx()
 		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
 		for _, nodePtr := range nodePtrs {
 			result = append(result, NewNode(nodePtr, xmlNode.Document))
 		}
+		xmlNode.Document.StopProfiling()
 	}
-
-	xmlNode.Document.StopProfiling()
-
 	return
 }
 
@@ -599,24 +636,35 @@ func (xmlNode *XmlNode) IsFragment() bool {
 */
 
 func (xmlNode *XmlNode) Name() (name string) {
+
+	xmlNode.Document.StartProfiling("Name")
+
 	if xmlNode.Ptr.name != nil {
 		p := unsafe.Pointer(xmlNode.Ptr.name)
 		name = C.GoString((*C.char)(p))
 	}
+
+	xmlNode.Document.StopProfiling()
+
 	return
 }
 
 func (xmlNode *XmlNode) SetName(name string) {
+
+	xmlNode.Document.StartProfiling("SetName")
+
 	if len(name) > 0 {
 		nameBytes := GetCString([]byte(name))
 		namePtr := unsafe.Pointer(&nameBytes[0])
 		C.xmlNodeSetName(xmlNode.Ptr, (*C.xmlChar)(namePtr))
 	}
+
+	xmlNode.Document.StopProfiling()
 }
 
 func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
 
-	xmlNode.Document.StartProfiling("Duplicate")
+	// xmlNode.Document.StartProfiling("Duplicate")
 
 	if xmlNode.valid {
 		dupPtr := C.xmlDocCopyNode(xmlNode.Ptr, (*C.xmlDoc)(xmlNode.Document.DocPtr()), C.int(level))
@@ -625,12 +673,15 @@ func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
 		}
 	}
 
-	xmlNode.Document.StopProfiling()
+	// xmlNode.Document.StopProfiling()
 
 	return
 }
 
 func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]byte, int) {
+
+	xmlNode.Document.StartProfiling("serialize")
+
 	nodePtr := unsafe.Pointer(xmlNode.Ptr)
 	var encodingPtr unsafe.Pointer
 	if len(encoding) == 0 {
@@ -651,6 +702,8 @@ func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]
 		println("output error!!!")
 		return nil, 0
 	}
+
+	xmlNode.Document.StopProfiling()
 
 	return wbuffer.Buffer, wbuffer.Offset
 }
@@ -683,9 +736,15 @@ func (xmlNode *XmlNode) String() string {
 }
 
 func (xmlNode *XmlNode) Content() string {
+
+	xmlNode.Document.StartProfiling("Content")
+
 	contentPtr := C.xmlNodeGetContent(xmlNode.Ptr)
 	charPtr := (*C.char)(unsafe.Pointer(contentPtr))
 	defer C.xmlFreeChars(charPtr)
+
+	xmlNode.Document.StopProfiling()
+
 	return C.GoString(charPtr)
 }
 
@@ -699,9 +758,15 @@ func (xmlNode *XmlNode) InnerHtml() string {
 }
 
 func (xmlNode *XmlNode) Unlink() {
+
+	// xmlNode.Document.StartProfiling("Unlink")
+
 	if int(C.xmlUnlinkNodeWithCheck(xmlNode.Ptr)) != 0 {
 		xmlNode.Document.AddUnlinkedNode(unsafe.Pointer(xmlNode.Ptr))
 	}
+
+	// xmlNode.Document.StopProfiling()
+
 }
 
 func (xmlNode *XmlNode) Remove() {
