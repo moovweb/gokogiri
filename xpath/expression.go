@@ -19,6 +19,8 @@ type Expression struct {
 var (
 	CompileCount int64
 	CompileTime int64
+	FreeCount int64
+	FreeTime int64
 )
 
 func Compile(path string) (expr *Expression) {
@@ -44,7 +46,13 @@ func Compile(path string) (expr *Expression) {
 }
 
 func (exp *Expression) Free() {
+	FreeCount++
+	startTime := time.Now().UnixNano()
+
 	if exp.Ptr != nil {
 		C.xmlXPathFreeCompExpr(exp.Ptr)
 	}
+
+	FreeTime += time.Now().UnixNano() - startTime
+
 }

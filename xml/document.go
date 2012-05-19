@@ -306,12 +306,26 @@ func (document *XmlDocument) Free() {
 	xpath.CompileCount = 0
 	xpath.CompileTime = 0
 
-	fmt.Printf("Calls to rubex.MustCompile:\t%d\n", rubex.MustCompileCount)
-	fmt.Printf("μsecs in rubex.MustCompile:\t%d\n", rubex.MustCompileTime/1000)
+	fmt.Printf("Calls to xpath.Free:\t%d\n", xpath.FreeCount)
+	fmt.Printf("μsecs in xpath.Free:\t%d\n", xpath.FreeTime/1000)
 	fmt.Println()
-	total += rubex.MustCompileTime
-	rubex.MustCompileCount = 0
-	rubex.MustCompileTime = 0
+	total += xpath.FreeTime
+	xpath.FreeCount = 0
+	xpath.FreeTime = 0
+
+	fmt.Printf("Calls to rubex.NewRegexp:\t%d\n", rubex.NewRegexpCount)
+	fmt.Printf("μsecs in rubex.NewRegexp:\t%d\n", rubex.NewRegexpTime/1000)
+	fmt.Println()
+	total += rubex.NewRegexpTime
+	rubex.NewRegexpCount = 0
+	rubex.NewRegexpTime = 0
+
+	fmt.Printf("Calls to rubex.Free:\t%d\n", rubex.FreeCount)
+	fmt.Printf("μsecs in rubex.Free:\t%d\n", rubex.FreeTime/1000)
+	fmt.Println()
+	total += rubex.FreeTime
+	rubex.FreeCount = 0
+	rubex.FreeTime = 0
 
 	fmt.Printf("Total μsecs spent in instrumented functions: %d\n\n", total/1000)
 	fmt.Println("****************************************\n")
