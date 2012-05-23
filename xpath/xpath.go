@@ -14,6 +14,7 @@ xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
 import "C"
 import "unsafe"
 import . "gokogiri/util"
+import "runtime"
 
 type XPath struct {
 	ContextPtr *C.xmlXPathContext
@@ -25,6 +26,7 @@ func NewXPath(docPtr unsafe.Pointer) (xpath *XPath) {
 		return
 	}
 	xpath = &XPath{ContextPtr: C.xmlXPathNewContext((*C.xmlDoc)(docPtr)), ResultPtr: nil}
+	runtime.SetFinalizer(xpath, (*XPath).Free)
 	return
 }
 

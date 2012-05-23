@@ -14,6 +14,7 @@ import (
 	"errors"
 	. "gokogiri/util"
 	"gokogiri/xml"
+	"runtime"
 	"unsafe"
 )
 
@@ -57,6 +58,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	doc.Me = doc
 	node := doc.Node.(*xml.XmlNode)
 	node.Document = doc
+	runtime.SetFinalizer(doc, (*HtmlDocument).Free)
 	return
 }
 
