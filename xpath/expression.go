@@ -1,4 +1,5 @@
 package xpath
+
 /*
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
@@ -29,5 +30,6 @@ func Compile(path string) (expr *Expression) {
 func (exp *Expression) Free() {
 	if exp.Ptr != nil {
 		C.xmlXPathFreeCompExpr(exp.Ptr)
+		exp.Ptr = nil
 	}
 }
