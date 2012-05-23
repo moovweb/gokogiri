@@ -1,4 +1,5 @@
 package xpath
+
 /*
 #cgo pkg-config: libxml-2.0
 #include <libxml/xpath.h> 
@@ -30,5 +31,6 @@ func Compile(path string) (expr *Expression) {
 func (exp *Expression) Free() {
 	if exp.Ptr != nil {
 		C.xmlXPathFreeCompExpr(exp.Ptr)
+		exp.Ptr = nil
 	}
 }

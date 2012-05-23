@@ -1,4 +1,5 @@
 package xpath
+
 /* 
 #cgo pkg-config: libxml-2.0
 #include <libxml/xpath.h> 
@@ -66,8 +67,10 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nod
 func (xpath *XPath) Free() {
 	if xpath.ContextPtr != nil {
 		C.xmlXPathFreeContext(xpath.ContextPtr)
+		xpath.ContextPtr = nil
 	}
 	if xpath.ResultPtr != nil {
 		C.xmlXPathFreeObject(xpath.ResultPtr)
+		xpath.ResultPtr = nil
 	}
 }
