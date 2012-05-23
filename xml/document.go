@@ -234,16 +234,27 @@ func (document *XmlDocument) ParseFragment(input, url []byte, options int) (frag
 func (document *XmlDocument) Free() {
 	//must clear the fragments first
 	//because the nodes are put in the unlinked list
-	for _, fragment := range document.fragments {
-		fragment.Remove()
+	if document.fragments != nil {
+		for _, fragment := range document.fragments {
+			fragment.Remove()
+		}
 	}
+	document.fragments = nil
 	var p *C.xmlNode
-	for p, _ = range document.UnlinkedNodes {
-		C.xmlFreeNode(p)
-		delete(document.UnlinkedNodes, p)
+	if document.UnlinkedNodes != nil {
+		for p, _ = range document.UnlinkedNodes {
+			C.xmlFreeNode(p)
+		}
 	}
-	document.XPathCtx.Free()
-	C.xmlFreeDoc(document.Ptr)
+	document.UnlinkedNodes = nil
+	if document.XPathCtx != nil {
+		document.XPathCtx.Free()
+		document.XPathCtx = nil
+	}
+	if document.Ptr != nil {
+		C.xmlFreeDoc(document.Ptr)
+		document.Ptr = nil
+	}
 }
 
 /*
