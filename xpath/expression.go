@@ -8,6 +8,7 @@ package xpath
 import "C"
 import "unsafe"
 import . "github.com/moovweb/gokogiri/util"
+import "runtime"
 
 type Expression struct {
 	Ptr *C.xmlXPathCompExpr
@@ -25,6 +26,7 @@ func Compile(path string) (expr *Expression) {
 		return
 	}
 	expr = &Expression{Ptr: ptr}
+	runtime.SetFinalizer(expr, (*Expression).Free)
 	return
 }
 
