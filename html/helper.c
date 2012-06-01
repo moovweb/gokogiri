@@ -22,7 +22,7 @@ htmlDocPtr htmlParse(void *buffer, int buffer_len, void *url, void *encoding, in
 				c_error_buffer[error_buffer_len-1] = '\0';
 			}
 			else {
-				snprintf(c_error_buffer, error_buffer_len, "xml parsing error:%d", error->code);
+				//snprintf(c_error_buffer, error_buffer_len, "xml parsing error:%d", error->code);
 			}
 		}
 	}
@@ -34,8 +34,8 @@ xmlNode* htmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, i
 	xmlParserErrors errCode;
 	errCode = xmlParseInNodeContext((xmlNodePtr)doc, buffer, buffer_len, options, &root_element);
 	if (errCode != XML_ERR_OK) {
-		char *c_error_buffer = (char*)error_buffer;
-		snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
+		//char *c_error_buffer = (char*)error_buffer;
+		//snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
 		return NULL;
 	} 
 	return root_element;

@@ -61,7 +61,7 @@ xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int op
 				c_error_buffer[error_buffer_len-1] = '\0';
 			}
 			else {
-				snprintf(c_error_buffer, error_buffer_len, "xml parsing error:%d", error->code);
+				//snprintf(c_error_buffer, error_buffer_len, "xml parsing error:%d", error->code);
 			}
 		}
 	}
@@ -74,8 +74,8 @@ xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, in
 	errCode = xmlParseInNodeContext((xmlNodePtr)doc, buffer, buffer_len, options, &root_element);
 	if (errCode != XML_ERR_OK) {
 		if (error_buffer != NULL && error_buffer_len > 0) {
-			char *c_error_buffer = (char*)error_buffer;
-			snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
+			//char *c_error_buffer = (char*)error_buffer;
+			//snprintf(c_error_buffer, error_buffer_len, "xml fragemnt parsing error (xmlParserErrors):%d", errCode);
 		}
 		printf("errorcode %d\n", errCode);
 		return NULL;
