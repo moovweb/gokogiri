@@ -5,7 +5,7 @@ import "testing"
 func CheckXmlMemoryLeaks(t *testing.T) {
 	LibxmlCleanUpParser()
 	if ! LibxmlCheckMemoryLeak() {
-		t.Errorf("Memeory leaks: %d!!!", LibxmlGetMemoryAllocation())
+		t.Errorf("Memory leaks: %d!!!", LibxmlGetMemoryAllocation())
 		LibxmlReportMemoryLeak()
 	}
 }
