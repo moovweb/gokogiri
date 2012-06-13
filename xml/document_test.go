@@ -12,6 +12,9 @@ import (
 )
 
 func TestDocuments(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		return
+	}
 	tests, err := collectTests("document")
 
 	if len(err) > 0 {
