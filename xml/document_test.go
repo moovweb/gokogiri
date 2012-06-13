@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+  "runtime"
 	"fmt"
 )
 
@@ -43,6 +44,9 @@ func TestDocuments(t *testing.T) {
 }
 
 func TestBufferedDocuments(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		return
+	}
 	tests, err := collectTests("document")
 
 	if len(err) > 0 {
