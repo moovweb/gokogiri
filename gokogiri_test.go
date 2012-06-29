@@ -32,7 +32,7 @@ func TestParseHtml(t *testing.T) {
 		t.Error("the output of the html doc does not match the expected")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }
 
 func TestParseXml(t *testing.T) {
@@ -60,5 +60,14 @@ func TestParseXml(t *testing.T) {
 		t.Error("the output of the xml doc does not match the expected")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }
+
+func CheckXmlMemoryLeaks(t *testing.T) {
+	help.LibxmlCleanUpParser()
+	if ! help.LibxmlCheckMemoryLeak() {
+		t.Errorf("Memory leaks: %d!!!", help.LibxmlGetMemoryAllocation())
+		help.LibxmlReportMemoryLeak()
+	}
+}
+

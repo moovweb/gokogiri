@@ -1,12 +1,9 @@
 package xml
 
-import (
-	"testing"
-	"gokogiri/help"
-)
+import "testing"
 
 func TestParseDocumentFragmentBasic(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
@@ -30,7 +27,7 @@ func TestParseDocumentFragmentBasic(t *testing.T) {
 }
 
 func TestParseDocumentFragment(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
@@ -55,7 +52,7 @@ func TestParseDocumentFragment(t *testing.T) {
 }
 
 func TestSearchDocumentFragment(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	doc, err := Parse([]byte("<moovweb><z/><s/></moovweb>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
@@ -93,7 +90,7 @@ func TestSearchDocumentFragment(t *testing.T) {
 }
 
 func TestSearchDocumentFragmentWithEmptyDoc(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	doc, err := Parse(nil, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {

@@ -2,12 +2,11 @@ package xml
 
 import (
 	"testing"
-	"gokogiri/help"
 	"os"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
-  "runtime"
+	"runtime"
 	"fmt"
 )
 
@@ -85,7 +84,7 @@ func RunParseDocumentWithBufferTest(t *testing.T, name string) (error *string) {
 	var errorMessage string
 	offset := "\t"
 
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	input, output, dataError := getTestData(name)
 
@@ -120,7 +119,7 @@ func RunDocumentParseTest(t *testing.T, name string) (error *string) {
 	var errorMessage string
 	offset := "\t"
 
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	input, output, dataError := getTestData(name)
 

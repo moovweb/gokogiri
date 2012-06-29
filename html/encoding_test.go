@@ -4,7 +4,6 @@ import (
 	"testing"
 	"io/ioutil"
 	"bytes"
-	"gokogiri/help"
 )
 
 func TestParseDocument_CP1252(t *testing.T) {
@@ -23,7 +22,7 @@ func TestParseDocument_CP1252(t *testing.T) {
 		t.Error("the output is not properly encoded")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }
 
 func TestParseDocumentWithInOutEncodings(t *testing.T) {
@@ -42,5 +41,5 @@ func TestParseDocumentWithInOutEncodings(t *testing.T) {
 		t.Error("the output is not properly encoded")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }

@@ -2,10 +2,9 @@ package xml
 
 import "testing"
 import "fmt"
-import "gokogiri/help"
 
 func TestSetValue(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
 		t.Error("Parsing has error:", err)
@@ -47,7 +46,7 @@ func TestSetValue(t *testing.T) {
 }
 
 func TestSetAttribute(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
 		t.Error("Parsing has error:", err)
@@ -84,7 +83,7 @@ func TestSetAttribute(t *testing.T) {
 }
 
 func TestSetEmptyAttribute(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 	doc, err := Parse([]byte("<foo id=\"a\" myname=\"ff\"><bar class=\"shine\"/></foo>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	if err != nil {
 		t.Error("Parsing has error:", err)

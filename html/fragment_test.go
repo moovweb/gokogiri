@@ -1,9 +1,6 @@
 package html
 
-import (
-	"testing"
-	"gokogiri/help"
-)
+import "testing"
 
 func TestParseDocumentFragmentText(t *testing.T) {
 	doc, err := Parse(nil, []byte("iso-8859-1"), nil, DefaultParseOption, []byte("iso-8859-1"))
@@ -20,7 +17,7 @@ func TestParseDocumentFragmentText(t *testing.T) {
 		t.Error("the children from the fragment text do not match")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }
 
 func TestParseDocumentFragment(t *testing.T) {
@@ -38,7 +35,7 @@ func TestParseDocumentFragment(t *testing.T) {
 	}
 
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 
 }
 
@@ -62,7 +59,7 @@ func TestParseDocumentFragment2(t *testing.T) {
 	}
 
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }
 
 func TestSearchDocumentFragment(t *testing.T) {
@@ -103,5 +100,5 @@ func TestSearchDocumentFragment(t *testing.T) {
 	}
 
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }

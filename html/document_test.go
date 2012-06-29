@@ -1,10 +1,6 @@
 package html
 
-import (
-	"testing"
-	"gokogiri/help"
-	//"path/filepath"
-)
+import "testing"
 
 func TestParseDocument(t *testing.T) {
 	expected :=
@@ -43,7 +39,7 @@ func TestParseDocument(t *testing.T) {
 	}
 
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }
 
 func TestEmptyDocument(t *testing.T) {
@@ -63,12 +59,12 @@ func TestEmptyDocument(t *testing.T) {
 		t.Error("the output of the html doc does not match the empty xml")
 	}
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }
 
 /*
 func TestHTMLFragmentEncoding(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	input, output, error := getTestData(filepath.Join("tests", "document", "html_fragment_encoding"))
 

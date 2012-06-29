@@ -1,12 +1,9 @@
 package html
 
-import (
-	"testing"
-	"gokogiri/help"
-)
+import "testing"
 
 func TestInnerScript(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	doc, err := Parse([]byte("<html><body><div><h1></div>"), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 
@@ -24,7 +21,7 @@ func TestInnerScript(t *testing.T) {
 }
 
 func TestInnerScript2(t *testing.T) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 	script := `<script>try {
 var productNAPage = "",
 suppressReviews = "false";

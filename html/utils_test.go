@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+	"gokogiri/help"
+	"testing"
 )
 
 func badOutput(actual string, expected string) {
@@ -52,3 +54,12 @@ func collectTests(suite string) (names []string, error string) {
 
 	return
 }
+
+func CheckXmlMemoryLeaks(t *testing.T) {
+	help.LibxmlCleanUpParser()
+	if ! help.LibxmlCheckMemoryLeak() {
+		t.Errorf("Memory leaks: %d!!!", help.LibxmlGetMemoryAllocation())
+		help.LibxmlReportMemoryLeak()
+	}
+}
+
