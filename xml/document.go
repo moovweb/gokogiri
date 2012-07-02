@@ -17,8 +17,8 @@ import (
 
 	// for profiling
 	"time"
-	"fmt"
-	"rubex"
+	// "fmt"
+	// "rubex"
 )
 
 type Document interface {
@@ -78,11 +78,15 @@ type XmlDocument struct {
 
 	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
 
-	// profiling data
-	ProfilingData map[string]*CountAndTime
-	NowProfiling string
-	StartTime int64
+
 }
+
+// profiling data
+var (
+	ProfilingData map[string]*CountAndSum
+	NowProfiling string
+	StartTime time.Time
+)
 
 //default encoding in byte slice
 var DefaultEncodingBytes = []byte(DefaultEncoding)
@@ -102,32 +106,34 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	doc.Type = xmlNode.NodeType()
 	doc.fragments = make([]*DocumentFragment, 0, initialFragments)
 	doc.Me = doc
-	doc.ProfilingData = make(map[string]*CountAndTime)
 	xmlNode.Document = doc
 	return
 }
 
+func init() {
+	ProfilingData = make(map[string]*CountAndSum)
+}
+
 // for storing the number of times a function is called, and the total time
 // spent in that function
-type CountAndTime struct {
-	Count int64
-	Time int64
+type CountAndSum struct {
+	Count time.Duration
+	Sum time.Duration
 }
 
 func (doc *XmlDocument) StartProfiling(fnName string) {
-	doc.NowProfiling = fnName
+	NowProfiling = fnName
 
-	if doc.ProfilingData[fnName] == nil {
-		doc.ProfilingData[fnName] = &CountAndTime{ 0, 0 }
+	if ProfilingData[fnName] == nil {
+		ProfilingData[fnName] = &CountAndSum{ 0, 0 }
 	}
 
-	doc.ProfilingData[fnName].Count++
-	doc.StartTime = time.Now().UnixNano()
+	ProfilingData[fnName].Count++
+	StartTime = time.Now()
 }
 
 func (doc *XmlDocument) StopProfiling() {
-	stopTime := time.Now().UnixNano()
-	doc.ProfilingData[doc.NowProfiling].Time += (stopTime - doc.StartTime)
+	ProfilingData[NowProfiling].Sum += time.Since(StartTime)
 }
 
 func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err error) {
@@ -289,30 +295,28 @@ func (document *XmlDocument) Free() {
 	}
 
 	// print out profiling data
+	/*
 	fmt.Println("\n******** AARON'S PROFILING DATA ********\n")
 
-	var total int64
-	for name, data := range document.ProfilingData {
+	for name, data := range ProfilingData {
 		fmt.Printf("Calls to %s:\t%d\n", name, data.Count)
-		fmt.Printf("μsecs in %s:\t%d\n", name, data.Time/1000)
+		fmt.Printf("μsecs in %s:\t%d\n", name, data.Sum/1000)
 		fmt.Println()
-		total += data.Time
 	}
 
 	fmt.Printf("Calls to xpath.Compile:\t%d\n", xpath.CompileCount)
 	fmt.Printf("μsecs in xpath.Compile:\t%d\n", xpath.CompileTime/1000)
 	fmt.Println()
-	total += xpath.CompileTime
 	xpath.CompileCount = 0
 	xpath.CompileTime = 0
 
 	fmt.Printf("Calls to xpath.Free:\t%d\n", xpath.FreeCount)
 	fmt.Printf("μsecs in xpath.Free:\t%d\n", xpath.FreeTime/1000)
 	fmt.Println()
-	total += xpath.FreeTime
 	xpath.FreeCount = 0
 	xpath.FreeTime = 0
-
+	*/
+/*
 	fmt.Printf("Calls to rubex.NewRegexp:\t%d\n", rubex.NewRegexpCount)
 	fmt.Printf("μsecs in rubex.NewRegexp:\t%d\n", rubex.NewRegexpTime/1000)
 	fmt.Println()
@@ -326,10 +330,10 @@ func (document *XmlDocument) Free() {
 	total += rubex.FreeTime
 	rubex.FreeCount = 0
 	rubex.FreeTime = 0
-
-	fmt.Printf("Total μsecs spent in instrumented functions: %d\n\n", total/1000)
+*/
+	/*
 	fmt.Println("****************************************\n")
-
+*/
 
 	document.XPathCtx.Free()
 	C.xmlFreeDoc(document.Ptr)

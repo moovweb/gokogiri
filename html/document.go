@@ -66,7 +66,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 
 //parse a string to document
 func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err error) {
-	startTime := time.Now().UnixNano()
+	startTime := time.Now()
 
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
@@ -98,7 +98,12 @@ func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (do
 		doc = CreateEmptyDocument(inEncoding, outEncoding)
 	}
 
-	doc.ProfilingData["HtmlDocument.Parse"] = &xml.CountAndTime{ 1, time.Now().UnixNano() - startTime }
+	if xml.ProfilingData["HtmlDocument.Parse"] == nil {
+		xml.ProfilingData["HtmlDocument.Parse"] = &xml.CountAndSum{ 1, time.Since(startTime) }
+	} else {
+		xml.ProfilingData["HtmlDocument.Parse"].Count++
+		xml.ProfilingData["HtmlDocument.Parse"].Sum += time.Since(startTime)
+	}
 	return
 }
 
