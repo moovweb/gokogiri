@@ -2,10 +2,10 @@ package html
 
 import (
 	"fmt"
+	"gokogiri/help"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
-	"gokogiri/help"
 	"testing"
 )
 
@@ -56,10 +56,11 @@ func collectTests(suite string) (names []string, error string) {
 }
 
 func CheckXmlMemoryLeaks(t *testing.T) {
+	t.Log("Cleaning up parser...")
 	help.LibxmlCleanUpParser()
-	if ! help.LibxmlCheckMemoryLeak() {
+	t.Log("Done cleaning parser, checking for libxml leaks...")
+	if !help.LibxmlCheckMemoryLeak() {
 		t.Errorf("Memory leaks: %d!!!", help.LibxmlGetMemoryAllocation())
 		help.LibxmlReportMemoryLeak()
 	}
 }
-
