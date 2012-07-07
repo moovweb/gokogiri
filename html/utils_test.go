@@ -56,11 +56,11 @@ func collectTests(suite string) (names []string, error string) {
 }
 
 func CheckXmlMemoryLeaks(t *testing.T) {
-	t.Log("Cleaning up parser...")
+	println("Cleaning up parser...")
 	help.LibxmlCleanUpParser()
-	t.Log("Done cleaning parser, checking for libxml leaks...")
+	println("Done cleaning parser, checking for libxml leaks...")
 	if !help.LibxmlCheckMemoryLeak() {
-		t.Log("Found memory leaks!")
+		println("Found memory leaks!")
 		t.Errorf("Memory leaks: %d!!!", help.LibxmlGetMemoryAllocation())
 		help.LibxmlReportMemoryLeak()
 	}
