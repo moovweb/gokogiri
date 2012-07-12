@@ -3,21 +3,29 @@ package xpath
 /*
 #include <libxml/xpath.h> 
 #include <libxml/xpathInternals.h>
+#include <string.h>
 
-void check_xpath_syntax_noop() {
+void check_xpath_syntax_noop(void *ctx, const char *fmt, ...) {
 }
 
 char *check_xpath_syntax(const char *xpath) {
-	char *rval = NULL;
-	xmlXPathContextPtr ctx = xmlXPathNewContext(NULL);
-	ctx->error = check_xpath_syntax_noop;
-	xmlXPathCtxtCompile(ctx, (const xmlChar *)xpath);
-	if (ctx->lastError.domain > 0) {
-		//fprintf(stderr, "%s Code: %d Domain: %d", ctx->lastError.str2, ctx->lastError.code, ctx->lastError.domain);
-		rval = "ERROR";
+	xmlGenericErrorFunc err_func = check_xpath_syntax_noop;
+	initGenericErrorDefaultFunc(&err_func);
+	xmlResetLastError();
+	xmlXPathCompile((const xmlChar *)xpath);
+	xmlErrorPtr err = xmlGetLastError();
+	if (err != NULL) {
+		if (err->code == XML_XPATH_EXPR_ERROR) {
+			// TODO: Not the cleanest but should scale well
+			int size = strlen(err->message) + strlen(err->str1) + err->int1 + 16;
+			char *msg = malloc(size);
+			sprintf(msg, "%s%s\n%*s^", err->message, err->str1, err->int1, " ");
+			return msg;
+		} else {
+			return strdup(err->message);
+		}
 	}
-	xmlXPathFreeContext(ctx);
-	return rval;
+	return NULL;
 }
 */
 import "C"
@@ -35,6 +43,7 @@ func Check(path string) (err error) {
 	defer C.free(unsafe.Pointer(str))
 	cstr := C.check_xpath_syntax(str)
 	if cstr != nil {
+		defer C.free(unsafe.Pointer(cstr))
 		err = errors.New(C.GoString(cstr))
 	}
 	return
