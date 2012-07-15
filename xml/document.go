@@ -11,7 +11,7 @@ import (
 	"errors"
 	. "github.com/moovweb/gokogiri/util"
 	"github.com/moovweb/gokogiri/xpath"
-	"runtime"
+	//"runtime"
 	"unsafe"
 )
 
@@ -88,7 +88,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	doc.fragments = make([]*DocumentFragment, 0, initialFragments)
 	doc.Me = doc
 	xmlNode.Document = doc
-	runtime.SetFinalizer(doc, (*XmlDocument).Free)
+	//runtime.SetFinalizer(doc, (*XmlDocument).Free)
 	return
 }
 
