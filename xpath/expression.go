@@ -22,7 +22,9 @@ char *check_xpath_syntax(const char *xpath) {
 			sprintf(msg, "%s%s\n%*s^", err->message, err->str1, err->int1, " ");
 			return msg;
 		} else {
-			return strdup(err->message);
+			char *msg = malloc(strlen(err->message));
+			sprintf(msg, "%s", err->message);
+			return msg;
 		}
 	}
 	return NULL;
