@@ -31,6 +31,7 @@ type Document interface {
 	OutputEncoding() []byte
 	DocXPathCtx() *xpath.XPath
 	AddUnlinkedNode(unsafe.Pointer)
+	RemoveUnlinkedNode(unsafe.Pointer) bool
 	Free()
 	String() string
 	Root() *ElementNode
@@ -165,6 +166,15 @@ func (document *XmlDocument) DocXPathCtx() (ctx *xpath.XPath) {
 func (document *XmlDocument) AddUnlinkedNode(nodePtr unsafe.Pointer) {
 	p := (*C.xmlNode)(nodePtr)
 	document.UnlinkedNodes[p] = true
+}
+
+func (document *XmlDocument) RemoveUnlinkedNode(nodePtr unsafe.Pointer) bool {
+	p := (*C.xmlNode)(nodePtr)
+	if document.UnlinkedNodes[p] {
+		delete(document.UnlinkedNodes, p)
+		return true
+	}
+	return false
 }
 
 func (document *XmlDocument) BookkeepFragment(fragment *DocumentFragment) {
