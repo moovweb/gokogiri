@@ -648,7 +648,10 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 		}
 	}
 	if !isNodeAccestor {
-		C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
+		if xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+		} else {
+			C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
+		}
 		C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 	} else {
 		node.Remove()
