@@ -1,6 +1,7 @@
 package html
 
 import "testing"
+import "github.com/moovweb/gokogiri/help"
 
 
 func TestCrazyMove(t *testing.T) {
@@ -34,5 +35,5 @@ func TestCrazyMove(t *testing.T) {
 	}
 	
 	doc.Free()
-	CheckXmlMemoryLeaks(t)
+	help.CheckXmlMemoryLeaks(t)
 }
