@@ -324,7 +324,7 @@ func (xmlNode *XmlNode) ResetChildren() {
 	for childPtr := xmlNode.Ptr.children; childPtr != nil; {
 		nextPtr := childPtr.next
 		p = unsafe.Pointer(childPtr)
-		C.xmlUnlinkNode((*C.xmlNode)(p))
+		C.xmlUnlinkNodeWithCheck((*C.xmlNode)(p))
 		xmlNode.Document.AddUnlinkedNode(p)
 		childPtr = nextPtr
 	}
@@ -631,29 +631,15 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-	parentPtr := xmlNode.Ptr.parent
-
-	if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+	ret := xmlNode.isAccestor(nodePtr)
+	if ret < 0 {
 		return
-	}
-
-	isNodeAccestor := false
-	for ; parentPtr != nil; parentPtr = parentPtr.parent {
-		if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
-			return
-		}
-		p := unsafe.Pointer(parentPtr)
-		if p == nodePtr {
-			isNodeAccestor = true
-		}
-	}
-	if !isNodeAccestor {
-		if xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
-		} else {
-			C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
+	} else if ret == 0 {
+		if ! xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
 		}
 		C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-	} else {
+	} else if ret > 0 {
 		node.Remove()
 	}
 
@@ -676,9 +662,17 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-
-	C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	ret := xmlNode.isAccestor(nodePtr)
+	if ret < 0 {
+		return
+	} else if ret == 0 {
+		if ! xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
+		}
+		C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	} else if ret > 0 {
+		node.Remove()
+	}
 	/*
 		childPtr := C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
@@ -698,8 +692,17 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-	C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	ret := xmlNode.isAccestor(nodePtr)
+	if ret < 0 {
+		return
+	} else if ret == 0 {
+		if ! xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
+		}
+		C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	} else if ret > 0 {
+		node.Remove()
+	}
 	/*
 		childPtr := C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
@@ -764,4 +767,22 @@ func makeSlice(n int) []byte {
 		}
 	}()
 	return make([]byte, n)
+}
+
+func (xmlNode *XmlNode) isAccestor(nodePtr unsafe.Pointer) int {
+	parentPtr := xmlNode.Ptr.parent
+
+	if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+		return -1
+	}
+	for ; parentPtr != nil; parentPtr = parentPtr.parent {
+		if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+			return -1
+		}
+		p := unsafe.Pointer(parentPtr)
+		if p == nodePtr {
+			 return 1
+		}
+	}
+	return 0
 }
