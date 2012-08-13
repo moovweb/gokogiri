@@ -339,7 +339,7 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	case []byte:
 		contentBytes := GetCString(data)
 		contentPtr := unsafe.Pointer(&contentBytes[0])
-		C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), contentPtr)
+		C.xmlSetContent(unsafe.Pointer(xmlNode), unsafe.Pointer(xmlNode.Ptr), contentPtr)
 	}
 	return
 }
@@ -752,6 +752,13 @@ func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_l
 		wbuffer.Offset += dataLen
 	}
 }
+
+//export xmlUnlinkNodeCallback
+func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
+	xmlNode := (*XmlNode)(gonodePtr)
+	xmlNode.Document.AddUnlinkedNode(nodePtr)
+}
+
 
 func grow(buffer []byte, n int) (newBuffer []byte) {
 	newBuffer = makeSlice(2*cap(buffer) + n)

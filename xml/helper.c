@@ -99,7 +99,7 @@ xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *ur
 	return tmpRoot;
 }
 
-void xmlSetContent(void *n, void *content) {
+void xmlSetContent(void *gonode, void *n, void *content) {
 	xmlNode *node = (xmlNode*)n;
 	xmlNode *child = node->children;
 	xmlNode *next = NULL;
@@ -108,7 +108,8 @@ void xmlSetContent(void *n, void *content) {
 		while (child) {
 			next = child->next ;
 			xmlUnlinkNode(child);
-			xmlFreeNode(child);
+			//xmlFreeNode(child);
+			xmlUnlinkNodeCallback(child, gonode);
 			child = next ;
 	  	}
 	  	xmlNodeSetContent(node, (xmlChar*)encoded);
