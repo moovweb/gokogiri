@@ -278,7 +278,7 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	case []byte:
 		contentBytes := GetCString(data)
 		contentPtr := unsafe.Pointer(&contentBytes[0])
-		C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), contentPtr)
+		C.xmlSetContent(unsafe.Pointer(xmlNode), unsafe.Pointer(xmlNode.Ptr), contentPtr)
 	}
 	return
 }
@@ -597,6 +597,12 @@ func (xmlNode *XmlNode) ToBuffer(outputBuffer []byte) []byte {
 		b, size = xmlNode.ToXml(nil, outputBuffer)
 	}
 	return b[:size]
+}
+
+//export xmlUnlinkNodeCallback
+func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
+	xmlNode := (*XmlNode)(gonodePtr)
+	xmlNode.AddUnlinkedNode(nodePtr)
 }
 
 func (xmlNode *XmlNode) String() string {

@@ -14,7 +14,7 @@ xmlNode* xmlParseFragment(void* doc, void *buffer, int buffer_len, void *url, in
 xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len);
 int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options);
 
-void xmlSetContent(void* node, void *content);
+void xmlSetContent(void *gonode, void *node, void *content);
 
 xmlDoc* newEmptyXmlDoc();
 xmlElementType getNodeType(xmlNode *node);
