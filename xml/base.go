@@ -18,20 +18,23 @@ type DocCtx struct {
 	UnlinkedNodes map[*C.xmlNode]bool
 	XPathCtx      *xpath.XPath
 	DocPtr        unsafe.Pointer
-	Fragments     []*DocumentFragment 
+	Fragments     []*DocumentFragment
+	FragmentParser
 }
 
 func NewDocCtx(docPtr unsafe.Pointer, inEncoding, outEncoding []byte) (*DocCtx) {
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
-	ctx := &DocCtx{InEncoding: inEncoding, OutEncoding: outEncoding, DocPtr: docPtr}
+	ctx := &DocCtx{InEncoding: inEncoding, OutEncoding: outEncoding, DocPtr: docPtr, FragmentParser: &XmlFragmentParser{}}
 	ctx.UnlinkedNodes = make(map[*C.xmlNode]bool)
 	ctx.XPathCtx = xpath.NewXPath(docPtr)
 	ctx.Fragments = make([]*DocumentFragment, 0, initialFragments)
 	return ctx
 }
 
-	//ParseFragment([]byte, []byte, int) (*DocumentFragment, error)
+func (ctx *DocCtx) SetFragmentParser(fp FragmentParser) {
+	ctx.FragmentParser = fp
+}
 
 func (ctx *DocCtx) InputEncoding() []byte {
 	return ctx.InEncoding
@@ -90,10 +93,10 @@ func (ctx *DocCtx) Free() {
 func (ctx *DocCtx) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err error) {
 	rootPtr := C.xmlDocGetRootElement((*C.xmlDoc)(ctx.DocPtr))
 	if rootPtr == nil {
-		fragment, err = parsefragment(ctx, nil, input, url, options)
+		fragment, err = ctx.FragmentParser.ParseFragment(ctx, nil, input, url, options)
 	} else {
 		root := NewNode(unsafe.Pointer(rootPtr), ctx).(*ElementNode)
-		fragment, err = parsefragment(ctx, root.XmlNode, input, url, options)
+		fragment, err = ctx.FragmentParser.ParseFragment(ctx, root.XmlNode, input, url, options)
 	}
 	if fragment != nil {
 		ctx.Fragments = append(ctx.Fragments, fragment)

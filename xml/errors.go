@@ -16,3 +16,7 @@ var ERR_FAILED_TO_PARSE_XML                  = errors.New("failed to parse xml i
 
 //serialize
 var	ErrTooLarge                              = errors.New("Output buffer too large")
+
+//fragment
+var ErrFailParseFragment = errors.New("failed to parse xml fragment")
+var ErrEmptyFragment = errors.New("empty xml fragment")
