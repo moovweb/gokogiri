@@ -631,6 +631,9 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
 	ret := xmlNode.isAccestor(nodePtr)
 	if ret < 0 {
 		return
@@ -662,6 +665,9 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
 	ret := xmlNode.isAccestor(nodePtr)
 	if ret < 0 {
 		return
@@ -692,6 +698,9 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
 	ret := xmlNode.isAccestor(nodePtr)
 	if ret < 0 {
 		return
