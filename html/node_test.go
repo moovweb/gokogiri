@@ -206,3 +206,39 @@ func TestAddMyselfChild(t *testing.T) {
 	doc.Free()
 	CheckXmlMemoryLeaks(t)
 }
+
+func TestRemoveMeRemoveParent(t *testing.T) {
+	input := `<html>
+<head>
+<title> Title </title>
+</head>
+<body>
+<div id="header"><h1> Welcome to Tritium Tester </h1></div>
+</body>
+</html>
+`
+	doc, err := Parse([]byte(input), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+
+	if err != nil {
+		t.Error("Parsing has error:", err)
+		return
+	}
+
+	divs, _ := doc.Search("//div")
+	if len(divs) != 1 {
+		t.Error("should have 1 div")
+		return
+	}
+
+	div := divs[0]
+	h1 := div.FirstChild()
+	nodes, _ := h1.Search("..")
+	h1.Remove()
+	nodes, _ = h1.Search("..")
+	if (len(nodes) != 1) {
+		t.Error("removed node should have a parent , i.e. its document")
+	}
+	nodes[0].Remove()
+	doc.Free()
+	CheckXmlMemoryLeaks(t)
+}
