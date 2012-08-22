@@ -618,7 +618,7 @@ func (xmlNode *XmlNode) Unlink() {
 }
 
 func (xmlNode *XmlNode) Remove() {
-	if xmlNode.valid {
+	if xmlNode.valid && unsafe.Pointer(xmlNode.Ptr) != xmlNode.Document.DocPtr() {
 		xmlNode.Unlink()
 		xmlNode.valid = false
 	}
