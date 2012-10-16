@@ -15,6 +15,7 @@ import "C"
 import "unsafe"
 import . "gokogiri/util"
 import "runtime"
+import "errors"
 
 type XPath struct {
 	ContextPtr *C.xmlXPathContext
@@ -47,17 +48,20 @@ func (xpath *XPath) RegisterNamespace(prefix, href string) bool {
 	return result == 0
 }
 
-func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nodes []unsafe.Pointer) {
+//need to add an error as a return value b/c xpath evaluation can return error
+func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nodes []unsafe.Pointer, err error) {
 	if nodePtr == nil {
+		//evaluating xpath on a  nil node returns no result.
 		return
 	}
 	xpath.ContextPtr.node = (*C.xmlNode)(nodePtr)
 	if xpath.ResultPtr != nil {
 		C.xmlXPathFreeObject(xpath.ResultPtr)
 	}
+
 	xpath.ResultPtr = C.xmlXPathCompiledEval(xpathExpr.Ptr, xpath.ContextPtr)
-	
 	if xpath.ResultPtr == nil {
+		err = errors.New("err in evaluating xpath: " + xpathExpr.String())
 		return
 	}
 

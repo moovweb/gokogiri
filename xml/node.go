@@ -476,7 +476,10 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 		result, err = xmlNode.Search(string(data))
 	case *xpath.Expression:
 		xpathCtx := xmlNode.Document.DocXPathCtx()
-		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		nodePtrs, err := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		if nodePtrs == nil || err != nil {
+			return nil, err
+		}
 		for _, nodePtr := range nodePtrs {
 			result = append(result, NewNode(nodePtr, xmlNode.Document))
 		}
