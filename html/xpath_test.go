@@ -14,6 +14,9 @@ func TestUnfoundFuncInXpath(t *testing.T) {
 	}
 
 	html := doc.Root().FirstChild()
-	html.Search("./div[matches(text(), 'foo')]")
+	results, _ := html.Search("./div[matches(text(), 'foo')]")
+	if len(results) != 0 {
+		t.Error("should match nothing because the function is not found")
+	}
 	doc.Free()
 }
