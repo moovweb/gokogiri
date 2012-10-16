@@ -9,6 +9,7 @@ func TestCompileGoodExpr(t *testing.T) {
 	if e == nil {
 		t.Error("expr should be good")
 	}
+	e.Free()
 }
 
 func TestCompileBadExpr(t *testing.T) {
