@@ -56,6 +56,11 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nod
 		C.xmlXPathFreeObject(xpath.ResultPtr)
 	}
 	xpath.ResultPtr = C.xmlXPathCompiledEval(xpathExpr.Ptr, xpath.ContextPtr)
+	
+	if xpath.ResultPtr == nil {
+		return
+	}
+
 	if nodesetPtr := xpath.ResultPtr.nodesetval; nodesetPtr != nil {
 		if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
 			nodes = make([]unsafe.Pointer, nodesetSize)
