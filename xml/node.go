@@ -4,6 +4,8 @@ package xml
 //#include <string.h>
 import "C"
 
+import "time"
+
 import (
 	"errors"
 	. "gokogiri/util"
@@ -111,6 +113,7 @@ type Node interface {
 	Duplicate(int) Node
 
 	Search(interface{}) ([]Node, error)
+	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
 
 	//SetParent(Node)
 	//IsComment() bool
@@ -484,6 +487,14 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 			result = append(result, NewNode(nodePtr, xmlNode.Document))
 		}
 	}
+	return
+}
+
+func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) (result []Node, err error) {
+	xpathCtx := xmlNode.Document.DocXPathCtx()
+	xpathCtx.SetDeadline(deadline)
+	result, err = xmlNode.Search(data)
+	xpathCtx.SetDeadline(nil)
 	return
 }
 
