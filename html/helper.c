@@ -56,3 +56,4 @@ xmlNode* htmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *u
 	xmlFreeDoc(tmpDoc);
 	return tmpRoot;
 }
+

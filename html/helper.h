@@ -12,3 +12,4 @@ xmlNode* htmlParseFragment(void* doc, void *buffer, int buffer_len, void *url, i
 xmlNode* htmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *url, void *encoding, int options, void *error_buffer, int error_buffer_len);
 
 #endif //__CHELPER_H__
+

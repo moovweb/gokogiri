@@ -32,3 +32,4 @@ typedef struct XmlBufferContext {
 } XmlBufferContext;
 
 #endif //__CHELPER_H__
+
