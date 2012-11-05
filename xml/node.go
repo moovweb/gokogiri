@@ -652,7 +652,7 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 	if ret < 0 {
 		return
 	} else if ret == 0 {
-		if ! xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+		if !xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
 			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
 		}
 		C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
@@ -686,7 +686,7 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
 	if ret < 0 {
 		return
 	} else if ret == 0 {
-		if ! xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+		if !xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
 			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
 		}
 		C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
@@ -719,7 +719,7 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
 	if ret < 0 {
 		return
 	} else if ret == 0 {
-		if ! xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+		if !xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
 			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
 		}
 		C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
@@ -782,7 +782,6 @@ func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
 	xmlNode.Document.AddUnlinkedNode(nodePtr)
 }
 
-
 func grow(buffer []byte, n int) (newBuffer []byte) {
 	newBuffer = makeSlice(2*cap(buffer) + n)
 	copy(newBuffer, buffer)
@@ -811,7 +810,7 @@ func (xmlNode *XmlNode) isAccestor(nodePtr unsafe.Pointer) int {
 		}
 		p := unsafe.Pointer(parentPtr)
 		if p == nodePtr {
-			 return 1
+			return 1
 		}
 	}
 	return 0

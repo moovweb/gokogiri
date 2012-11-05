@@ -95,7 +95,7 @@ func TestInsertMyselfBefore(t *testing.T) {
 
 	div := divs[0]
 	div.InsertBefore(div)
-	
+
 	expected := `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
@@ -141,7 +141,7 @@ func TestInsertMyselfAfter(t *testing.T) {
 
 	div := divs[0]
 	div.InsertAfter(div)
-	
+
 	expected := `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
@@ -187,7 +187,7 @@ func TestAddMyselfChild(t *testing.T) {
 
 	div := divs[0]
 	div.AddChild(div)
-	
+
 	expected := `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html>
 <head>
@@ -235,7 +235,7 @@ func TestRemoveMeRemoveParent(t *testing.T) {
 	nodes, _ := h1.Search("..")
 	h1.Remove()
 	nodes, _ = h1.Search("..")
-	if (len(nodes) != 1) {
+	if len(nodes) != 1 {
 		t.Error("removed node should have a parent , i.e. its document")
 	}
 	nodes[0].Remove()

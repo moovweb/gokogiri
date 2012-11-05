@@ -150,9 +150,8 @@ func collectTests(suite string) (names []string, error string) {
 
 func CheckXmlMemoryLeaks(t *testing.T) {
 	help.LibxmlCleanUpParser()
-	if ! help.LibxmlCheckMemoryLeak() {
+	if !help.LibxmlCheckMemoryLeak() {
 		t.Errorf("Memory leaks: %d!!!", help.LibxmlGetMemoryAllocation())
 		help.LibxmlReportMemoryLeak()
 	}
 }
-

@@ -37,7 +37,7 @@ import "runtime"
 import "errors"
 
 type Expression struct {
-	Ptr *C.xmlXPathCompExpr
+	Ptr   *C.xmlXPathCompExpr
 	xpath string
 }
 

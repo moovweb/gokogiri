@@ -2,7 +2,6 @@ package html
 
 import "testing"
 
-
 func TestUnfoundFuncInXpath(t *testing.T) {
 	defer CheckXmlMemoryLeaks(t)
 

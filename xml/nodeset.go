@@ -18,7 +18,7 @@ func NewNodeSet(document Document, nodes interface{}) (set *NodeSet) {
 	case []unsafe.Pointer:
 		if num := len(t); num > 0 {
 			set.Nodes = make([]Node, num)
-			for i, p := range(t) {
+			for i, p := range t {
 				set.Nodes[i] = NewNode(p, document)
 			}
 		}
@@ -35,7 +35,7 @@ func (set *NodeSet) Length() int {
 
 func (set *NodeSet) Remove() {
 	if set.valid {
-		for _, node := range(set.Nodes) {
+		for _, node := range set.Nodes {
 			node.Remove()
 		}
 		set.valid = false

@@ -65,9 +65,8 @@ func TestParseXml(t *testing.T) {
 
 func CheckXmlMemoryLeaks(t *testing.T) {
 	help.LibxmlCleanUpParser()
-	if ! help.LibxmlCheckMemoryLeak() {
+	if !help.LibxmlCheckMemoryLeak() {
 		t.Errorf("Memory leaks: %d!!!", help.LibxmlGetMemoryAllocation())
 		help.LibxmlReportMemoryLeak()
 	}
 }
-

@@ -1,4 +1,5 @@
 package mem
+
 /*
 #cgo CFLAGS: -I../../../clibs/include/libxml2
 #cgo LDFLAGS: -lxml2 -L../../../clibs/lib
