@@ -59,7 +59,6 @@ const (
 )
 
 var pattern [NUM_LEXEMES]string
-var matcher [NUM_LEXEMES]*rubex.Regexp
 
 type Scope int
 
