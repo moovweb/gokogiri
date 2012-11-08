@@ -33,7 +33,7 @@ char *check_xpath_syntax(const char *xpath) {
 import "C"
 import "unsafe"
 import . "gokogiri/util"
-import "runtime"
+//import "runtime"
 import "errors"
 
 type Expression struct {
@@ -64,7 +64,7 @@ func Compile(path string) (expr *Expression) {
 		return
 	}
 	expr = &Expression{Ptr: ptr, xpath: path}
-	runtime.SetFinalizer(expr, (*Expression).Free)
+	//runtime.SetFinalizer(expr, (*Expression).Free)
 	return
 }
 
