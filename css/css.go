@@ -60,6 +60,53 @@ const (
 
 var pattern [NUM_LEXEMES]string
 
+func init() {
+    pattern[SPACES] = `\s+`
+    pattern[COMMA] = `\s*,`
+    pattern[UNIVERSAL] = `\*`
+    pattern[TYPE] = `[_a-zA-Z]\w*`
+    pattern[ELEMENT] = `(\*|[_a-zA-Z]\w*)`
+    pattern[CLASS] = `\.[-\w]+`
+    pattern[ID] = `\#[-\w]+`
+    pattern[LBRACKET] = `\[`
+    pattern[RBRACKET] = `\]`
+    pattern[ATTR_NAME] = `[-_:a-zA-Z][-\w:.]*`
+    pattern[ATTR_VALUE] = `("(\\.|[^"\\])*"|'(\\.|[^'\\])*')`
+    pattern[EQUALS] = `=`
+    pattern[CONTAINS_CLASS] = `~=`
+    pattern[DASH_PREFIXED] = `\|=`
+    pattern[STARTS_WITH] = `\^=`
+    pattern[ENDS_WITH] = `\$=`
+    pattern[CONTAINS] = `\*=`
+    pattern[MATCH_OP] = "(" + strings.Join([]string{pattern[EQUALS], pattern[CONTAINS_CLASS], pattern[DASH_PREFIXED], pattern[STARTS_WITH], pattern[ENDS_WITH], pattern[CONTAINS]}, "|") + ")"
+    pattern[PSEUDO_CLASS] = `:[-a-z]+`
+    pattern[FIRST_CHILD] = `:first-child`
+    pattern[FIRST_OF_TYPE] = `:first-of-type`
+    pattern[NTH_CHILD] = `:nth-child`
+    pattern[NTH_OF_TYPE] = `:nth-of-type`
+    pattern[ONLY_CHILD] = `:only-child`
+    pattern[ONLY_OF_TYPE] = `:only-of-type`
+    pattern[LAST_CHILD] = `:last-child`
+    pattern[LAST_OF_TYPE] = `:last-of-type`
+    pattern[NOT] = `:not`
+    pattern[LPAREN] = `\s*\(`
+    pattern[RPAREN] = `\s*\)`
+    pattern[COEFFICIENT] = `[-+]?(\d+)?`
+    pattern[SIGNED] = `[-+]?\d+`
+    pattern[UNSIGNED] = `\d+`
+    pattern[ODD] = `odd`
+    pattern[EVEN] = `even`
+    pattern[N] = `[nN]`
+    pattern[OPERATOR] = `[-+]`
+    pattern[PLUS] = `\+`
+    pattern[MINUS] = `-`
+    pattern[BINOMIAL] = strings.Join([]string{pattern[COEFFICIENT], pattern[N], `\s*`, pattern[OPERATOR], `\s*`, pattern[UNSIGNED]}, "")
+    pattern[ADJACENT_TO] = `\s*\+`
+    pattern[PRECEDES] = `\s*~`
+    pattern[PARENT_OF] = `\s*>`
+    pattern[ANCESTOR_OF] = `\s+`
+}
+
 type Scope int
 
 const (
@@ -76,50 +123,6 @@ func Convert(css string, scope Scope) string {
 
 func allocate() []*rubex.Regexp {
   // some overlap in here, but it'll make the parsing functions clearer
-  pattern[SPACES] = `\s+`
-  pattern[COMMA] = `\s*,`
-  pattern[UNIVERSAL] = `\*`
-  pattern[TYPE] = `[_a-zA-Z]\w*`
-  pattern[ELEMENT] = `(\*|[_a-zA-Z]\w*)`
-  pattern[CLASS] = `\.[-\w]+`
-  pattern[ID] = `\#[-\w]+`
-  pattern[LBRACKET] = `\[`
-  pattern[RBRACKET] = `\]`
-  pattern[ATTR_NAME] = `[-_:a-zA-Z][-\w:.]*`
-  pattern[ATTR_VALUE] = `("(\\.|[^"\\])*"|'(\\.|[^'\\])*')`
-  pattern[EQUALS] = `=`
-  pattern[CONTAINS_CLASS] = `~=`
-  pattern[DASH_PREFIXED] = `\|=`
-  pattern[STARTS_WITH] = `\^=`
-  pattern[ENDS_WITH] = `\$=`
-  pattern[CONTAINS] = `\*=`
-  pattern[MATCH_OP] = "(" + strings.Join([]string{pattern[EQUALS], pattern[CONTAINS_CLASS], pattern[DASH_PREFIXED], pattern[STARTS_WITH], pattern[ENDS_WITH], pattern[CONTAINS]}, "|") + ")"
-  pattern[PSEUDO_CLASS] = `:[-a-z]+`
-  pattern[FIRST_CHILD] = `:first-child`
-  pattern[FIRST_OF_TYPE] = `:first-of-type`
-  pattern[NTH_CHILD] = `:nth-child`
-  pattern[NTH_OF_TYPE] = `:nth-of-type`
-  pattern[ONLY_CHILD] = `:only-child`
-  pattern[ONLY_OF_TYPE] = `:only-of-type`
-  pattern[LAST_CHILD] = `:last-child`
-  pattern[LAST_OF_TYPE] = `:last-of-type`
-  pattern[NOT] = `:not`
-  pattern[LPAREN] = `\s*\(`
-  pattern[RPAREN] = `\s*\)`
-  pattern[COEFFICIENT] = `[-+]?(\d+)?`
-  pattern[SIGNED] = `[-+]?\d+`
-  pattern[UNSIGNED] = `\d+`
-  pattern[ODD] = `odd`
-  pattern[EVEN] = `even`
-  pattern[N] = `[nN]`
-  pattern[OPERATOR] = `[-+]`
-  pattern[PLUS] = `\+`
-  pattern[MINUS] = `-`
-  pattern[BINOMIAL] = strings.Join([]string{pattern[COEFFICIENT], pattern[N], `\s*`, pattern[OPERATOR], `\s*`, pattern[UNSIGNED]}, "")
-  pattern[ADJACENT_TO] = `\s*\+`
-  pattern[PRECEDES] = `\s*~`
-  pattern[PARENT_OF] = `\s*>`
-  pattern[ANCESTOR_OF] = `\s+`
   matchers := make([]*rubex.Regexp, 0, NUM_LEXEMES)
   for _, p := range pattern {
     matchers = append(matchers, rubex.MustCompile(`\A` + p))
