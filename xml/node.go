@@ -8,6 +8,7 @@ import "time"
 
 import (
 	"errors"
+	"fmt"
 	. "gokogiri/util"
 	"gokogiri/xpath"
 	"unsafe"
@@ -575,7 +576,7 @@ func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]
 	format |= XML_SAVE_FORMAT
 	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
-		println("output error!!!")
+		fmt.Println("output error!!!")
 		return nil, 0
 	}
 
