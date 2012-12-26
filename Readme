@@ -11,10 +11,12 @@ This is a major rewrite from v0 in the following places:
     - Serialization
     - Some API adjustment
 
-To build and install
+To install
 
-    - make install
+    - go get github.com/moovweb/gokogiri
+
 	
 To run test
 
-    - make test
+    - go test github.com/moovweb/gokogiri/html
+    - go test github.com/moovweb/gokogiri/xml
