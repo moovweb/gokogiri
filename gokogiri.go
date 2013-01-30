@@ -1,8 +1,8 @@
 package gokogiri
 
 import (
-	"gokogiri/html"
-	"gokogiri/xml"
+	"./html"
+	"./xml"
 )
 
 func ParseHtml(content []byte) (doc *html.HtmlDocument, err error) {
