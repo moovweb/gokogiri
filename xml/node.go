@@ -9,8 +9,8 @@ import "time"
 import (
 	"errors"
 	"fmt"
-	. "../util"
-	"../xpath"
+	. "gokogiri/util"
+	"gokogiri/xpath"
 	"unsafe"
 )
 

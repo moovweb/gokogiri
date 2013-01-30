@@ -10,8 +10,8 @@ import "C"
 
 import (
 	"errors"
-	. "../util"
-	"../xpath"
+	. "gokogiri/util"
+	"gokogiri/xpath"
 	//"runtime"
 	"unsafe"
 )

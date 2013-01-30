@@ -2,7 +2,7 @@ package html
 
 import (
 	"fmt"
-	"../help"
+	"gokogiri/help"
 	"io/ioutil"
 	"path/filepath"
 	"strings"

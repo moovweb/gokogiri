@@ -15,7 +15,7 @@ import "C"
 
 import "time"
 import "unsafe"
-import . "../util"
+import . "gokogiri/util"
 import "runtime"
 import "errors"
 
