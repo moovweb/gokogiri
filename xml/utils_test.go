@@ -3,7 +3,7 @@ package xml
 import (
 	"errors"
 	"fmt"
-	"gokogiri/help"
+	"../help"
 	"io/ioutil"
 	"path/filepath"
 	"strings"

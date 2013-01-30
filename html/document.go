@@ -12,8 +12,8 @@ import "C"
 
 import (
 	"errors"
-	. "gokogiri/util"
-	"gokogiri/xml"
+	. "../util"
+	"../xml"
 	//"runtime"
 	"unsafe"
 )

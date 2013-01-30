@@ -1,7 +1,7 @@
 package gokogiri
 
 import (
-	"gokogiri/help"
+	"help"
 	"testing"
 )
 

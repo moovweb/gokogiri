@@ -1,7 +1,7 @@
 package xpath
 
 import "testing"
-import "gokogiri/help"
+import "../help"
 
 func CheckXmlMemoryLeaks(t *testing.T) {
 	help.LibxmlCleanUpParser()
