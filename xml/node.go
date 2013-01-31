@@ -221,6 +221,15 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 				}
 			}
 		}
+	case *DocumentFragment:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range nodes {
+				println("trying to add ", node.NodePtr())
+				if err = xmlNode.addChild(node); err != nil {
+					break
+				}
+			}
+		}
 	case Node:
 		err = xmlNode.addChild(t)
 	}
@@ -237,6 +246,14 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 				}
 			}
 		}
+	case *DocumentFragment:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range nodes {
+				if err = xmlNode.addPreviousSibling(node); err != nil {
+					break
+				}
+			}
+		}
 	case Node:
 		err = xmlNode.addPreviousSibling(t)
 	}
@@ -246,6 +263,15 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
 	switch t := data.(type) {
 	default:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for i := len(nodes) - 1; i >= 0; i-- {
+				node := nodes[i]
+				if err = xmlNode.addNextSibling(node); err != nil {
+					break
+				}
+			}
+		}
+	case *DocumentFragment:
 		if nodes, err := xmlNode.coerce(data); err == nil {
 			for i := len(nodes) - 1; i >= 0; i-- {
 				node := nodes[i]
