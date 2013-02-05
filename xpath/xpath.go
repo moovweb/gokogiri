@@ -12,9 +12,12 @@ xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
 }
 */
 import "C"
+
+import "time"
 import "unsafe"
 import . "gokogiri/util"
 import "runtime"
+import "errors"
 
 type XPath struct {
 	ContextPtr *C.xmlXPathContext
@@ -47,15 +50,23 @@ func (xpath *XPath) RegisterNamespace(prefix, href string) bool {
 	return result == 0
 }
 
-func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nodes []unsafe.Pointer) {
+//need to add an error as a return value b/c xpath evaluation can return error
+func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nodes []unsafe.Pointer, err error) {
 	if nodePtr == nil {
+		//evaluating xpath on a  nil node returns no result.
 		return
 	}
 	xpath.ContextPtr.node = (*C.xmlNode)(nodePtr)
 	if xpath.ResultPtr != nil {
 		C.xmlXPathFreeObject(xpath.ResultPtr)
 	}
+
 	xpath.ResultPtr = C.xmlXPathCompiledEval(xpathExpr.Ptr, xpath.ContextPtr)
+	if xpath.ResultPtr == nil {
+		err = errors.New("err in evaluating xpath: " + xpathExpr.String())
+		return
+	}
+
 	if nodesetPtr := xpath.ResultPtr.nodesetval; nodesetPtr != nil {
 		if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
 			nodes = make([]unsafe.Pointer, nodesetSize)
@@ -65,6 +76,15 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nod
 		}
 	}
 	return
+}
+
+func (xpath *XPath) SetDeadline(deadline *time.Time) {
+	if deadline == nil {
+		C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(0))
+	} else {
+		t := deadline.Unix()
+		C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(t))
+	}
 }
 
 func (xpath *XPath) Free() {

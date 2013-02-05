@@ -33,11 +33,12 @@ char *check_xpath_syntax(const char *xpath) {
 import "C"
 import "unsafe"
 import . "gokogiri/util"
-import "runtime"
+//import "runtime"
 import "errors"
 
 type Expression struct {
-	Ptr *C.xmlXPathCompExpr
+	Ptr   *C.xmlXPathCompExpr
+	xpath string
 }
 
 func Check(path string) (err error) {
@@ -62,9 +63,13 @@ func Compile(path string) (expr *Expression) {
 	if ptr == nil {
 		return
 	}
-	expr = &Expression{Ptr: ptr}
-	runtime.SetFinalizer(expr, (*Expression).Free)
+	expr = &Expression{Ptr: ptr, xpath: path}
+	//runtime.SetFinalizer(expr, (*Expression).Free)
 	return
+}
+
+func (exp *Expression) String() string {
+	return exp.xpath
 }
 
 func (exp *Expression) Free() {

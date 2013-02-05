@@ -4,6 +4,8 @@ package xml
 //#include <string.h>
 import "C"
 
+import "time"
+
 import (
 	"errors"
 	. "gokogiri/util"
@@ -68,6 +70,7 @@ type Node interface {
 	Duplicate(int) Node
 
 	Search(interface{}) ([]Node, error)
+	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
 
 	//SetParent(Node)
 	//IsComment() bool
@@ -78,6 +81,11 @@ type Node interface {
 	//IsElement() bool
 	//IsFragment() bool
 	//
+
+	Root() *ElementNode
+	CreateCDataNode(string) *CDataNode
+	CreateTextNode(string) *TextNode
+	CreateElementNode(string) *ElementNode
 
 	//
 	Unlink()
@@ -165,6 +173,15 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 				}
 			}
 		}
+	case *DocumentFragment:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range nodes {
+				println("trying to add ", node.NodePtr())
+				if err = xmlNode.addChild(node); err != nil {
+					break
+				}
+			}
+		}
 	case Node:
 		err = xmlNode.addChild(t)
 	}
@@ -181,6 +198,14 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 				}
 			}
 		}
+	case *DocumentFragment:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range nodes {
+				if err = xmlNode.addPreviousSibling(node); err != nil {
+					break
+				}
+			}
+		}
 	case Node:
 		err = xmlNode.addPreviousSibling(t)
 	}
@@ -190,6 +215,15 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
 	switch t := data.(type) {
 	default:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for i := len(nodes) - 1; i >= 0; i-- {
+				node := nodes[i]
+				if err = xmlNode.addNextSibling(node); err != nil {
+					break
+				}
+			}
+		}
+	case *DocumentFragment:
 		if nodes, err := xmlNode.coerce(data); err == nil {
 			for i := len(nodes) - 1; i >= 0; i-- {
 				node := nodes[i]
@@ -415,11 +449,22 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 		result, err = xmlNode.Search(string(data))
 	case *xpath.Expression:
 		xpathCtx := xmlNode.XPathCtx
-		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		nodePtrs, err := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		if nodePtrs == nil || err != nil {
+			return nil, err
+		}
 		for _, nodePtr := range nodePtrs {
 			result = append(result, NewNode(nodePtr, xmlNode.DocCtx))
 		}
 	}
+	return
+}
+
+func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) (result []Node, err error) {
+	xpathCtx := xmlNode.XPathCtx
+	xpathCtx.SetDeadline(deadline)
+	result, err = xmlNode.Search(data)
+	xpathCtx.SetDeadline(nil)
 	return
 }
 
@@ -480,6 +525,32 @@ func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
 	return
 }
 
+func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) ([]byte, int) {
+	return serialize(xmlNode, XML_SAVE_AS_XML, encoding, outputBuffer)
+}
+
+func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) ([]byte, int) {
+	return serialize(xmlNode, XML_SAVE_AS_HTML, encoding, outputBuffer)
+}
+
+func (xmlNode *XmlNode) ToBuffer(outputBuffer []byte) []byte {
+	var b []byte
+	var size int
+	if docType := xmlNode.DocType(); docType == XML_HTML_DOCUMENT_NODE {
+		b, size = xmlNode.ToHtml(nil, outputBuffer)
+	} else {
+		b, size = xmlNode.ToXml(nil, outputBuffer)
+	}
+	return b[:size]
+}
+
+func (xmlNode *XmlNode) String() string {
+	b := xmlNode.ToBuffer(nil)
+	if b == nil {
+		return ""
+	}
+	return string(b)
+}
 
 func (xmlNode *XmlNode) Content() string {
 	contentPtr := C.xmlNodeGetContent(xmlNode.Ptr)
@@ -504,7 +575,9 @@ func (xmlNode *XmlNode) Unlink() {
 }
 
 func (xmlNode *XmlNode) Remove() {
-	xmlNode.Unlink()
+	if unsafe.Pointer(xmlNode.Ptr) != xmlNode.DocPtr {
+		xmlNode.Unlink()
+	}
 }
 
 func (xmlNode *XmlNode) addChild(node Node) (err error) {
@@ -514,6 +587,9 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
 	ret := xmlNode.isAccestor(nodePtr)
 	if ret < 0 {
 		return
@@ -535,6 +611,9 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
 	ret := xmlNode.isAccestor(nodePtr)
 	if ret < 0 {
 		return
@@ -556,6 +635,9 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
 	ret := xmlNode.isAccestor(nodePtr)
 	if ret < 0 {
 		return
@@ -580,37 +662,10 @@ func (xmlNode *XmlNode) Wrap(data string) (err error) {
 	return
 }
 
-func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) ([]byte, int) {
-	return serialize(xmlNode, XML_SAVE_AS_XML, encoding, outputBuffer)
-}
-
-func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) ([]byte, int) {
-	return serialize(xmlNode, XML_SAVE_AS_HTML, encoding, outputBuffer)
-}
-
-func (xmlNode *XmlNode) ToBuffer(outputBuffer []byte) []byte {
-	var b []byte
-	var size int
-	if docType := xmlNode.DocType(); docType == XML_HTML_DOCUMENT_NODE {
-		b, size = xmlNode.ToHtml(nil, outputBuffer)
-	} else {
-		b, size = xmlNode.ToXml(nil, outputBuffer)
-	}
-	return b[:size]
-}
-
 //export xmlUnlinkNodeCallback
 func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
 	xmlNode := (*XmlNode)(gonodePtr)
 	xmlNode.AddUnlinkedNode(nodePtr)
-}
-
-func (xmlNode *XmlNode) String() string {
-	b := xmlNode.ToBuffer(nil)
-	if b == nil {
-		return ""
-	}
-	return string(b)
 }
 
 func (xmlNode *XmlNode) isAccestor(nodePtr unsafe.Pointer) int {
@@ -625,7 +680,7 @@ func (xmlNode *XmlNode) isAccestor(nodePtr unsafe.Pointer) int {
 		}
 		p := unsafe.Pointer(parentPtr)
 		if p == nodePtr {
-			 return 1
+			return 1
 		}
 	}
 	return 0

@@ -40,7 +40,6 @@ func BenchmarkSearch(b *testing.B) {
 	RunBenchmark(b, "node", "search", benchmarkLogic)
 }
 
-
 func BenchmarkBigDocDeepSearchyTagName(b *testing.B) {
 
 	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
@@ -79,7 +78,6 @@ func BenchmarkBigDocDeepSearchByID(b *testing.B) {
 	RunBenchmark(b, "document", "big_un", benchmarkLogic)
 }
 
-
 func BenchmarkBigDocDeepSearchByClass(b *testing.B) {
 
 	benchmarkLogic := func(b *testing.B, doc *XmlDocument) {
@@ -105,7 +103,6 @@ func BenchmarkBigDocDeepSearchByClassContains(b *testing.B) {
 
 	RunBenchmark(b, "document", "big_un", benchmarkLogic)
 }
-
 
 func BenchmarkBigDocDeepSearchBySemanticClass(b *testing.B) {
 

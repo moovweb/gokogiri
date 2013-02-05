@@ -1,13 +1,13 @@
 package xml
 
 import (
-	"testing"
-	"os"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
-	"runtime"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"testing"
 )
 
 func TestDocuments(t *testing.T) {

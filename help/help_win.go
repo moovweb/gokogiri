@@ -1,4 +1,4 @@
-// +build !windows
+// +build windows
 
 package help
 
@@ -21,7 +21,11 @@ func LibxmlInitParser() {
 }
 
 func LibxmlCleanUpParser() {
-	C.xmlCleanupParser()
+	// Because of our test structure, this method is called several times 
+	// during a test run (but it should only be called once during the lifetime
+	// of the program).  Windows truly hates this, so we comment it out for it.
+	// Other OSes don't seem to care.
+	//C.xmlCleanupParser()
 }
 
 func LibxmlGetMemoryAllocation() int {
