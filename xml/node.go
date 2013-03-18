@@ -138,8 +138,6 @@ type Node interface {
 	String() string
 	Content() string
 	InnerHtml() string
-
-	RecursivelyRemoveNamespaces() error
 }
 
 //run out of memory
@@ -843,35 +841,4 @@ func (xmlNode *XmlNode) isAccestor(nodePtr unsafe.Pointer) int {
 		}
 	}
 	return 0
-}
-
-func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() (err error) {
-	nodePtr := xmlNode.Ptr
-	C.xmlSetNs(nodePtr, nil)
-
-	for child := xmlNode.FirstChild(); child != nil; {
-		child.RecursivelyRemoveNamespaces()
-		child = child.NextSibling()
-	}
-
-	nodeType := xmlNode.NodeType()
-
-	if ((nodeType == XML_ELEMENT_NODE) ||
-		(nodeType == XML_XINCLUDE_START) ||
-		(nodeType == XML_XINCLUDE_END)) &&
-		(nodePtr.nsDef != nil) {
-		C.xmlFreeNsList((*C.xmlNs)(nodePtr.nsDef))
-		nodePtr.nsDef = nil
-	}
-
-	if nodeType == XML_ELEMENT_NODE && nodePtr.properties != nil {
-		property := nodePtr.properties
-		for property != nil {
-			if property.ns != nil {
-				property.ns = nil
-			}
-			property = property.next
-		}
-	}
-	return
 }
