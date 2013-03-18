@@ -108,7 +108,7 @@ func TestAddFragmentWithNamespace(t *testing.T) {
 	if err != nil {
 		println(err.Error())
 	}
-	defer doc.Free()
+	
 	docFragment, err := doc.ParseFragment([]byte("<div xmlns='http://www.moovweb.com' class='cool'><h1>"), nil, DefaultParseOption)
 	if err != nil {
 		t.Error(err.Error())
@@ -122,7 +122,6 @@ func TestAddFragmentWithNamespace(t *testing.T) {
 		println(err.Error())
 		return
 	}
-	defer doc2.Free()
 	body := doc2.Root().FirstChild()
 	body.AddChild(docFragment)
 	if doc2.String() != `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
@@ -133,5 +132,7 @@ func TestAddFragmentWithNamespace(t *testing.T) {
 ` 	{
 		t.Errorf("document does not match after adding a fragment with namespace\n")
 	}
+	doc2.Free()
+	doc.Free()
 	CheckXmlMemoryLeaks(t)
 }
