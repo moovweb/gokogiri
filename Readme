@@ -13,10 +13,10 @@ This is a major rewrite from v0 in the following places:
 
 To install
 
-    - go get github.com/moovweb/gokogiri
+    - go get github.com/zhigangc/gokogiri
 
 	
 To run test
 
-    - go test github.com/moovweb/gokogiri/html
-    - go test github.com/moovweb/gokogiri/xml
+    - go test github.com/zhigangc/gokogiri/html
+    - go test github.com/zhigangc/gokogiri/xml

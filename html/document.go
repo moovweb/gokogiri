@@ -11,54 +11,23 @@ package html
 import "C"
 
 import (
-	"errors"
 	. "gokogiri/util"
 	"gokogiri/xml"
-	//"runtime"
 	"unsafe"
 )
-
-//xml parse option
-const (
-	HTML_PARSE_RECOVER   = 1 << 0  /* Relaxed parsing */
-	HTML_PARSE_NODEFDTD  = 1 << 2  /* do not default a doctype if not found */
-	HTML_PARSE_NOERROR   = 1 << 5  /* suppress error reports */
-	HTML_PARSE_NOWARNING = 1 << 6  /* suppress warning reports */
-	HTML_PARSE_PEDANTIC  = 1 << 7  /* pedantic error reporting */
-	HTML_PARSE_NOBLANKS  = 1 << 8  /* remove blank nodes */
-	HTML_PARSE_NONET     = 1 << 11 /* Forbid network access */
-	HTML_PARSE_NOIMPLIED = 1 << 13 /* Do not add implied html/body... elements */
-	HTML_PARSE_COMPACT   = 1 << 16 /* compact small text nodes */
-)
-
-const EmptyHtmlDoc = ""
-
-//default parsing option: relax parsing
-var DefaultParseOption = HTML_PARSE_RECOVER |
-	HTML_PARSE_NONET |
-	HTML_PARSE_NOERROR |
-	HTML_PARSE_NOWARNING
 
 type HtmlDocument struct {
 	*xml.XmlDocument
 }
 
-//default encoding in byte slice
-var DefaultEncodingBytes = []byte(xml.DefaultEncoding)
 var emptyHtmlDocBytes = []byte(EmptyHtmlDoc)
-
-var ErrSetMetaEncoding = errors.New("Set Meta Encoding failed")
-var ERR_FAILED_TO_PARSE_HTML = errors.New("failed to parse html input")
 var emptyStringBytes = []byte{0}
 
 //create a document
 func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	doc = &HtmlDocument{}
 	doc.XmlDocument = xml.NewDocument(p, contentLen, inEncoding, outEncoding)
-	doc.Me = doc
-	node := doc.Node.(*xml.XmlNode)
-	node.Document = doc
-	//runtime.SetFinalizer(doc, (*HtmlDocument).Free)
+	doc.SetFragmentParser(&HtmlFragmentParser{})
 	return
 }
 
@@ -103,18 +72,8 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	return
 }
 
-func (document *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err error) {
-	root := document.Root()
-	if root == nil {
-		fragment, err = parsefragment(document, nil, input, url, options)
-	} else {
-		fragment, err = parsefragment(document, root.XmlNode, input, url, options)
-	}
-	return
-}
-
 func (doc *HtmlDocument) MetaEncoding() string {
-	metaEncodingXmlCharPtr := C.htmlGetMetaEncoding((*C.xmlDoc)(doc.DocPtr()))
+	metaEncodingXmlCharPtr := C.htmlGetMetaEncoding((*C.xmlDoc)(doc.DocPtr))
 	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
@@ -124,7 +83,7 @@ func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err error) {
 		encodingBytes := AppendCStringTerminator([]byte(encoding))
 		encodingPtr = unsafe.Pointer(&encodingBytes[0])
 	}
-	ret := int(C.htmlSetMetaEncoding((*C.xmlDoc)(doc.DocPtr()), (*C.xmlChar)(encodingPtr)))
+	ret := int(C.htmlSetMetaEncoding((*C.xmlDoc)(doc.DocPtr), (*C.xmlChar)(encodingPtr)))
 	if ret == -1 {
 		err = ErrSetMetaEncoding
 	}
