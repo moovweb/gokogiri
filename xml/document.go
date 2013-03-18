@@ -36,6 +36,8 @@ type Document interface {
 	String() string
 	Root() *ElementNode
 	BookkeepFragment(*DocumentFragment)
+
+	RecursivelyRemoveNamespaces() error
 }
 
 //xml parse option
