@@ -40,7 +40,6 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	xmlNode := &XmlNode{Ptr: (*C.xmlNode)(p), DocCtx: docCtx}
 	docPtr := (*C.xmlDoc)(p)
 	doc = &XmlDocument{Ptr: docPtr, XmlNode: xmlNode}
-	
 	runtime.SetFinalizer(doc, (*XmlDocument).Free)
 	return
 }

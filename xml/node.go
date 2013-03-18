@@ -70,7 +70,6 @@ type Node interface {
 	Duplicate(int) Node
 
 	Search(interface{}) ([]Node, error)
-	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
 
 	//SetParent(Node)
 	//IsComment() bool
@@ -457,14 +456,6 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 			result = append(result, NewNode(nodePtr, xmlNode.DocCtx))
 		}
 	}
-	return
-}
-
-func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) (result []Node, err error) {
-	xpathCtx := xmlNode.XPathCtx
-	xpathCtx.SetDeadline(deadline)
-	result, err = xmlNode.Search(data)
-	xpathCtx.SetDeadline(nil)
 	return
 }
 
