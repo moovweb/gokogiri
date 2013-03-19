@@ -64,7 +64,8 @@ func (ctx *DocCtx) DocType() int {
 
 func (ctx *DocCtx) Free() {
 	if ctx.XPathCtx != nil {
-		ctx.XPathCtx.Free()
+		//no need to call free
+		//ctx.XPathCtx.Free()
 		ctx.XPathCtx = nil
 	}
 	//must clear the fragments first

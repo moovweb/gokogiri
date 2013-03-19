@@ -64,7 +64,7 @@ func Compile(path string) (expr *Expression) {
 		return
 	}
 	expr = &Expression{Ptr: ptr, xpath: path}
-	//runtime.SetFinalizer(expr, (*Expression).Free)
+	runtime.SetFinalizer(expr, (*Expression).Free)
 	return
 }
 

@@ -438,7 +438,7 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 	case string:
 		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
 			result, err = xmlNode.Search(xpathExpr)
-			defer xpathExpr.Free()
+			//defer xpathExpr.Free()
 		} else {
 			err = errors.New("cannot compile xpath: " + data)
 		}
