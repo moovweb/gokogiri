@@ -226,7 +226,6 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 	case *DocumentFragment:
 		if nodes, err := xmlNode.coerce(data); err == nil {
 			for _, node := range nodes {
-				println("trying to add ", node.NodePtr())
 				if err = xmlNode.addChild(node); err != nil {
 					break
 				}
@@ -604,7 +603,7 @@ func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]
 	format |= XML_SAVE_FORMAT
 	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
-		fmt.Println("output error!!!")
+		panic("output error in xml node serialization: " + strconv.Itoa(ret))
 		return nil, 0
 	}
 
