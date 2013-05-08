@@ -8,9 +8,9 @@ import "time"
 
 import (
 	"errors"
-	"fmt"
 	. "gokogiri/util"
 	"gokogiri/xpath"
+	"strconv"
 	"unsafe"
 )
 
