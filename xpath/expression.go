@@ -1,7 +1,7 @@
 package xpath
 
 /*
-#include <libxml/xpath.h> 
+#include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <string.h>
 
@@ -33,6 +33,7 @@ char *check_xpath_syntax(const char *xpath) {
 import "C"
 import "unsafe"
 import . "gokogiri/util"
+
 //import "runtime"
 import "errors"
 
@@ -57,7 +58,7 @@ func Compile(path string) (expr *Expression) {
 		return
 	}
 
-	xpathBytes := AppendCStringTerminator([]byte(path))
+	xpathBytes := GetCString([]byte(path))
 	xpathPtr := unsafe.Pointer(&xpathBytes[0])
 	ptr := C.xmlXPathCompile((*C.xmlChar)(xpathPtr))
 	if ptr == nil {

@@ -498,8 +498,8 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 		err = ERR_UNDEFINED_SEARCH_PARAM
 	case string:
 		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
-			result, err = xmlNode.Search(xpathExpr)
 			defer xpathExpr.Free()
+			result, err = xmlNode.Search(xpathExpr)
 		} else {
 			err = errors.New("cannot compile xpath: " + data)
 		}
