@@ -1,8 +1,8 @@
 package xpath
 
-/* 
+/*
 #cgo pkg-config: libxml-2.0
-#include <libxml/xpath.h> 
+#include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
 
@@ -14,14 +14,9 @@ import "C"
 
 import "time"
 import "unsafe"
-<<<<<<< HEAD
 import . "github.com/moovweb/gokogiri/util"
 import "runtime"
-=======
-import . "gokogiri/util"
-import "runtime"
 import "errors"
->>>>>>> master
 
 type XPath struct {
 	ContextPtr *C.xmlXPathContext
