@@ -1,10 +1,13 @@
 package xml
 
-//#include "helper.h"
+/*
+#cgo pkg-config: libxml-2.0
+#include "helper.h"
+*/
 import "C"
 import (
 	"errors"
-	. "gokogiri/util"
+	. "github.com/moovweb/gokogiri/util"
 	"unsafe"
 )
 
@@ -52,7 +55,7 @@ func parsefragment(document Document, node *XmlNode, content, url []byte, option
 		rootElementPtr = C.xmlParseFragment(node.NodePtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 	}
 
-	//Note we've parsed the fragment within the given document 
+	//Note we've parsed the fragment within the given document
 	//the root is not the root of the document; rather it's the root of the subtree from the fragment
 	root := NewNode(unsafe.Pointer(rootElementPtr), document)
 

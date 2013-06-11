@@ -1,7 +1,10 @@
 package xml
 
-//#include "helper.h"
-//#include <string.h>
+/*
+#cgo pkg-config: libxml-2.0
+#include "helper.h"
+#include <string.h>
+*/
 import "C"
 
 import (
