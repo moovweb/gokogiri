@@ -77,15 +77,6 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (nod
 	return
 }
 
-func (xpath *XPath) SetDeadline(deadline *time.Time) {
-	if deadline == nil {
-		C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(0))
-	} else {
-		t := deadline.Unix()
-		C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(t))
-	}
-}
-
 func (xpath *XPath) Free() {
 	if xpath.ContextPtr != nil {
 		C.xmlXPathFreeContext(xpath.ContextPtr)
