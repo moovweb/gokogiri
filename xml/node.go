@@ -4,10 +4,13 @@ package xml
 //#include <string.h>
 import "C"
 
+import "time"
+
 import (
 	"errors"
-	. "github.com/moovweb/gokogiri/util"
-	"github.com/moovweb/gokogiri/xpath"
+	. "gokogiri/util"
+	"gokogiri/xpath"
+	"strconv"
 	"unsafe"
 )
 
@@ -111,6 +114,7 @@ type Node interface {
 	Duplicate(int) Node
 
 	Search(interface{}) ([]Node, error)
+	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
 
 	//SetParent(Node)
 	//IsComment() bool
@@ -134,6 +138,8 @@ type Node interface {
 	String() string
 	Content() string
 	InnerHtml() string
+
+	RecursivelyRemoveNamespaces() error
 }
 
 //run out of memory
@@ -217,6 +223,14 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 				}
 			}
 		}
+	case *DocumentFragment:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range nodes {
+				if err = xmlNode.addChild(node); err != nil {
+					break
+				}
+			}
+		}
 	case Node:
 		err = xmlNode.addChild(t)
 	}
@@ -233,6 +247,14 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 				}
 			}
 		}
+	case *DocumentFragment:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for _, node := range nodes {
+				if err = xmlNode.addPreviousSibling(node); err != nil {
+					break
+				}
+			}
+		}
 	case Node:
 		err = xmlNode.addPreviousSibling(t)
 	}
@@ -242,6 +264,15 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
 	switch t := data.(type) {
 	default:
+		if nodes, err := xmlNode.coerce(data); err == nil {
+			for i := len(nodes) - 1; i >= 0; i-- {
+				node := nodes[i]
+				if err = xmlNode.addNextSibling(node); err != nil {
+					break
+				}
+			}
+		}
+	case *DocumentFragment:
 		if nodes, err := xmlNode.coerce(data); err == nil {
 			for i := len(nodes) - 1; i >= 0; i-- {
 				node := nodes[i]
@@ -324,7 +355,7 @@ func (xmlNode *XmlNode) ResetChildren() {
 	for childPtr := xmlNode.Ptr.children; childPtr != nil; {
 		nextPtr := childPtr.next
 		p = unsafe.Pointer(childPtr)
-		C.xmlUnlinkNode((*C.xmlNode)(p))
+		C.xmlUnlinkNodeWithCheck((*C.xmlNode)(p))
 		xmlNode.Document.AddUnlinkedNode(p)
 		childPtr = nextPtr
 	}
@@ -339,7 +370,7 @@ func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	case []byte:
 		contentBytes := GetCString(data)
 		contentPtr := unsafe.Pointer(&contentBytes[0])
-		C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), contentPtr)
+		C.xmlSetContent(unsafe.Pointer(xmlNode), unsafe.Pointer(xmlNode.Ptr), contentPtr)
 	}
 	return
 }
@@ -467,8 +498,8 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 		err = ERR_UNDEFINED_SEARCH_PARAM
 	case string:
 		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
-			result, err = xmlNode.Search(xpathExpr)
 			defer xpathExpr.Free()
+			result, err = xmlNode.Search(xpathExpr)
 		} else {
 			err = errors.New("cannot compile xpath: " + data)
 		}
@@ -476,11 +507,22 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 		result, err = xmlNode.Search(string(data))
 	case *xpath.Expression:
 		xpathCtx := xmlNode.Document.DocXPathCtx()
-		nodePtrs := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		nodePtrs, err := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		if nodePtrs == nil || err != nil {
+			return nil, err
+		}
 		for _, nodePtr := range nodePtrs {
 			result = append(result, NewNode(nodePtr, xmlNode.Document))
 		}
 	}
+	return
+}
+
+func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) (result []Node, err error) {
+	xpathCtx := xmlNode.Document.DocXPathCtx()
+	xpathCtx.SetDeadline(deadline)
+	result, err = xmlNode.Search(data)
+	xpathCtx.SetDeadline(nil)
 	return
 }
 
@@ -561,7 +603,7 @@ func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]
 	format |= XML_SAVE_FORMAT
 	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
-		println("output error!!!")
+		panic("output error in xml node serialization: " + strconv.Itoa(ret))
 		return nil, 0
 	}
 
@@ -618,7 +660,7 @@ func (xmlNode *XmlNode) Unlink() {
 }
 
 func (xmlNode *XmlNode) Remove() {
-	if xmlNode.valid {
+	if xmlNode.valid && unsafe.Pointer(xmlNode.Ptr) != xmlNode.Document.DocPtr() {
 		xmlNode.Unlink()
 		xmlNode.valid = false
 	}
@@ -631,29 +673,18 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-	parentPtr := xmlNode.Ptr.parent
-
-	if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+	if xmlNode.NodePtr() == nodePtr {
 		return
 	}
-
-	isNodeAccestor := false
-	for ; parentPtr != nil; parentPtr = parentPtr.parent {
-		if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
-			return
-		}
-		p := unsafe.Pointer(parentPtr)
-		if p == nodePtr {
-			isNodeAccestor = true
-		}
-	}
-	if !isNodeAccestor {
-		if xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
-		} else {
-			C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
+	ret := xmlNode.isAccestor(nodePtr)
+	if ret < 0 {
+		return
+	} else if ret == 0 {
+		if !xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
 		}
 		C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-	} else {
+	} else if ret > 0 {
 		node.Remove()
 	}
 
@@ -676,9 +707,20 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-
-	C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
+	ret := xmlNode.isAccestor(nodePtr)
+	if ret < 0 {
+		return
+	} else if ret == 0 {
+		if !xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
+		}
+		C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	} else if ret > 0 {
+		node.Remove()
+	}
 	/*
 		childPtr := C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
@@ -698,8 +740,20 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
 		return
 	}
 	nodePtr := node.NodePtr()
-	C.xmlUnlinkNode((*C.xmlNode)(nodePtr))
-	C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	if xmlNode.NodePtr() == nodePtr {
+		return
+	}
+	ret := xmlNode.isAccestor(nodePtr)
+	if ret < 0 {
+		return
+	} else if ret == 0 {
+		if !xmlNode.Document.RemoveUnlinkedNode(nodePtr) {
+			C.xmlUnlinkNodeWithCheck((*C.xmlNode)(nodePtr))
+		}
+		C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
+	} else if ret > 0 {
+		node.Remove()
+	}
 	/*
 		childPtr := C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
 		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
@@ -750,6 +804,12 @@ func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_l
 	}
 }
 
+//export xmlUnlinkNodeCallback
+func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
+	xmlNode := (*XmlNode)(gonodePtr)
+	xmlNode.Document.AddUnlinkedNode(nodePtr)
+}
+
 func grow(buffer []byte, n int) (newBuffer []byte) {
 	newBuffer = makeSlice(2*cap(buffer) + n)
 	copy(newBuffer, buffer)
@@ -764,4 +824,53 @@ func makeSlice(n int) []byte {
 		}
 	}()
 	return make([]byte, n)
+}
+
+func (xmlNode *XmlNode) isAccestor(nodePtr unsafe.Pointer) int {
+	parentPtr := xmlNode.Ptr.parent
+
+	if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+		return -1
+	}
+	for ; parentPtr != nil; parentPtr = parentPtr.parent {
+		if C.xmlNodePtrCheck(unsafe.Pointer(parentPtr)) == C.int(0) {
+			return -1
+		}
+		p := unsafe.Pointer(parentPtr)
+		if p == nodePtr {
+			return 1
+		}
+	}
+	return 0
+}
+
+func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() (err error) {
+	nodePtr := xmlNode.Ptr
+	C.xmlSetNs(nodePtr, nil)
+
+	for child := xmlNode.FirstChild(); child != nil; {
+		child.RecursivelyRemoveNamespaces()
+		child = child.NextSibling()
+	}
+
+	nodeType := xmlNode.NodeType()
+
+	if ((nodeType == XML_ELEMENT_NODE) ||
+		(nodeType == XML_XINCLUDE_START) ||
+		(nodeType == XML_XINCLUDE_END)) &&
+		(nodePtr.nsDef != nil) {
+		C.xmlFreeNsList((*C.xmlNs)(nodePtr.nsDef))
+		nodePtr.nsDef = nil
+	}
+
+	if nodeType == XML_ELEMENT_NODE && nodePtr.properties != nil {
+		property := nodePtr.properties
+		for property != nil {
+			if property.ns != nil {
+				property.ns = nil
+			}
+			property = property.next
+		}
+	}
+	return
 }

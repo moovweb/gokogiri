@@ -3,7 +3,7 @@ package xml
 import (
 	"errors"
 	"fmt"
-	"github.com/moovweb/gokogiri/help"
+	"gokogiri/help"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -16,7 +16,7 @@ func badOutput(actual string, expected string) {
 }
 
 func RunTest(t *testing.T, suite string, name string, specificLogic func(t *testing.T, doc *XmlDocument), extraAssertions ...func(doc *XmlDocument) (string, string, string)) {
-	defer help.CheckXmlMemoryLeaks(t)
+	defer CheckXmlMemoryLeaks(t)
 
 	//println("Initiating test:" + suite + ":" + name)
 
@@ -61,7 +61,7 @@ func RunTest(t *testing.T, suite string, name string, specificLogic func(t *test
 func RunBenchmark(b *testing.B, suite string, name string, specificLogic func(b *testing.B, doc *XmlDocument)) {
 	b.StopTimer()
 
-	//	defer help.CheckXmlMemoryLeaks(b)
+	//	defer CheckXmlMemoryLeaks(b)
 
 	input, _, error := getTestData(filepath.Join("tests", suite, name))
 
@@ -146,4 +146,12 @@ func collectTests(suite string) (names []string, error string) {
 	}
 
 	return
+}
+
+func CheckXmlMemoryLeaks(t *testing.T) {
+	help.LibxmlCleanUpParser()
+	if !help.LibxmlCheckMemoryLeak() {
+		t.Errorf("Memory leaks: %d!!!", help.LibxmlGetMemoryAllocation())
+		help.LibxmlReportMemoryLeak()
+	}
 }

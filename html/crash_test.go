@@ -1,8 +1,6 @@
 package html
 
 import "testing"
-import "github.com/moovweb/gokogiri/help"
-
 
 func TestCrazyMove(t *testing.T) {
 	input := `
@@ -16,7 +14,7 @@ func TestCrazyMove(t *testing.T) {
 </body>
 </html>`
 	doc, err := Parse([]byte(input), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
-	
+
 	if err != nil {
 		t.Error("Parsing has error:", err)
 		return
@@ -27,13 +25,13 @@ func TestCrazyMove(t *testing.T) {
 		t.Error("search has error:", err)
 		return
 	}
-	for _, foo := range(foos) {
+	for _, foo := range foos {
 		bars, _ := foo.Search("//div[@id='bar']")
-		for _, bar := range(bars) {
+		for _, bar := range bars {
 			bar.AddChild(foo)
 		}
 	}
-	
+
 	doc.Free()
-	help.CheckXmlMemoryLeaks(t)
+	CheckXmlMemoryLeaks(t)
 }

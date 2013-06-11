@@ -1,7 +1,8 @@
 package html
 
 /*
-#cgo pkg-config: libxml-2.0
+#cgo CFLAGS: -I../../../clibs/include/libxml2
+#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
 
 #include <libxml/HTMLtree.h>
 #include <libxml/HTMLparser.h>

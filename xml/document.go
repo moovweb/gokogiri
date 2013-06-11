@@ -1,7 +1,8 @@
 package xml
 
 /*
-#cgo pkg-config: libxml-2.0
+#cgo CFLAGS: -I../../../clibs/include/libxml2
+#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
 
 #include "helper.h"
 */
@@ -35,6 +36,8 @@ type Document interface {
 	String() string
 	Root() *ElementNode
 	BookkeepFragment(*DocumentFragment)
+
+	RecursivelyRemoveNamespaces() error
 }
 
 //xml parse option
@@ -263,6 +266,12 @@ func (document *XmlDocument) ParseFragment(input, url []byte, options int) (frag
 }
 
 func (document *XmlDocument) Free() {
+	//must free the xpath context before freeing the fragments or unlinked nodes
+	//otherwise, it causes memory leaks and crashes when dealing with very large documents (a few MB)
+	if document.XPathCtx != nil {
+		document.XPathCtx.Free()
+		document.XPathCtx = nil
+	}
 	//must clear the fragments first
 	//because the nodes are put in the unlinked list
 	if document.fragments != nil {
@@ -278,10 +287,6 @@ func (document *XmlDocument) Free() {
 		}
 	}
 	document.UnlinkedNodes = nil
-	if document.XPathCtx != nil {
-		document.XPathCtx.Free()
-		document.XPathCtx = nil
-	}
 	if document.Ptr != nil {
 		C.xmlFreeDoc(document.Ptr)
 		document.Ptr = nil
