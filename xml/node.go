@@ -140,6 +140,7 @@ type Node interface {
 	InnerHtml() string
 
 	RecursivelyRemoveNamespaces() error
+	SetNamespace(string, string)
 }
 
 //run out of memory
@@ -865,4 +866,19 @@ func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() (err error) {
 		}
 	}
 	return
+}
+
+func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
+	if xmlNode.NodeType() != XML_ELEMENT_NODE {
+		return
+	}
+
+	prefixBytes := GetCString([]byte(prefix))
+	prefixPtr := unsafe.Pointer(&prefixBytes[0])
+
+	hrefBytes := GetCString([]byte(href))
+	hrefPtr := unsafe.Pointer(&hrefBytes[0])
+
+	ns := C.xmlNewNs(xmlNode.Ptr, (*C.xmlChar)(hrefPtr), (*C.xmlChar)(prefixPtr))
+	C.xmlSetNs(xmlNode.Ptr, ns)
 }
