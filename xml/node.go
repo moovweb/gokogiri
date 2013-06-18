@@ -112,6 +112,7 @@ type Node interface {
 
 	//
 	Duplicate(int) Node
+	DuplicateTo(Document, int) Node
 
 	Search(interface{}) ([]Node, error)
 	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
@@ -576,9 +577,13 @@ func (xmlNode *XmlNode) SetName(name string) {
 	}
 }
 
-func (xmlNode *XmlNode) Duplicate(level int) (dup Node) {
+func (xmlNode *XmlNode) Duplicate(level int) Node {
+	return xmlNode.DuplicateTo(xmlNode.Document, level)
+}
+
+func (xmlNode *XmlNode) DuplicateTo(doc Document, level int) (dup Node) {
 	if xmlNode.valid {
-		dupPtr := C.xmlDocCopyNode(xmlNode.Ptr, (*C.xmlDoc)(xmlNode.Document.DocPtr()), C.int(level))
+		dupPtr := C.xmlDocCopyNode(xmlNode.Ptr, (*C.xmlDoc)(doc.DocPtr()), C.int(level))
 		if dupPtr != nil {
 			dup = NewNode(unsafe.Pointer(dupPtr), xmlNode.Document)
 		}
