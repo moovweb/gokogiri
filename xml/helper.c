@@ -14,8 +14,6 @@ int close_callback(void * ctx) {
 }
 
 xmlDoc* newEmptyXmlDoc() {
-	//why does xmlNewDoc NOT call xmlInitParser like other parse functions?
-	xmlInitParser();
 	return xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION); 
 }
 
