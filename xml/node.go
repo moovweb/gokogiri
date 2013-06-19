@@ -141,6 +141,7 @@ type Node interface {
 	InnerHtml() string
 
 	RecursivelyRemoveNamespaces() error
+	RemoveNamespaces() error
 	SetNamespace(string, string)
 }
 
@@ -842,14 +843,9 @@ func (xmlNode *XmlNode) isAccestor(nodePtr unsafe.Pointer) int {
 	return 0
 }
 
-func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() (err error) {
+func (xmlNode *XmlNode) RemoveNamespaces() (err error) {
 	nodePtr := xmlNode.Ptr
 	C.xmlSetNs(nodePtr, nil)
-
-	for child := xmlNode.FirstChild(); child != nil; {
-		child.RecursivelyRemoveNamespaces()
-		child = child.NextSibling()
-	}
 
 	nodeType := xmlNode.NodeType()
 
@@ -870,7 +866,21 @@ func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() (err error) {
 			property = property.next
 		}
 	}
+
 	return
+}
+
+func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() error {
+	if err := xmlNode.RemoveNamespaces(); err != nil {
+		return err
+	}
+
+	for child := xmlNode.FirstChild(); child != nil; {
+		child.RecursivelyRemoveNamespaces()
+		child = child.NextSibling()
+	}
+
+	return nil
 }
 
 func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
