@@ -16,8 +16,14 @@ void printMemoryLeak() { xmlMemDisplay(stdout); }
 */
 import "C"
 
+import (
+	"sync"
+)
+
+var once sync.Once
+
 func LibxmlInitParser() {
-	C.xmlInitParser()
+	once.Do(func() { C.xmlInitParser() })
 }
 
 func LibxmlCleanUpParser() {

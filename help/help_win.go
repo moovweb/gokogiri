@@ -16,12 +16,18 @@ void printMemoryLeak() { xmlMemDisplay(stdout); }
 */
 import "C"
 
+import (
+	"sync"
+)
+
+var once sync.Once
+
 func LibxmlInitParser() {
-	C.xmlInitParser()
+	once.Do(func() { C.xmlInitParser() })
 }
 
 func LibxmlCleanUpParser() {
-	// Because of our test structure, this method is called several times 
+	// Because of our test structure, this method is called several times
 	// during a test run (but it should only be called once during the lifetime
 	// of the program).  Windows truly hates this, so we comment it out for it.
 	// Other OSes don't seem to care.
