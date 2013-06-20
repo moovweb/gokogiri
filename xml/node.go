@@ -142,6 +142,7 @@ type Node interface {
 
 	RecursivelyRemoveNamespaces() error
 	SetNamespace(string, string)
+	RemoveDefaultNamespace()
 }
 
 //run out of memory
@@ -871,6 +872,11 @@ func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() (err error) {
 		}
 	}
 	return
+}
+
+func (xmlNode *XmlNode) RemoveDefaultNamespace() {
+	nodePtr := xmlNode.Ptr
+	C.xmlRemoveDefaultNamespace(nodePtr)
 }
 
 func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
