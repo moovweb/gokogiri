@@ -176,7 +176,7 @@ void removeDefaultNamespace(xmlNs *ns, xmlNode *node) {
     }
 
     if (node->ns == ns)
-    	node->ns = NULL;
+        node->ns = NULL;
 
     xmlNode *child;
 
