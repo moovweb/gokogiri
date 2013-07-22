@@ -90,6 +90,5 @@ func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []b
 	outEncoding = AppendCStringTerminator(outEncoding)
 	document := CreateEmptyDocument(inEncoding, outEncoding)
 	fragment, err = parsefragment(document, nil, content, url, options)
-	C.xmlDocSetRootElement((*C.xmlDoc)(document.DocPtr()), (*C.xmlNode)(fragment.Node.NodePtr()))
 	return
 }
