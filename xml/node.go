@@ -903,6 +903,9 @@ func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
 
 	prefixBytes := GetCString([]byte(prefix))
 	prefixPtr := unsafe.Pointer(&prefixBytes[0])
+	if prefix == "" {
+	    prefixPtr = nil
+    }
 
 	hrefBytes := GetCString([]byte(href))
 	hrefPtr := unsafe.Pointer(&hrefBytes[0])
