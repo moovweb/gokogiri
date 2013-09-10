@@ -143,6 +143,7 @@ type Node interface {
 	RecursivelyRemoveNamespaces() error
 	Namespace() string
 	SetNamespace(string, string)
+	DeclareNamespace(string,string)
 	RemoveDefaultNamespace()
 }
 
@@ -896,6 +897,40 @@ func (xmlNode *XmlNode) RemoveDefaultNamespace() {
 	C.xmlRemoveDefaultNamespace(nodePtr)
 }
 
+// Add a namespace declaration to an element.
+
+// This is typically done on the root element or node high up in the tree
+// to avoid duplication. The declaration is not created if the namespace
+// is already declared in this scope with the same prefix.
+func (xmlNode *XmlNode) DeclareNamespace(prefix, href string) {
+	//can only declare namespaces on elements
+	if xmlNode.NodeType() != XML_ELEMENT_NODE {
+		return
+	}
+	hrefBytes := GetCString([]byte(href))
+	hrefPtr := unsafe.Pointer(&hrefBytes[0])
+
+    //if the namespace is already declared using this prefix, just return
+    _ns := C.xmlSearchNsByHref((*C.xmlDoc)(xmlNode.Document.DocPtr()), xmlNode.Ptr, (*C.xmlChar)(hrefPtr))
+    if(_ns != nil) {
+        _prefixPtr := unsafe.Pointer(_ns.prefix)
+        _prefix := C.GoString((*C.char)(_prefixPtr))
+        if(prefix == _prefix) {
+            return
+        }
+    }
+
+	prefixBytes := GetCString([]byte(prefix))
+	prefixPtr := unsafe.Pointer(&prefixBytes[0])
+	if prefix == "" {
+	    prefixPtr = nil
+    }
+
+	//this adds the namespace declaration to the node
+	_ = C.xmlNewNs(xmlNode.Ptr, (*C.xmlChar)(hrefPtr), (*C.xmlChar)(prefixPtr))
+}
+
+// Set the namespace of an element.
 func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
@@ -910,19 +945,17 @@ func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
 	hrefBytes := GetCString([]byte(href))
 	hrefPtr := unsafe.Pointer(&hrefBytes[0])
 
-	if xmlNode.Parent() != nil && xmlNode.Parent().NodeType() == XML_ELEMENT_NODE {
-		_ns := xmlNode.Ptr.parent.ns
-		if _ns != nil {
-			_prefixPtr := unsafe.Pointer(_ns.prefix)
-			_prefix := C.GoString((*C.char)(_prefixPtr))
-			_hrefPtr := unsafe.Pointer(_ns.href)
-			_href := C.GoString((*C.char)(_hrefPtr))
-			if href == _href && _prefix == prefix {
-				C.xmlSetNs(xmlNode.Ptr, _ns)
-				return
-			}
-		}
-	}
+    // use the existing namespace declaration if there is one
+    _ns := C.xmlSearchNsByHref((*C.xmlDoc)(xmlNode.Document.DocPtr()), xmlNode.Ptr, (*C.xmlChar)(hrefPtr))
+    if(_ns != nil) {
+        _prefixPtr := unsafe.Pointer(_ns.prefix)
+        _prefix := C.GoString((*C.char)(_prefixPtr))
+        if(prefix == _prefix) {
+            C.xmlSetNs(xmlNode.Ptr, _ns)
+            return
+        }
+    }
+
 	ns := C.xmlNewNs(xmlNode.Ptr, (*C.xmlChar)(hrefPtr), (*C.xmlChar)(prefixPtr))
 	C.xmlSetNs(xmlNode.Ptr, ns)
 }
