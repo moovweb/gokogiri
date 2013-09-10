@@ -67,7 +67,6 @@ type Node interface {
 
 	ParseFragment([]byte, []byte, int) (*DocumentFragment, error)
 
-	//
 	NodeType() int
 	NextSibling() Node
 	PreviousSibling() Node
@@ -78,10 +77,8 @@ type Node interface {
 	CountChildren() int
 	Attributes() map[string]*AttributeNode
 
-	//
 	Coerce(interface{}) ([]Node, error)
 
-	//
 	AddChild(interface{}) error
 	AddPreviousSibling(interface{}) error
 	AddNextSibling(interface{}) error
@@ -93,46 +90,28 @@ type Node interface {
 	SetChildren(interface{}) error
 	Replace(interface{}) error
 	Wrap(string) error
-	//Swap(interface{}) os.Error
-	//
-	////
+
 	SetContent(interface{}) error
 
-	//
 	Name() string
 	SetName(string)
 
-	//
 	Attr(string) string
 	SetAttr(string, string) string
 	Attribute(string) *AttributeNode
 
-	//
 	Path() string
 
-	//
 	Duplicate(int) Node
 	DuplicateTo(Document, int) Node
 
 	Search(interface{}) ([]Node, error)
 	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
 
-	//SetParent(Node)
-	//IsComment() bool
-	//IsCData() bool
-	//IsXml() bool
-	//IsHtml() bool
-	//IsText() bool
-	//IsElement() bool
-	//IsFragment() bool
-	//
-
-	//
 	Unlink()
 	Remove()
 	ResetChildren()
-	//Free()
-	////
+
 	ToXml([]byte, []byte) ([]byte, int)
 	ToHtml([]byte, []byte) ([]byte, int)
 	ToBuffer([]byte) []byte
@@ -216,7 +195,8 @@ func (xmlNode *XmlNode) Coerce(data interface{}) (nodes []Node, err error) {
 	return xmlNode.coerce(data)
 }
 
-//
+// Add a node as a child of the current node.
+// Passing in a nodeset will add all the nodes as children of the current node.
 func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 	switch t := data.(type) {
 	default:
@@ -241,6 +221,8 @@ func (xmlNode *XmlNode) AddChild(data interface{}) (err error) {
 	return
 }
 
+// Insert a node immediately before this node in the document.
+// Passing in a nodeset will add all the nodes, in order.
 func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 	switch t := data.(type) {
 	default:
@@ -265,6 +247,8 @@ func (xmlNode *XmlNode) AddPreviousSibling(data interface{}) (err error) {
 	return
 }
 
+// Insert a node immediately after this node in the document.
+// Passing in a nodeset will add all the nodes, in order.
 func (xmlNode *XmlNode) AddNextSibling(data interface{}) (err error) {
 	switch t := data.(type) {
 	default:
@@ -296,15 +280,20 @@ func (xmlNode *XmlNode) ResetNodePtr() {
 	return
 }
 
+// Returns true if the node is valid. Nodes become
+// invalid when Remove() is called.
 func (xmlNode *XmlNode) IsValid() bool {
 	return xmlNode.valid
 }
 
+// Return the document containing this node. Removed or unlinked
+// nodes still have a document associated with them.
 func (xmlNode *XmlNode) MyDocument() (document Document) {
 	document = xmlNode.Document.DocRef()
 	return
 }
 
+// Return a pointer to the underlying C struct.
 func (xmlNode *XmlNode) NodePtr() (p unsafe.Pointer) {
 	p = unsafe.Pointer(xmlNode.Ptr)
 	return
@@ -530,39 +519,7 @@ func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) 
 	return
 }
 
-/*
-func (xmlNode *XmlNode) Replace(interface{}) error {
-
-}
-func (xmlNode *XmlNode) Swap(interface{}) error {
-
-}
-func (xmlNode *XmlNode) SetParent(Node) {
-
-}
-func (xmlNode *XmlNode) IsComment() bool {
-
-}
-func (xmlNode *XmlNode) IsCData() bool {
-
-}
-func (xmlNode *XmlNode) IsXml() bool {
-
-}
-func (xmlNode *XmlNode) IsHtml() bool {
-
-}
-func (xmlNode *XmlNode) IsText() bool {
-
-}
-func (xmlNode *XmlNode) IsElement() bool {
-
-}
-func (xmlNode *XmlNode) IsFragment() bool {
-
-}
-*/
-
+// The local name of the node. Use Namespace() to get the namespace.
 func (xmlNode *XmlNode) Name() (name string) {
 	if xmlNode.Ptr.name != nil {
 		p := unsafe.Pointer(xmlNode.Ptr.name)
@@ -571,6 +528,8 @@ func (xmlNode *XmlNode) Name() (name string) {
 	return
 }
 
+// The namespace of the node. This is the empty string if there 
+// no associated namespace.
 func (xmlNode *XmlNode) Namespace() (href string) {
 	if xmlNode.Ptr.ns != nil {
 		p := unsafe.Pointer(xmlNode.Ptr.ns.href)
@@ -579,6 +538,7 @@ func (xmlNode *XmlNode) Namespace() (href string) {
 	return
 }
 
+// Set the local name of the node. The namespace is set via SetNamespace().
 func (xmlNode *XmlNode) SetName(name string) {
 	if len(name) > 0 {
 		nameBytes := GetCString([]byte(name))
@@ -704,15 +664,6 @@ func (xmlNode *XmlNode) addChild(node Node) (err error) {
 		node.Remove()
 	}
 
-	/*
-		childPtr := C.xmlAddChild(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
-			//check the retured pointer
-			//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
-			//then we should invalid this node, because we do not want to have a dangling pointer
-			node.Remove()
-		}
-	*/
 	return
 }
 
@@ -737,15 +688,6 @@ func (xmlNode *XmlNode) addPreviousSibling(node Node) (err error) {
 	} else if ret > 0 {
 		node.Remove()
 	}
-	/*
-		childPtr := C.xmlAddPrevSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
-			//check the retured pointer
-			//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
-			//then we should invalid this node, because we do not want to have a dangling pointer
-			//xmlNode.Document.AddUnlinkedNode(unsafe.Pointer(nodePtr))
-		}
-	*/
 	return
 }
 
@@ -770,15 +712,6 @@ func (xmlNode *XmlNode) addNextSibling(node Node) (err error) {
 	} else if ret > 0 {
 		node.Remove()
 	}
-	/*
-		childPtr := C.xmlAddNextSibling(xmlNode.Ptr, (*C.xmlNode)(nodePtr))
-		if nodeType == XML_TEXT_NODE && childPtr != (*C.xmlNode)(nodePtr) {
-			//check the retured pointer
-			//if it is not the text node just added, it means that the text node is freed because it has merged into other nodes
-			//then we should invalid this node, because we do not want to have a dangling pointer
-			//node.Remove()
-		}
-	*/
 	return
 }
 
