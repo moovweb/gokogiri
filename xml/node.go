@@ -141,7 +141,7 @@ type Node interface {
 	InnerHtml() string
 
 	RecursivelyRemoveNamespaces() error
-	Namespace() (string)
+	Namespace() string
 	SetNamespace(string, string)
 	RemoveDefaultNamespace()
 }
@@ -904,12 +904,25 @@ func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
 	prefixBytes := GetCString([]byte(prefix))
 	prefixPtr := unsafe.Pointer(&prefixBytes[0])
 	if prefix == "" {
-	    prefixPtr = nil
-    }
+		prefixPtr = nil
+	}
 
 	hrefBytes := GetCString([]byte(href))
 	hrefPtr := unsafe.Pointer(&hrefBytes[0])
 
+	if xmlNode.Parent() != nil && xmlNode.Parent().NodeType() == XML_ELEMENT_NODE {
+		_ns := xmlNode.Ptr.parent.ns
+		if _ns != nil {
+			_prefixPtr := unsafe.Pointer(_ns.prefix)
+			_prefix := C.GoString((*C.char)(_prefixPtr))
+			_hrefPtr := unsafe.Pointer(_ns.href)
+			_href := C.GoString((*C.char)(_hrefPtr))
+			if href == _href && _prefix == prefix {
+				C.xmlSetNs(xmlNode.Ptr, _ns)
+				return
+			}
+		}
+	}
 	ns := C.xmlNewNs(xmlNode.Ptr, (*C.xmlChar)(hrefPtr), (*C.xmlChar)(prefixPtr))
 	C.xmlSetNs(xmlNode.Ptr, ns)
 }
