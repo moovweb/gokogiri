@@ -105,6 +105,7 @@ type Node interface {
 	//
 	Attr(string) string
 	SetAttr(string, string) string
+	SetNsAttr(string, string, string) string
 	Attribute(string) *AttributeNode
 
 	//
@@ -448,6 +449,7 @@ func (xmlNode *XmlNode) Attributes() (attributes map[string]*AttributeNode) {
 	return
 }
 
+// Return the attribute node, or nil if the attribute does not exist.
 func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
@@ -466,6 +468,10 @@ func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
 	return
 }
 
+// Attr returns the value of an attribute.
+
+// If you need to check for the existence of an attribute,
+// use Attribute.
 func (xmlNode *XmlNode) Attr(name string) (val string) {
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
 		return
@@ -482,6 +488,14 @@ func (xmlNode *XmlNode) Attr(name string) (val string) {
 	return
 }
 
+// SetAttr sets the value of an attribute. If the attribute is in a namespace,
+// use SetNsAttr instead.
+
+// While this call accepts QNames for the name parameter, it does not check
+// their validity.
+
+// Attributes such as "xml:lang" or "xml:space" are not is a formal namespace
+// and should be set by calling SetAttr with the prefix as part of the name.
 func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 	val = value
 	if xmlNode.NodeType() != XML_ELEMENT_NODE {
@@ -494,6 +508,36 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 	valuePtr := unsafe.Pointer(&valueBytes[0])
 
 	C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
+	return
+}
+
+// SetNsAttr sets the value of a namespaced attribute.
+
+// Attributes such as "xml:lang" or "xml:space" are not is a formal namespace
+// and should be set by calling SetAttr with the xml prefix as part of the name.
+
+// The namespace should already be declared and in-scope when SetNsAttr is called.
+// This restriction will be lifted in a future version.
+func (xmlNode *XmlNode) SetNsAttr(href, name, value string) (val string) {
+	val = value
+	if xmlNode.NodeType() != XML_ELEMENT_NODE {
+		return
+	}
+	nameBytes := GetCString([]byte(name))
+	namePtr := unsafe.Pointer(&nameBytes[0])
+
+	valueBytes := GetCString([]byte(value))
+	valuePtr := unsafe.Pointer(&valueBytes[0])
+
+	hrefBytes := GetCString([]byte(href))
+	hrefPtr := unsafe.Pointer(&hrefBytes[0])
+
+    ns := C.xmlSearchNsByHref((*C.xmlDoc)(xmlNode.Document.DocPtr()), xmlNode.Ptr, (*C.xmlChar)(hrefPtr))
+    if(ns == nil) {
+        return
+    }
+
+	C.xmlSetNsProp(xmlNode.Ptr, ns, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
 	return
 }
 
