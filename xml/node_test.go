@@ -267,7 +267,7 @@ func TestNamespaceAttribute(t *testing.T) {
 	testLogic := func(t *testing.T, doc *XmlDocument) {
 		root := doc.Root()
 		root.DeclareNamespace("foo", "bar")
-        root.SetNsAttr("bar", "hello", "world")
+		root.SetNsAttr("bar", "hello", "world")
 	}
 
 	RunTest(t, "node", "set_ns_attr", testLogic)

@@ -532,10 +532,10 @@ func (xmlNode *XmlNode) SetNsAttr(href, name, value string) (val string) {
 	hrefBytes := GetCString([]byte(href))
 	hrefPtr := unsafe.Pointer(&hrefBytes[0])
 
-    ns := C.xmlSearchNsByHref((*C.xmlDoc)(xmlNode.Document.DocPtr()), xmlNode.Ptr, (*C.xmlChar)(hrefPtr))
-    if(ns == nil) {
-        return
-    }
+	ns := C.xmlSearchNsByHref((*C.xmlDoc)(xmlNode.Document.DocPtr()), xmlNode.Ptr, (*C.xmlChar)(hrefPtr))
+	if ns == nil {
+		return
+	}
 
 	C.xmlSetNsProp(xmlNode.Ptr, ns, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
 	return
