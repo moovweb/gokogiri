@@ -111,7 +111,9 @@ type Node interface {
 	DuplicateTo(Document, int) Node
 
 	Search(interface{}) ([]Node, error)
+	SearchWithVariables(interface{}, xpath.VariableScope) ([]Node, error)
 	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
+	EvalXPath(interface{}, xpath.VariableScope) (interface{}, error)
 
 	Unlink()
 	Remove()
@@ -540,6 +542,7 @@ func (xmlNode *XmlNode) SetNsAttr(href, name, value string) (val string) {
 	return
 }
 
+// Search for nodes that match an XPath. This is the simplest way to look for nodes.
 func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 	switch data := data.(type) {
 	default:
@@ -555,7 +558,7 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 		result, err = xmlNode.Search(string(data))
 	case *xpath.Expression:
 		xpathCtx := xmlNode.Document.DocXPathCtx()
-		nodePtrs, err := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		nodePtrs, err := xpathCtx.EvaluateAsNodeset(unsafe.Pointer(xmlNode.Ptr), data)
 		if nodePtrs == nil || err != nil {
 			return nil, err
 		}
@@ -566,6 +569,85 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 	return
 }
 
+// As search, but passing a VariableScope that can be used to variable references in
+// the XPath being evaluated.
+func (xmlNode *XmlNode) SearchWithVariables(data interface{}, v xpath.VariableScope) (result []Node, err error) {
+	switch data := data.(type) {
+	default:
+		err = ERR_UNDEFINED_SEARCH_PARAM
+	case string:
+		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
+			defer xpathExpr.Free()
+			result, err = xmlNode.SearchWithVariables(xpathExpr, v)
+		} else {
+			err = errors.New("cannot compile xpath: " + data)
+		}
+	case []byte:
+		result, err = xmlNode.SearchWithVariables(string(data), v)
+	case *xpath.Expression:
+		xpathCtx := xmlNode.Document.DocXPathCtx()
+		xpathCtx.SetResolver(v)
+		nodePtrs, err := xpathCtx.EvaluateAsNodeset(unsafe.Pointer(xmlNode.Ptr), data)
+		if nodePtrs == nil || err != nil {
+			return nil, err
+		}
+		for _, nodePtr := range nodePtrs {
+			result = append(result, NewNode(nodePtr, xmlNode.Document))
+		}
+	}
+	return
+}
+
+// Evaluate an XPath and return a result of the appropriate type.
+// If a non-nil VariableScope is provided, any variables present
+// in the xpath will be resolved.
+
+// If the result is a nodeset (or the empty nodeset), a nodeset will be returned.
+// If the result is a number, a float64 will be returned.
+// In any other cases, the result will be coerced to a string.
+func (xmlNode *XmlNode) EvalXPath(data interface{}, v xpath.VariableScope) (result interface{}, err error) {
+	switch data := data.(type) {
+	case string:
+		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
+			defer xpathExpr.Free()
+			result, err = xmlNode.EvalXPath(xpathExpr, v)
+		} else {
+			err = errors.New("cannot compile xpath: " + data)
+		}
+	case []byte:
+		result, err = xmlNode.EvalXPath(string(data), v)
+	case *xpath.Expression:
+		xpathCtx := xmlNode.Document.DocXPathCtx()
+		xpathCtx.SetResolver(v)
+		err := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		if err != nil {
+			return nil, err
+		}
+		rt := xpathCtx.ReturnType()
+		switch rt {
+		case xpath.XPATH_NODESET:
+			nodePtrs, err := xpathCtx.ResultAsNodeset()
+			if err != nil {
+				return nil, err
+			}
+			var output []Node
+			for _, nodePtr := range nodePtrs {
+				output = append(output, NewNode(nodePtr, xmlNode.Document))
+			}
+			result = output
+		case xpath.XPATH_NUMBER:
+			result, _ = xpathCtx.ResultAsNumber()
+		default:
+			result, _ = xpathCtx.ResultAsString()
+		}
+	default:
+		err = ERR_UNDEFINED_SEARCH_PARAM
+	}
+	return
+}
+
+// Evaluate an XPath and return a nodeset, but cancel the evaluation if not completed
+// by the deadline.
 func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) (result []Node, err error) {
 	xpathCtx := xmlNode.Document.DocXPathCtx()
 	xpathCtx.SetDeadline(deadline)
