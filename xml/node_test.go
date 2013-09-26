@@ -242,3 +242,33 @@ func TestSetNamespace(t *testing.T) {
 
 	RunTest(t, "node", "set_namespace", testLogic)
 }
+
+func TestSetDefaultNamespace(t *testing.T) {
+	testLogic := func(t *testing.T, doc *XmlDocument) {
+		root := doc.Root()
+		root.SetNamespace("", "bar")
+	}
+
+	RunTest(t, "node", "set_default_namespace", testLogic)
+}
+
+func TestDeclareNamespace(t *testing.T) {
+	testLogic := func(t *testing.T, doc *XmlDocument) {
+		root := doc.Root()
+		root.DeclareNamespace("foo", "bar")
+		child := root.FirstChild()
+		child.SetNamespace("foo", "bar")
+	}
+
+	RunTest(t, "node", "declare_namespace", testLogic)
+}
+
+func TestNamespaceAttribute(t *testing.T) {
+	testLogic := func(t *testing.T, doc *XmlDocument) {
+		root := doc.Root()
+		root.DeclareNamespace("foo", "bar")
+		root.SetNsAttr("bar", "hello", "world")
+	}
+
+	RunTest(t, "node", "set_ns_attr", testLogic)
+}
