@@ -23,10 +23,10 @@ type Document interface {
 	CreateCDataNode(string) *CDataNode
 	CreateTextNode(string) *TextNode
 	//CreateCommentNode(string) *CommentNode
-	ParseFragment([]byte, []byte, int) (*DocumentFragment, error)
+	ParseFragment([]byte, []byte, ParseOption) (*DocumentFragment, error)
 
 	DocPtr() unsafe.Pointer
-	DocType() int
+	DocType() NodeType
 	DocRef() Document
 	InputEncoding() []byte
 	OutputEncoding() []byte
@@ -41,16 +41,17 @@ type Document interface {
 	RecursivelyRemoveNamespaces() error
 }
 
-//xml parse option
+type ParseOption int
+
 const (
-	XML_PARSE_RECOVER   = 1 << 0  //relaxed parsing
-	XML_PARSE_NOERROR   = 1 << 5  //suppress error reports
-	XML_PARSE_NOWARNING = 1 << 6  //suppress warning reports
-	XML_PARSE_NONET     = 1 << 11 //forbid network access
+	XML_PARSE_RECOVER   ParseOption = 1 << 0  //relaxed parsing
+	XML_PARSE_NOERROR   ParseOption = 1 << 5  //suppress error reports
+	XML_PARSE_NOWARNING ParseOption = 1 << 6  //suppress warning reports
+	XML_PARSE_NONET     ParseOption = 1 << 11 //forbid network access
 )
 
 //default parsing option: relax parsing
-var DefaultParseOption = XML_PARSE_RECOVER |
+var DefaultParseOption ParseOption = XML_PARSE_RECOVER |
 	XML_PARSE_NONET |
 	XML_PARSE_NOERROR |
 	XML_PARSE_NOWARNING
@@ -68,7 +69,7 @@ type XmlDocument struct {
 	OutEncoding   []byte
 	UnlinkedNodes map[*C.xmlNode]bool
 	XPathCtx      *xpath.XPath
-	Type          int
+	Type          NodeType
 	InputLen      int
 
 	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
@@ -97,7 +98,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	return
 }
 
-func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *XmlDocument, err error) {
+func Parse(content, inEncoding, url []byte, options ParseOption, outEncoding []byte) (doc *XmlDocument, err error) {
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
@@ -142,7 +143,7 @@ func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {
 	return
 }
 
-func (document *XmlDocument) DocType() (t int) {
+func (document *XmlDocument) DocType() (t NodeType) {
 	t = document.Type
 	return
 }
@@ -237,7 +238,7 @@ func (document *XmlDocument) CreateCommentNode(data string) (cdata *CommentNode)
 }
 */
 
-func (document *XmlDocument) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err error) {
+func (document *XmlDocument) ParseFragment(input, url []byte, options ParseOption) (fragment *DocumentFragment, err error) {
 	root := document.Root()
 	if root == nil {
 		fragment, err = parsefragment(document, nil, input, url, options)

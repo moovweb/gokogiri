@@ -20,7 +20,7 @@ var ErrEmptyFragment = errors.New("empty html fragment")
 
 const initChildrenNumber = 4
 
-func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte, options int) (fragment *xml.DocumentFragment, err error) {
+func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte, options xml.ParseOption) (fragment *xml.DocumentFragment, err error) {
 	//set up pointers before calling the C function
 	var contentPtr, urlPtr unsafe.Pointer
 	if len(url) > 0 {
@@ -85,7 +85,7 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 	return
 }
 
-func ParseFragment(content, inEncoding, url []byte, options int, outEncoding []byte) (fragment *xml.DocumentFragment, err error) {
+func ParseFragment(content, inEncoding, url []byte, options xml.ParseOption, outEncoding []byte) (fragment *xml.DocumentFragment, err error) {
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 	document := CreateEmptyDocument(inEncoding, outEncoding)

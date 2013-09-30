@@ -22,40 +22,43 @@ var (
 	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD = errors.New("cannot copy a text node when adding it")
 )
 
-//xmlNode types
-const (
-	XML_ELEMENT_NODE       = 1
-	XML_ATTRIBUTE_NODE     = 2
-	XML_TEXT_NODE          = 3
-	XML_CDATA_SECTION_NODE = 4
-	XML_ENTITY_REF_NODE    = 5
-	XML_ENTITY_NODE        = 6
-	XML_PI_NODE            = 7
-	XML_COMMENT_NODE       = 8
-	XML_DOCUMENT_NODE      = 9
-	XML_DOCUMENT_TYPE_NODE = 10
-	XML_DOCUMENT_FRAG_NODE = 11
-	XML_NOTATION_NODE      = 12
-	XML_HTML_DOCUMENT_NODE = 13
-	XML_DTD_NODE           = 14
-	XML_ELEMENT_DECL       = 15
-	XML_ATTRIBUTE_DECL     = 16
-	XML_ENTITY_DECL        = 17
-	XML_NAMESPACE_DECL     = 18
-	XML_XINCLUDE_START     = 19
-	XML_XINCLUDE_END       = 20
-	XML_DOCB_DOCUMENT_NODE = 21
-)
+type NodeType int
 
 const (
-	XML_SAVE_FORMAT   = 1   // format save output
-	XML_SAVE_NO_DECL  = 2   //drop the xml declaration
-	XML_SAVE_NO_EMPTY = 4   //no empty tags
-	XML_SAVE_NO_XHTML = 8   //disable XHTML1 specific rules
-	XML_SAVE_XHTML    = 16  //force XHTML1 specific rules
-	XML_SAVE_AS_XML   = 32  //force XML serialization on HTML doc
-	XML_SAVE_AS_HTML  = 64  //force HTML serialization on XML doc
-	XML_SAVE_WSNONSIG = 128 //format with non-significant whitespace
+	XML_ELEMENT_NODE NodeType = iota + 1
+	XML_ATTRIBUTE_NODE
+	XML_TEXT_NODE
+	XML_CDATA_SECTION_NODE
+	XML_ENTITY_REF_NODE
+	XML_ENTITY_NODE
+	XML_PI_NODE
+	XML_COMMENT_NODE
+	XML_DOCUMENT_NODE
+	XML_DOCUMENT_TYPE_NODE
+	XML_DOCUMENT_FRAG_NODE
+	XML_NOTATION_NODE
+	XML_HTML_DOCUMENT_NODE
+	XML_DTD_NODE
+	XML_ELEMENT_DECL
+	XML_ATTRIBUTE_DECL
+	XML_ENTITY_DECL
+	XML_NAMESPACE_DECL
+	XML_XINCLUDE_START
+	XML_XINCLUDE_END
+	XML_DOCB_DOCUMENT_NODE
+)
+
+type SerializationOption int
+
+const (
+	XML_SAVE_FORMAT   SerializationOption = 1 << iota // format save output
+	XML_SAVE_NO_DECL                                  //drop the xml declaration
+	XML_SAVE_NO_EMPTY                                 //no empty tags
+	XML_SAVE_NO_XHTML                                 //disable XHTML1 specific rules
+	XML_SAVE_XHTML                                    //force XHTML1 specific rules
+	XML_SAVE_AS_XML                                   //force XML serialization on HTML doc
+	XML_SAVE_AS_HTML                                  //force HTML serialization on XML doc
+	XML_SAVE_WSNONSIG                                 //format with non-significant whitespace
 )
 
 type Node interface {
@@ -65,10 +68,10 @@ type Node interface {
 
 	IsValid() bool
 
-	ParseFragment([]byte, []byte, int) (*DocumentFragment, error)
+	ParseFragment([]byte, []byte, ParseOption) (*DocumentFragment, error)
 
 	//
-	NodeType() int
+	NodeType() NodeType
 	NextSibling() Node
 	PreviousSibling() Node
 
@@ -175,7 +178,7 @@ func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 		Document: document,
 		valid:    true,
 	}
-	nodeType := C.getNodeType((*C.xmlNode)(nodePtr))
+	nodeType := NodeType(C.getNodeType((*C.xmlNode)(nodePtr)))
 
 	switch nodeType {
 	default:
@@ -312,8 +315,8 @@ func (xmlNode *XmlNode) NodePtr() (p unsafe.Pointer) {
 	return
 }
 
-func (xmlNode *XmlNode) NodeType() (nodeType int) {
-	nodeType = int(C.getNodeType(xmlNode.Ptr))
+func (xmlNode *XmlNode) NodeType() (nodeType NodeType) {
+	nodeType = NodeType(C.getNodeType(xmlNode.Ptr))
 	return
 }
 
@@ -646,7 +649,7 @@ func (xmlNode *XmlNode) DuplicateTo(doc Document, level int) (dup Node) {
 	return
 }
 
-func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]byte, int) {
+func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBuffer []byte) ([]byte, int) {
 	nodePtr := unsafe.Pointer(xmlNode.Ptr)
 	var encodingPtr unsafe.Pointer
 	if len(encoding) == 0 {
@@ -837,7 +840,7 @@ func (xmlNode *XmlNode) Wrap(data string) (err error) {
 	return
 }
 
-func (xmlNode *XmlNode) ParseFragment(input, url []byte, options int) (fragment *DocumentFragment, err error) {
+func (xmlNode *XmlNode) ParseFragment(input, url []byte, options ParseOption) (fragment *DocumentFragment, err error) {
 	fragment, err = parsefragment(xmlNode.Document, xmlNode, input, url, options)
 	return
 }
