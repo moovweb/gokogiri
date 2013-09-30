@@ -111,7 +111,7 @@ func init() {
 type Scope int
 
 const (
-	GLOBAL = iota
+	GLOBAL Scope = iota
 	LOCAL
 )
 
