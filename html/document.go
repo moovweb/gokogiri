@@ -21,21 +21,21 @@ import (
 
 //xml parse option
 const (
-	HTML_PARSE_RECOVER   = 1 << 0  /* Relaxed parsing */
-	HTML_PARSE_NODEFDTD  = 1 << 2  /* do not default a doctype if not found */
-	HTML_PARSE_NOERROR   = 1 << 5  /* suppress error reports */
-	HTML_PARSE_NOWARNING = 1 << 6  /* suppress warning reports */
-	HTML_PARSE_PEDANTIC  = 1 << 7  /* pedantic error reporting */
-	HTML_PARSE_NOBLANKS  = 1 << 8  /* remove blank nodes */
-	HTML_PARSE_NONET     = 1 << 11 /* Forbid network access */
-	HTML_PARSE_NOIMPLIED = 1 << 13 /* Do not add implied html/body... elements */
-	HTML_PARSE_COMPACT   = 1 << 16 /* compact small text nodes */
+	HTML_PARSE_RECOVER   xml.ParseOption = 1 << 0  /* Relaxed parsing */
+	HTML_PARSE_NODEFDTD  xml.ParseOption = 1 << 2  /* do not default a doctype if not found */
+	HTML_PARSE_NOERROR   xml.ParseOption = 1 << 5  /* suppress error reports */
+	HTML_PARSE_NOWARNING xml.ParseOption = 1 << 6  /* suppress warning reports */
+	HTML_PARSE_PEDANTIC  xml.ParseOption = 1 << 7  /* pedantic error reporting */
+	HTML_PARSE_NOBLANKS  xml.ParseOption = 1 << 8  /* remove blank nodes */
+	HTML_PARSE_NONET     xml.ParseOption = 1 << 11 /* Forbid network access */
+	HTML_PARSE_NOIMPLIED xml.ParseOption = 1 << 13 /* Do not add implied html/body... elements */
+	HTML_PARSE_COMPACT   xml.ParseOption = 1 << 16 /* compact small text nodes */
 )
 
 const EmptyHtmlDoc = ""
 
 //default parsing option: relax parsing
-var DefaultParseOption = HTML_PARSE_RECOVER |
+var DefaultParseOption xml.ParseOption = HTML_PARSE_RECOVER |
 	HTML_PARSE_NONET |
 	HTML_PARSE_NOERROR |
 	HTML_PARSE_NOWARNING
@@ -64,7 +64,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 }
 
 //parse a string to document
-func Parse(content, inEncoding, url []byte, options int, outEncoding []byte) (doc *HtmlDocument, err error) {
+func Parse(content, inEncoding, url []byte, options xml.ParseOption, outEncoding []byte) (doc *HtmlDocument, err error) {
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
@@ -104,7 +104,7 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	return
 }
 
-func (document *HtmlDocument) ParseFragment(input, url []byte, options int) (fragment *xml.DocumentFragment, err error) {
+func (document *HtmlDocument) ParseFragment(input, url []byte, options xml.ParseOption) (fragment *xml.DocumentFragment, err error) {
 	root := document.Root()
 	if root == nil {
 		fragment, err = parsefragment(document, nil, input, url, options)
