@@ -581,7 +581,7 @@ func (xmlNode *XmlNode) Name() (name string) {
 	return
 }
 
-// The namespace of the node. This is the empty string if there 
+// The namespace of the node. This is the empty string if there
 // no associated namespace.
 func (xmlNode *XmlNode) Namespace() (href string) {
 	if xmlNode.Ptr.ns != nil {

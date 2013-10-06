@@ -201,7 +201,7 @@ func (document *XmlDocument) NodeById(id string) (element *ElementNode) {
 	dataPtr := unsafe.Pointer(&dataBytes[0])
 	nodePtr := C.xmlGetID(document.Ptr, (*C.xmlChar)(dataPtr))
 	if nodePtr != nil {
-        idattr := NewNode(unsafe.Pointer(nodePtr), document).(*AttributeNode)
+		idattr := NewNode(unsafe.Pointer(nodePtr), document).(*AttributeNode)
 		element = idattr.Parent().(*ElementNode)
 	}
 	return
