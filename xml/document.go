@@ -22,7 +22,8 @@ type Document interface {
 	CreateElementNode(string) *ElementNode
 	CreateCDataNode(string) *CDataNode
 	CreateTextNode(string) *TextNode
-	//CreateCommentNode(string) *CommentNode
+	CreateCommentNode(string) *CommentNode
+	CreatePINode(string, string) *ProcessingInstructionNode
 	ParseFragment([]byte, []byte, ParseOption) (*DocumentFragment, error)
 
 	DocPtr() unsafe.Pointer
@@ -36,6 +37,7 @@ type Document interface {
 	Free()
 	String() string
 	Root() *ElementNode
+	NodeById(string) *ElementNode
 	BookkeepFragment(*DocumentFragment)
 
 	RecursivelyRemoveNamespaces() error
@@ -194,6 +196,17 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 	return
 }
 
+func (document *XmlDocument) NodeById(id string) (element *ElementNode) {
+	dataBytes := GetCString([]byte(id))
+	dataPtr := unsafe.Pointer(&dataBytes[0])
+	nodePtr := C.xmlGetID(document.Ptr, (*C.xmlChar)(dataPtr))
+	if nodePtr != nil {
+        idattr := NewNode(unsafe.Pointer(nodePtr), document).(*AttributeNode)
+		element = idattr.Parent().(*ElementNode)
+	}
+	return
+}
+
 func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode) {
 	tagBytes := GetCString([]byte(tag))
 	tagPtr := unsafe.Pointer(&tagBytes[0])
@@ -225,18 +238,27 @@ func (document *XmlDocument) CreateCDataNode(data string) (cdata *CDataNode) {
 	return
 }
 
-/*
-func (document *XmlDocument) CreateCommentNode(data string) (cdata *CommentNode) {
-	dataLen := len(data)
+func (document *XmlDocument) CreateCommentNode(data string) (comment *CommentNode) {
 	dataBytes := GetCString([]byte(data))
 	dataPtr := unsafe.Pointer(&dataBytes[0])
-	nodePtr := C.xmlNewCDataBlock(document.Ptr, (*C.xmlChar)(dataPtr), C.int(dataLen))
+	nodePtr := C.xmlNewComment((*C.xmlChar)(dataPtr))
 	if nodePtr != nil {
-		cdata = NewNode(unsafe.Pointer(nodePtr), document).(*CDataNode)
+		comment = NewNode(unsafe.Pointer(nodePtr), document).(*CommentNode)
 	}
 	return
 }
-*/
+
+func (document *XmlDocument) CreatePINode(name, data string) (pi *ProcessingInstructionNode) {
+	nameBytes := GetCString([]byte(name))
+	namePtr := unsafe.Pointer(&nameBytes[0])
+	dataBytes := GetCString([]byte(data))
+	dataPtr := unsafe.Pointer(&dataBytes[0])
+	nodePtr := C.xmlNewDocPI(document.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(dataPtr))
+	if nodePtr != nil {
+		pi = NewNode(unsafe.Pointer(nodePtr), document).(*ProcessingInstructionNode)
+	}
+	return
+}
 
 func (document *XmlDocument) ParseFragment(input, url []byte, options ParseOption) (fragment *DocumentFragment, err error) {
 	root := document.Root()

@@ -169,6 +169,10 @@ func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 		node = &ElementNode{XmlNode: xmlNode}
 	case XML_CDATA_SECTION_NODE:
 		node = &CDataNode{XmlNode: xmlNode}
+	case XML_COMMENT_NODE:
+		node = &CommentNode{XmlNode: xmlNode}
+	case XML_PI_NODE:
+		node = &ProcessingInstructionNode{XmlNode: xmlNode}
 	case XML_TEXT_NODE:
 		node = &TextNode{XmlNode: xmlNode}
 	}
