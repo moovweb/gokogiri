@@ -635,10 +635,10 @@ func (xmlNode *XmlNode) serialize(format int, encoding, outputBuffer []byte) ([]
 // SerializeWithFormat allows you to control the serialization flags passed to libxml.
 // In most cases ToXml() and ToHtml() provide sensible defaults and should be preferred.
 
-// The format parameter should be a set of XML_SAVE* constants or'd together.
+// The format parameter should be a set of SerializationOption constants or'd together.
 // If encoding is nil, the document's output encoding is used - this defaults to UTF-8.
 // If outputBuffer is nil, one will be created for you.
-func (xmlNode *XmlNode) SerializeWithFormat(format int, encoding, outputBuffer []byte) ([]byte, int) {
+func (xmlNode *XmlNode) SerializeWithFormat(format SerializationOption, encoding, outputBuffer []byte) ([]byte, int) {
 	return xmlNode.serialize(format, encoding, outputBuffer)
 }
 
