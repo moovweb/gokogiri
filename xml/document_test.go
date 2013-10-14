@@ -278,3 +278,20 @@ func TestRemoveDefaultNamespace(t *testing.T) {
 		t.Errorf("Default namespace not removed!")
 	}
 }
+
+func TestNodeById(t *testing.T) {
+	xml := "<!DOCTYPE doc [\n<!ELEMENT para (#PCDATA)>\n<!ATTLIST para label ID #IMPLIED>\n]>\n<doc><para>Failed</para><para label=\"W11\">Success</para></doc>"
+
+	doc, _ := Parse([]byte(xml), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	p := doc.NodeById("W11")
+
+	if p == nil {
+		t.Errorf("Did not find node by ID!")
+		return
+	}
+
+	output := fmt.Sprintf("%v", p.Content())
+	if output != "Success" {
+		t.Errorf("Incorrect node selected by ID!")
+	}
+}
