@@ -196,6 +196,10 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 	return
 }
 
+// Get an element node by the value of its ID attribute. By convention this attribute
+// is named id, but the actual name of the attribute is set by the document's DTD or schema.
+
+// The value for an ID attribute is guaranteed to be unique within a valid document.
 func (document *XmlDocument) NodeById(id string) (element *ElementNode) {
 	dataBytes := GetCString([]byte(id))
 	dataPtr := unsafe.Pointer(&dataBytes[0])
