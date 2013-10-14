@@ -12,10 +12,24 @@ xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
 }
 
 xmlXPathObjectPtr go_resolve_variables(void* ctxt, char* name, char* ns);
+int go_can_resolve_function(void* ctxt, char* name, char* ns);
+void exec_xpath_function(xmlXPathParserContextPtr ctxt, int nargs);
+
+xmlXPathFunction go_resolve_function(void* ctxt, char* name, char* ns) {
+    if (go_can_resolve_function(ctxt, name, ns))
+    return exec_xpath_function;
+
+    return 0;
+}
 
 static void set_var_lookup(xmlXPathContext* c, void* data) {
     c->varLookupFunc = (void *)go_resolve_variables;
     c->varLookupData = data;
+}
+
+static void set_function_lookup(xmlXPathContext* c, void* data) {
+    c->funcLookupFunc = (void *)go_resolve_function;
+    c->funcLookupData = data;
 }
 
 int getXPathObjectType(xmlXPathObject* o) {
@@ -53,12 +67,16 @@ const (
 	XPATH_XSLT_TREE                   = 9 // An XSLT value tree, non modifiable
 )
 
+type XPathFunction func(context *VariableScope, args []interface{}) interface{}
+
 // Types that provide the VariableScope interface know how to resolve
 // XPath variable names into values.
 
 //This interface exist primarily for the benefit of XSLT processors.
 type VariableScope interface {
-	Resolve(string, string) interface{}
+	ResolveVariable(string, string) interface{}
+	IsFunctionRegistered(string, string) bool
+	ResolveFunction(string, string) XPathFunction
 }
 
 func NewXPath(docPtr unsafe.Pointer) (xpath *XPath) {
@@ -111,12 +129,27 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (err
 		//evaluating xpath on a nil node returns no result.
 		return
 	}
+
+	oldXPContextDoc := xpath.ContextPtr.doc
+	oldXPContextNode := xpath.ContextPtr.node
+	oldXPProximityPosition := xpath.ContextPtr.proximityPosition
+	oldXPContextSize := xpath.ContextPtr.contextSize
+	oldXPNsNr := xpath.ContextPtr.nsNr
+	oldXPNamespaces := xpath.ContextPtr.namespaces
+
 	xpath.ContextPtr.node = (*C.xmlNode)(nodePtr)
 	if xpath.ResultPtr != nil {
 		C.xmlXPathFreeObject(xpath.ResultPtr)
 	}
-
 	xpath.ResultPtr = C.xmlXPathCompiledEval(xpathExpr.Ptr, xpath.ContextPtr)
+
+	xpath.ContextPtr.doc = oldXPContextDoc
+	xpath.ContextPtr.node = oldXPContextNode
+	xpath.ContextPtr.proximityPosition = oldXPProximityPosition
+	xpath.ContextPtr.contextSize = oldXPContextSize
+	xpath.ContextPtr.nsNr = oldXPNsNr
+	xpath.ContextPtr.namespaces = oldXPNamespaces
+
 	if xpath.ResultPtr == nil {
 		err = errors.New("err in evaluating xpath: " + xpathExpr.String())
 		return
@@ -168,9 +201,30 @@ func (xpath *XPath) ResultAsNumber() (val float64, err error) {
 	return
 }
 
+func (xpath *XPath) ResultAsBoolean() (val bool, err error) {
+	xpath.ResultPtr = C.xmlXPathConvertBoolean(xpath.ResultPtr)
+	val = xpath.ResultPtr.boolval != 0
+	return
+}
+
 // Add a variable resolver.
 func (xpath *XPath) SetResolver(v VariableScope) {
 	C.set_var_lookup(xpath.ContextPtr, unsafe.Pointer(&v))
+	C.set_function_lookup(xpath.ContextPtr, unsafe.Pointer(&v))
+}
+
+// SetContextPosition sets the internal values needed to
+// determine the values of position() and last() for the
+// current context node.
+func (xpath *XPath) SetContextPosition(position, size int) {
+	xpath.ContextPtr.proximityPosition = C.int(position)
+	xpath.ContextPtr.contextSize = C.int(size)
+}
+
+func (xpath *XPath) GetContextPosition() (position, size int) {
+	position = int(xpath.ContextPtr.proximityPosition)
+	size = int(xpath.ContextPtr.contextSize)
+	return
 }
 
 func (xpath *XPath) SetDeadline(deadline *time.Time) {

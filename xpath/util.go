@@ -6,11 +6,12 @@ package xpath
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
 
+int getXPathObjectType(xmlXPathObject* o);
+
 */
 import "C"
 
 import "unsafe"
-import "fmt"
 import "reflect"
 import . "github.com/moovweb/gokogiri/util"
 
@@ -21,43 +22,106 @@ func go_resolve_variables(ctxt unsafe.Pointer, name, ns *C.char) (ret C.xmlXPath
 
 	context := (*VariableScope)(ctxt)
 	if context != nil {
-		val := (*context).Resolve(variable, namespace)
-		if val == nil {
-			//fmt.Println("go-resolve wrong-type nil")
-			//return the empty node set
+		val := (*context).ResolveVariable(variable, namespace)
+		ret = ValueToXPathObject(val)
+	}
+	return
+}
+
+// Convert an arbitrary value into a C.xmlXPathObjectPtr
+// Unrecognised and nil values are converted to empty node sets.
+func ValueToXPathObject(val interface{}) (ret C.xmlXPathObjectPtr) {
+	if val == nil {
+		//return the empty node set
+		ret = C.xmlXPathNewNodeSet(nil)
+		return
+	}
+	switch val.(type) {
+	case []unsafe.Pointer:
+		ptrs := val.([]unsafe.Pointer)
+		if len(ptrs) > 0 {
+			//default - return a node set
+			ret = C.xmlXPathNewNodeSet(nil)
+			for _, p := range ptrs {
+				_ = C.xmlXPathNodeSetAdd(ret.nodesetval, (*C.xmlNode)(p))
+			}
+		} else {
 			ret = C.xmlXPathNewNodeSet(nil)
 			return
 		}
-		switch val.(type) {
-		case []unsafe.Pointer:
-			ptrs := val.([]unsafe.Pointer)
-			if len(ptrs) > 0 {
-				//default - return a node set
-				ret = C.xmlXPathNewNodeSet(nil)
-				for _, p := range ptrs {
-					_ = C.xmlXPathNodeSetAdd(ret.nodesetval, (*C.xmlNode)(p))
-				}
-			} else {
-				ret = C.xmlXPathNewNodeSet(nil)
-				return
-			}
-		case float64:
-			content := val.(float64)
-			ret = C.xmlXPathNewFloat(C.double(content))
-		case string:
-			content := val.(string)
-			fmt.Println("go-resolve string", content)
-			xpathBytes := GetCString([]byte(content))
-			xpathPtr := unsafe.Pointer(&xpathBytes[0])
-			ret = C.xmlXPathNewString((*C.xmlChar)(xpathPtr))
-		default:
-			typ := reflect.TypeOf(val)
-			// if a pointer to a struct is passed, get the type of the dereferenced object
-			if typ.Kind() == reflect.Ptr {
-				typ = typ.Elem()
-			}
-			fmt.Println("go-resolve wrong-type", typ.Kind())
+	case float64:
+		content := val.(float64)
+		ret = C.xmlXPathNewFloat(C.double(content))
+	case string:
+		content := val.(string)
+		xpathBytes := GetCString([]byte(content))
+		xpathPtr := unsafe.Pointer(&xpathBytes[0])
+		ret = C.xmlXPathNewString((*C.xmlChar)(xpathPtr))
+	default:
+		typ := reflect.TypeOf(val)
+		// if a pointer to a struct is passed, get the type of the dereferenced object
+		if typ.Kind() == reflect.Ptr {
+			typ = typ.Elem()
 		}
+		//log the unknown type, return an empty node set
+		//fmt.Println("go-resolve wrong-type", typ.Kind())
+		ret = C.xmlXPathNewNodeSet(nil)
 	}
 	return
+}
+
+func XPathObjectToValue(obj C.xmlXPathObjectPtr) (result interface{}) {
+	rt := XPathObjectType(C.getXPathObjectType(obj))
+	switch rt {
+	case XPATH_NODESET:
+		//nodePtrs, _ := xpathCtx.ResultAsNodeset()
+		result = nil
+	case XPATH_NUMBER:
+		obj = C.xmlXPathConvertNumber(obj)
+		result = float64(obj.floatval)
+	case XPATH_BOOLEAN:
+		obj = C.xmlXPathConvertBoolean(obj)
+		result = obj.boolval != 0
+	default:
+		obj = C.xmlXPathConvertString(obj)
+		result = C.GoString((*C.char)(unsafe.Pointer(obj.stringval)))
+	}
+	return
+}
+
+//export exec_xpath_function
+func exec_xpath_function(ctxt C.xmlXPathParserContextPtr, nargs C.int) {
+	function := C.GoString((*C.char)(unsafe.Pointer(ctxt.context.function)))
+	namespace := C.GoString((*C.char)(unsafe.Pointer(ctxt.context.functionURI)))
+	context := (*VariableScope)(ctxt.context.funcLookupData)
+
+	argcount := int(nargs)
+	var args []interface{}
+
+	if argcount > 0 {
+		for i := 0; i < int(nargs); i = i + 1 {
+			args = append(args, XPathObjectToValue(C.valuePop(ctxt)))
+		}
+	}
+
+	f := (*context).ResolveFunction(function, namespace)
+	if f != nil {
+		retval := f(context, args)
+		C.valuePush(ctxt, ValueToXPathObject(retval))
+	} else {
+		ret := C.xmlXPathNewNodeSet(nil)
+		C.valuePush(ctxt, ret)
+	}
+
+}
+
+//export go_can_resolve_function
+func go_can_resolve_function(ctxt unsafe.Pointer, name, ns *C.char) (ret C.int) {
+	function := C.GoString(name)
+	namespace := C.GoString(ns)
+	context := (*VariableScope)(ctxt)
+	if (*context).IsFunctionRegistered(function, namespace) {
+		return C.int(1)
+	}
+	return C.int(0)
 }
