@@ -114,6 +114,7 @@ type Node interface {
 	SearchWithVariables(interface{}, xpath.VariableScope) ([]Node, error)
 	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
 	EvalXPath(interface{}, xpath.VariableScope) (interface{}, error)
+	EvalXPathAsBoolean(interface{}, xpath.VariableScope) bool
 
 	Unlink()
 	Remove()
@@ -569,8 +570,8 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 	return
 }
 
-// As search, but passing a VariableScope that can be used to variable references in
-// the XPath being evaluated.
+// As the Search function, but passing a VariableScope that can be used to reolve variable
+// names or registered function references in the XPath being evaluated.
 func (xmlNode *XmlNode) SearchWithVariables(data interface{}, v xpath.VariableScope) (result []Node, err error) {
 	switch data := data.(type) {
 	default:
@@ -599,11 +600,15 @@ func (xmlNode *XmlNode) SearchWithVariables(data interface{}, v xpath.VariableSc
 }
 
 // Evaluate an XPath and return a result of the appropriate type.
-// If a non-nil VariableScope is provided, any variables present
+// If a non-nil VariableScope is provided, any variables or functions present
 // in the xpath will be resolved.
 
 // If the result is a nodeset (or the empty nodeset), a nodeset will be returned.
+
 // If the result is a number, a float64 will be returned.
+
+// If the result is a boolean, a bool will be returned.
+
 // In any other cases, the result will be coerced to a string.
 func (xmlNode *XmlNode) EvalXPath(data interface{}, v xpath.VariableScope) (result interface{}, err error) {
 	switch data := data.(type) {
@@ -637,11 +642,48 @@ func (xmlNode *XmlNode) EvalXPath(data interface{}, v xpath.VariableScope) (resu
 			result = output
 		case xpath.XPATH_NUMBER:
 			result, _ = xpathCtx.ResultAsNumber()
+		case xpath.XPATH_BOOLEAN:
+			result, _ = xpathCtx.ResultAsBoolean()
 		default:
 			result, _ = xpathCtx.ResultAsString()
 		}
 	default:
 		err = ERR_UNDEFINED_SEARCH_PARAM
+	}
+	return
+}
+
+// Evaluate an XPath and coerce the result to a boolean according to the
+// XPath rules. In the presence of an error, this function will return false
+// even if the expression cannot actually be evaluated.
+
+// In most cases you are better advised to call EvalXPath; this function is
+// intended for packages that implement XML standards and that are fully aware
+// of the consequences of suppressing a compilation error.
+
+// If a non-nil VariableScope is provided, any variables or registered functions present
+// in the xpath will be resolved.
+func (xmlNode *XmlNode) EvalXPathAsBoolean(data interface{}, v xpath.VariableScope) (result bool) {
+	switch data := data.(type) {
+	case string:
+		if xpathExpr := xpath.Compile(data); xpathExpr != nil {
+			defer xpathExpr.Free()
+			result = xmlNode.EvalXPathAsBoolean(xpathExpr, v)
+		} else {
+			//err = errors.New("cannot compile xpath: " + data)
+		}
+	case []byte:
+		result = xmlNode.EvalXPathAsBoolean(string(data), v)
+	case *xpath.Expression:
+		xpathCtx := xmlNode.Document.DocXPathCtx()
+		xpathCtx.SetResolver(v)
+		err := xpathCtx.Evaluate(unsafe.Pointer(xmlNode.Ptr), data)
+		if err != nil {
+			return false
+		}
+		result, _ = xpathCtx.ResultAsBoolean()
+	default:
+		//err = ERR_UNDEFINED_SEARCH_PARAM
 	}
 	return
 }

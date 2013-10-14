@@ -201,6 +201,7 @@ func (xpath *XPath) ResultAsNumber() (val float64, err error) {
 	return
 }
 
+// Coerce the result into a boolean
 func (xpath *XPath) ResultAsBoolean() (val bool, err error) {
 	xpath.ResultPtr = C.xmlXPathConvertBoolean(xpath.ResultPtr)
 	val = xpath.ResultPtr.boolval != 0
@@ -221,6 +222,12 @@ func (xpath *XPath) SetContextPosition(position, size int) {
 	xpath.ContextPtr.contextSize = C.int(size)
 }
 
+// GetContextPosition retrieves the internal values used to
+// determine the values of position() and last() for the
+// current context node.
+
+// This allows values to saved and restored during processing
+// of a document.
 func (xpath *XPath) GetContextPosition() (position, size int) {
 	position = int(xpath.ContextPtr.proximityPosition)
 	size = int(xpath.ContextPtr.contextSize)
