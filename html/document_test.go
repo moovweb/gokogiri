@@ -1,6 +1,7 @@
 package html
 
 import "testing"
+import "fmt"
 
 func TestParseDocument(t *testing.T) {
 	expected :=
@@ -60,6 +61,20 @@ func TestEmptyDocument(t *testing.T) {
 	}
 	doc.Free()
 	CheckXmlMemoryLeaks(t)
+}
+
+func TestNodeById(t *testing.T) {
+	html := "<html><head></head><body><div id='yup'>success</div><div id='nope'>fail</div></body></html>"
+	doc, _ := Parse([]byte(html), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	p := doc.NodeById("yup")
+	if p == nil {
+		t.Errorf("Did not find node by ID!")
+		return
+	}
+	output := fmt.Sprintf("%v", p.Content())
+	if output != "success" {
+		t.Errorf("Incorrect node selected by ID!")
+	}
 }
 
 /*
