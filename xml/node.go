@@ -117,9 +117,9 @@ type Node interface {
 	Remove()
 	ResetChildren()
 
-	SerializeWithFormat(int, []byte, []byte) ([]byte, int)
+	SerializeWithFormat(SerializationOption, []byte, []byte) ([]byte, int)
 	ToXml([]byte, []byte) ([]byte, int)
-	ToUnformattedXml([]byte, []byte) string
+	ToUnformattedXml() string
 	ToHtml([]byte, []byte) ([]byte, int)
 	ToBuffer([]byte) []byte
 	String() string
