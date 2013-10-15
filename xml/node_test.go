@@ -275,7 +275,7 @@ func TestNamespaceAttribute(t *testing.T) {
 
 func TestUnformattedXml(t *testing.T) {
 	xml := "<?xml version=\"1.0\"?>\n<foo>\n\t<bar>Test</bar>\n</foo>"
-	expected := "<foo><bar>Test</bar></foo>"
+	expected := "<foo>\n\t<bar>Test</bar>\n</foo>"
 	doc, _ := Parse([]byte(xml), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	root := doc.Root()
 	out := root.ToUnformattedXml()
@@ -287,7 +287,7 @@ func TestUnformattedXml(t *testing.T) {
 
 func TestSerializewithFomat(t *testing.T) {
 	xml := "<?xml version=\"1.0\"?>\n<foo>\n\t<bar>Test</bar>\n</foo>"
-	expected := "<foo><bar>Test</bar></foo>"
+	expected := "<foo>\n\t<bar>Test</bar>\n</foo>"
 	doc, _ := Parse([]byte(xml), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	root := doc.Root()
 	b, size := root.SerializeWithFormat(XML_SAVE_AS_XML|XML_SAVE_NO_DECL, nil, nil)
