@@ -117,7 +117,9 @@ type Node interface {
 	Remove()
 	ResetChildren()
 
+	SerializeWithFormat(int, []byte, []byte) ([]byte, int)
 	ToXml([]byte, []byte) ([]byte, int)
+	ToUnformattedXml([]byte, []byte) string
 	ToHtml([]byte, []byte) ([]byte, int)
 	ToBuffer([]byte) []byte
 	String() string
@@ -629,7 +631,6 @@ func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBu
 	wbuffer := &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
 	wbufferPtr := unsafe.Pointer(wbuffer)
 
-	format |= XML_SAVE_FORMAT
 	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
 		panic("output error in xml node serialization: " + strconv.Itoa(ret))
@@ -639,12 +640,51 @@ func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBu
 	return wbuffer.Buffer, wbuffer.Offset
 }
 
-func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) ([]byte, int) {
-	return xmlNode.serialize(XML_SAVE_AS_XML, encoding, outputBuffer)
+// SerializeWithFormat allows you to control the serialization flags passed to libxml.
+// In most cases ToXml() and ToHtml() provide sensible defaults and should be preferred.
+
+// The format parameter should be a set of SerializationOption constants or'd together.
+// If encoding is nil, the document's output encoding is used - this defaults to UTF-8.
+// If outputBuffer is nil, one will be created for you.
+func (xmlNode *XmlNode) SerializeWithFormat(format SerializationOption, encoding, outputBuffer []byte) ([]byte, int) {
+	return xmlNode.serialize(format, encoding, outputBuffer)
 }
 
+// ToXml generates an indented XML document with an XML declaration.
+// It is not guaranteed to be well formed unless xmlNode is an element node,
+// or a document node with only one element child.
+
+// If you need finer control over the formatting, call SerializeWithFormat.
+
+// If encoding is nil, the document's output encoding is used - this defaults to UTF-8.
+// If outputBuffer is nil, one will be created for you.
+func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) ([]byte, int) {
+	return xmlNode.serialize(XML_SAVE_AS_XML|XML_SAVE_FORMAT, encoding, outputBuffer)
+}
+
+// ToUnformattedXml generates an unformatted XML document without an XML declaration.
+// This is useful for conforming to various standards and for unit testing, although
+// the output is not guaranteed to be well formed unless xmlNode is an element node.
+func (xmlNode *XmlNode) ToUnformattedXml() string {
+	var b []byte
+	var size int
+	b, size = xmlNode.serialize(XML_SAVE_AS_XML|XML_SAVE_NO_DECL, nil, nil)
+	if b == nil {
+		return ""
+	}
+	return string(b[:size])
+}
+
+// ToHtml generates an indented XML document that conforms to HTML 4.0 rules; meaning
+// that some elements may be unclosed or forced to use end tags even when empty.
+
+// If you want to output XHTML, call SerializeWithFormat and enable the XML_SAVE_XHTML
+// flag as part of the format.
+
+// If encoding is nil, the document's output encoding is used - this defaults to UTF-8.
+// If outputBuffer is nil, one will be created for you.
 func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) ([]byte, int) {
-	return xmlNode.serialize(XML_SAVE_AS_HTML, encoding, outputBuffer)
+	return xmlNode.serialize(XML_SAVE_AS_HTML|XML_SAVE_FORMAT, encoding, outputBuffer)
 }
 
 func (xmlNode *XmlNode) ToBuffer(outputBuffer []byte) []byte {
