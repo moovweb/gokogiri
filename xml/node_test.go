@@ -290,7 +290,7 @@ func TestSerializewithFomat(t *testing.T) {
 	expected := "<foo><bar>Test</bar></foo>"
 	doc, _ := Parse([]byte(xml), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
 	root := doc.Root()
-	b, size = root.SerializeWithFormat(XML_SAVE_AS_XML|XML_SAVE_NO_DECL, nil, nil)
+	b, size := root.SerializeWithFormat(XML_SAVE_AS_XML|XML_SAVE_NO_DECL, nil, nil)
 	if b == nil {
 		t.Errorf("SerializeWithFormat Expected: %v\nActual: (nil)", expected)
 		return
