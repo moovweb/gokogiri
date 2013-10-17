@@ -67,7 +67,7 @@ const (
 	XPATH_XSLT_TREE                   = 9 // An XSLT value tree, non modifiable
 )
 
-type XPathFunction func(context *VariableScope, args []interface{}) interface{}
+type XPathFunction func(context VariableScope, args []interface{}) interface{}
 
 // Types that provide the VariableScope interface know how to resolve
 // XPath variable names into values.

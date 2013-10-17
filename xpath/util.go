@@ -104,9 +104,15 @@ func exec_xpath_function(ctxt C.xmlXPathParserContextPtr, nargs C.int) {
 		}
 	}
 
+	if argcount > 1 {
+		for i, j := 0, len(args)-1; i < j; i, j = i+1, j-1 {
+			args[i], args[j] = args[j], args[i]
+		}
+	}
+
 	f := (*context).ResolveFunction(function, namespace)
 	if f != nil {
-		retval := f(context, args)
+		retval := f(*context, args)
 		C.valuePush(ctxt, ValueToXPathObject(retval))
 	} else {
 		ret := C.xmlXPathNewNodeSet(nil)
