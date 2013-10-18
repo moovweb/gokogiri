@@ -98,10 +98,8 @@ func exec_xpath_function(ctxt C.xmlXPathParserContextPtr, nargs C.int) {
 	argcount := int(nargs)
 	var args []interface{}
 
-	if argcount > 0 {
-		for i := 0; i < int(nargs); i = i + 1 {
-			args = append(args, XPathObjectToValue(C.valuePop(ctxt)))
-		}
+	for i := 0; i < argcount; i = i + 1 {
+		args = append(args, XPathObjectToValue(C.valuePop(ctxt)))
 	}
 
 	if argcount > 1 {
