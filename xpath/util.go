@@ -74,7 +74,16 @@ func XPathObjectToValue(obj C.xmlXPathObjectPtr) (result interface{}) {
 	rt := XPathObjectType(C.getXPathObjectType(obj))
 	switch rt {
 	case XPATH_NODESET:
-		//nodePtrs, _ := xpathCtx.ResultAsNodeset()
+		if nodesetPtr := obj.nodesetval; nodesetPtr != nil {
+			if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
+				nodes := make([]unsafe.Pointer, nodesetSize)
+				for i := 0; i < nodesetSize; i++ {
+					nodes[i] = unsafe.Pointer(C.fetchNode(nodesetPtr, C.int(i)))
+				}
+				result = nodes
+				return
+			}
+		}
 		result = nil
 	case XPATH_NUMBER:
 		obj = C.xmlXPathConvertNumber(obj)
@@ -102,12 +111,17 @@ func exec_xpath_function(ctxt C.xmlXPathParserContextPtr, nargs C.int) {
 		args = append(args, XPathObjectToValue(C.valuePop(ctxt)))
 	}
 
+	// arguments are popped off the stack in reverse order, so
+	// we reverse the slice before invoking our callback
 	if argcount > 1 {
 		for i, j := 0, len(args)-1; i < j; i, j = i+1, j-1 {
 			args[i], args[j] = args[j], args[i]
 		}
 	}
 
+	// push the result onto the stack
+	// if for some reason we are unable to resolve the
+	// function we push an empty nodeset
 	f := (*context).ResolveFunction(function, namespace)
 	if f != nil {
 		retval := f(*context, args)
