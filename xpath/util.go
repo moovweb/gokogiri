@@ -44,7 +44,7 @@ func ValueToXPathObject(val interface{}) (ret C.xmlXPathObjectPtr) {
 			//default - return a node set
 			ret = C.xmlXPathNewNodeSet(nil)
 			for _, p := range ptrs {
-				_ = C.xmlXPathNodeSetAdd(ret.nodesetval, (*C.xmlNode)(p))
+				C.xmlXPathNodeSetAdd(ret.nodesetval, (*C.xmlNode)(p))
 			}
 		} else {
 			ret = C.xmlXPathNewNodeSet(nil)
