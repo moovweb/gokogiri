@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gokogiri/help"
+	"gokogiri/xpath"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -160,3 +161,30 @@ func CheckXmlMemoryLeaks(t *testing.T) {
 		help.LibxmlReportMemoryLeak()
 	}
 }
+
+// This is a simple test implementation of the VariableScope interface.
+// Currently it's os simple it ignores the namespace argument.
+type SimpleVariableScope struct {
+	variables map[string]interface{}
+	functions map[string]xpath.XPathFunction
+}
+
+func (s *SimpleVariableScope) ResolveVariable(name, ns string) interface{} {
+    v, _ := s.variables[name]
+    return v
+}
+
+func (s *SimpleVariableScope) IsFunctionRegistered(name, ns string) bool {
+    _, ok := s.functions[name]
+    return ok
+}
+func (s *SimpleVariableScope) ResolveFunction(name, ns string) xpath.XPathFunction {
+    f, _ := s.functions[name]
+    return f
+}
+
+func newSimpleVariableScope() *SimpleVariableScope {
+    s := &SimpleVariableScope {make(map[string]interface{}), make(map[string]xpath.XPathFunction)}
+    return s
+}
+
