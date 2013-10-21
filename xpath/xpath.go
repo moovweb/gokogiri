@@ -253,3 +253,31 @@ func (xpath *XPath) Free() {
 		xpath.ResultPtr = nil
 	}
 }
+
+func XPathObjectToValue(obj C.xmlXPathObjectPtr) (result interface{}) {
+	rt := XPathObjectType(C.getXPathObjectType(obj))
+	switch rt {
+	case XPATH_NODESET:
+		if nodesetPtr := obj.nodesetval; nodesetPtr != nil {
+			if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
+				nodes := make([]unsafe.Pointer, nodesetSize)
+				for i := 0; i < nodesetSize; i++ {
+					nodes[i] = unsafe.Pointer(C.fetchNode(nodesetPtr, C.int(i)))
+				}
+				result = nodes
+				return
+			}
+		}
+		result = nil
+	case XPATH_NUMBER:
+		obj = C.xmlXPathConvertNumber(obj)
+		result = float64(obj.floatval)
+	case XPATH_BOOLEAN:
+		obj = C.xmlXPathConvertBoolean(obj)
+		result = obj.boolval != 0
+	default:
+		obj = C.xmlXPathConvertString(obj)
+		result = C.GoString((*C.char)(unsafe.Pointer(obj.stringval)))
+	}
+	return
+}

@@ -9,15 +9,6 @@ package xpath
 
 int getXPathObjectType(xmlXPathObject* o);
 
-// TODO This function is defined in xpath.go as well, however, for some reason,
-// this file can't resolve the function name.  If you add the prototype here in
-// hopes of resolving the name, then you get a duplicate definition error.
-// This could be a Go bug, should investigate!  In the interim, this seems to
-// get the code to compile and be happy.
-static xmlNode* fetchNode1(xmlNodeSet *nodeset, int index) {
-    return nodeset->nodeTab[index];
-}
-
 */
 import "C"
 
@@ -76,34 +67,6 @@ func ValueToXPathObject(val interface{}) (ret C.xmlXPathObjectPtr) {
 		//log the unknown type, return an empty node set
 		//fmt.Println("go-resolve wrong-type", typ.Kind())
 		ret = C.xmlXPathNewNodeSet(nil)
-	}
-	return
-}
-
-func XPathObjectToValue(obj C.xmlXPathObjectPtr) (result interface{}) {
-	rt := XPathObjectType(C.getXPathObjectType(obj))
-	switch rt {
-	case XPATH_NODESET:
-		if nodesetPtr := obj.nodesetval; nodesetPtr != nil {
-			if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
-				nodes := make([]unsafe.Pointer, nodesetSize)
-				for i := 0; i < nodesetSize; i++ {
-					nodes[i] = unsafe.Pointer(C.fetchNode1(nodesetPtr, C.int(i)))
-				}
-				result = nodes
-				return
-			}
-		}
-		result = nil
-	case XPATH_NUMBER:
-		obj = C.xmlXPathConvertNumber(obj)
-		result = float64(obj.floatval)
-	case XPATH_BOOLEAN:
-		obj = C.xmlXPathConvertBoolean(obj)
-		result = obj.boolval != 0
-	default:
-		obj = C.xmlXPathConvertString(obj)
-		result = C.GoString((*C.char)(unsafe.Pointer(obj.stringval)))
 	}
 	return
 }
