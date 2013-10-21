@@ -8,7 +8,7 @@ package xpath
 #include <libxml/parser.h>
 
 xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
-  	return nodeset->nodeTab[index];
+    return nodeset->nodeTab[index];
 }
 
 xmlXPathObjectPtr go_resolve_variables(void* ctxt, char* name, char* ns);

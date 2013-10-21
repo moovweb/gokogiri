@@ -9,6 +9,15 @@ package xpath
 
 int getXPathObjectType(xmlXPathObject* o);
 
+// TODO This function is defined in xpath.go as well, however, for some reason,
+// this file can't resolve the function name.  If you add the prototype here in
+// hopes of resolving the name, then you get a duplicate definition error.
+// This could be a Go bug, should investigate!  In the interim, this seems to
+// get the code to compile and be happy.
+static xmlNode* fetchNode1(xmlNodeSet *nodeset, int index) {
+    return nodeset->nodeTab[index];
+}
+
 */
 import "C"
 
@@ -79,7 +88,7 @@ func XPathObjectToValue(obj C.xmlXPathObjectPtr) (result interface{}) {
 			if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
 				nodes := make([]unsafe.Pointer, nodesetSize)
 				for i := 0; i < nodesetSize; i++ {
-					nodes[i] = unsafe.Pointer(C.fetchNode(nodesetPtr, C.int(i)))
+					nodes[i] = unsafe.Pointer(C.fetchNode1(nodesetPtr, C.int(i)))
 				}
 				result = nodes
 				return
