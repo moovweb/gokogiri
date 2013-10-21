@@ -1,7 +1,8 @@
 package xpath
 
 /*
-#cgo pkg-config: libxml-2.0
+#cgo CFLAGS: -I../../../clibs/include/libxml2
+#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
