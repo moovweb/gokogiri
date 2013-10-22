@@ -17,7 +17,7 @@ void exec_xpath_function(xmlXPathParserContextPtr ctxt, int nargs);
 
 xmlXPathFunction go_resolve_function(void* ctxt, char* name, char* ns) {
     if (go_can_resolve_function(ctxt, name, ns))
-    return exec_xpath_function;
+        return exec_xpath_function;
 
     return 0;
 }
