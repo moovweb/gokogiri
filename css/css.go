@@ -4,7 +4,7 @@ package css
 
 import (
 	"fmt"
-	"rubex"
+	"github.com/moovweb/rubex"
 	"strings"
 )
 

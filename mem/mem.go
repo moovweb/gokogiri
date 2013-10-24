@@ -1,8 +1,7 @@
 package mem
 
 /*
-#cgo CFLAGS: -I../../../clibs/include/libxml2
-#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
+#cgo pkg-config: libxml-2.0
 
 #include <libxml/xmlversion.h>
 #include "libxml.h"

@@ -1,8 +1,7 @@
 package html
 
 /*
-#cgo CFLAGS: -I../../../clibs/include/libxml2
-#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
+#cgo pkg-config: libxml-2.0
 
 #include <libxml/HTMLtree.h>
 #include <libxml/HTMLparser.h>
@@ -12,9 +11,9 @@ import "C"
 
 import (
 	"errors"
-	"gokogiri/help"
-	. "gokogiri/util"
-	"gokogiri/xml"
+	"github.com/moovweb/gokogiri/help"
+	. "github.com/moovweb/gokogiri/util"
+	"github.com/moovweb/gokogiri/xml"
 	//"runtime"
 	"unsafe"
 )
