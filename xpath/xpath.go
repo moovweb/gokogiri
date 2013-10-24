@@ -1,8 +1,8 @@
 package xpath
 
 /*
-#cgo pkg-config: libxml-2.0
-
+#cgo CFLAGS: -I../../../clibs/include/libxml2
+#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
@@ -43,7 +43,7 @@ import "C"
 
 import "time"
 import "unsafe"
-import . "github.com/moovweb/gokogiri/util"
+import . "gokogiri/util"
 import "runtime"
 import "errors"
 

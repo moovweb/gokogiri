@@ -8,8 +8,8 @@ import "time"
 
 import (
 	"errors"
-	. "github.com/moovweb/gokogiri/util"
-	"github.com/moovweb/gokogiri/xpath"
+	. "gokogiri/util"
+	"gokogiri/xpath"
 	"strconv"
 	"unsafe"
 )
