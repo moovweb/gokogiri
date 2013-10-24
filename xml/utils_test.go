@@ -3,8 +3,8 @@ package xml
 import (
 	"errors"
 	"fmt"
-	"gokogiri/help"
-	"gokogiri/xpath"
+	"github.com/moovweb/gokogiri/help"
+	"github.com/moovweb/gokogiri/xpath"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -170,21 +170,20 @@ type SimpleVariableScope struct {
 }
 
 func (s *SimpleVariableScope) ResolveVariable(name, ns string) interface{} {
-    v, _ := s.variables[name]
-    return v
+	v, _ := s.variables[name]
+	return v
 }
 
 func (s *SimpleVariableScope) IsFunctionRegistered(name, ns string) bool {
-    _, ok := s.functions[name]
-    return ok
+	_, ok := s.functions[name]
+	return ok
 }
 func (s *SimpleVariableScope) ResolveFunction(name, ns string) xpath.XPathFunction {
-    f, _ := s.functions[name]
-    return f
+	f, _ := s.functions[name]
+	return f
 }
 
 func newSimpleVariableScope() *SimpleVariableScope {
-    s := &SimpleVariableScope {make(map[string]interface{}), make(map[string]xpath.XPathFunction)}
-    return s
+	s := &SimpleVariableScope{make(map[string]interface{}), make(map[string]xpath.XPathFunction)}
+	return s
 }
-
