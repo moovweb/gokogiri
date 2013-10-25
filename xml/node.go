@@ -4,6 +4,8 @@ package xml
 //#include <string.h>
 import "C"
 
+import "time"
+
 import (
 	"errors"
 	. "gokogiri/util"
