@@ -61,6 +61,11 @@ const (
 	XML_SAVE_WSNONSIG                                 //format with non-significant whitespace
 )
 
+type NamespaceDeclaration struct {
+	Prefix string
+	Uri    string
+}
+
 type Node interface {
 	NodePtr() unsafe.Pointer
 	ResetNodePtr()
@@ -134,6 +139,7 @@ type Node interface {
 	SetNamespace(string, string)
 	DeclareNamespace(string, string)
 	RemoveDefaultNamespace()
+	DeclaredNamespaces() []NamespaceDeclaration
 }
 
 //run out of memory
@@ -1044,6 +1050,26 @@ func (xmlNode *XmlNode) RecursivelyRemoveNamespaces() (err error) {
 func (xmlNode *XmlNode) RemoveDefaultNamespace() {
 	nodePtr := xmlNode.Ptr
 	C.xmlRemoveDefaultNamespace(nodePtr)
+}
+
+// Returns a list of all the namespace declarations that exist on this node.
+
+// You can add a namespace declaration by calling DeclareNamespace.
+// Calling SetNamespace will automatically add a declaration if required.
+
+// Calling SetNsAttr does *not* automatically create a declaration. This will
+// fixed in a future version.
+func (xmlNode *XmlNode) DeclaredNamespaces() (result []NamespaceDeclaration) {
+	nodePtr := xmlNode.Ptr
+	for ns := nodePtr.nsDef; ns != nil; ns = (*C.xmlNs)(ns.next) {
+		prefixPtr := unsafe.Pointer(ns.prefix)
+		prefix := C.GoString((*C.char)(prefixPtr))
+		hrefPtr := unsafe.Pointer(ns.href)
+		uri := C.GoString((*C.char)(hrefPtr))
+		decl := NamespaceDeclaration{prefix, uri}
+		result = append(result, decl)
+	}
+	return
 }
 
 // Add a namespace declaration to an element.
