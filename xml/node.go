@@ -636,7 +636,7 @@ func (xmlNode *XmlNode) EvalXPath(data interface{}, v xpath.VariableScope) (resu
 		}
 		rt := xpathCtx.ReturnType()
 		switch rt {
-		case xpath.XPATH_NODESET:
+		case xpath.XPATH_NODESET, xpath.XPATH_XSLT_TREE:
 			nodePtrs, err := xpathCtx.ResultAsNodeset()
 			if err != nil {
 				return nil, err

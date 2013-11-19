@@ -37,9 +37,11 @@ func ValueToXPathObject(val interface{}) (ret C.xmlXPathObjectPtr) {
 		ret = C.xmlXPathNewNodeSet(nil)
 		return
 	}
-	switch val.(type) {
+	switch v := val.(type) {
+	case unsafe.Pointer:
+		return (C.xmlXPathObjectPtr)(v)
 	case []unsafe.Pointer:
-		ptrs := val.([]unsafe.Pointer)
+		ptrs := v
 		if len(ptrs) > 0 {
 			//default - return a node set
 			ret = C.xmlXPathNewNodeSet(nil)
@@ -51,11 +53,9 @@ func ValueToXPathObject(val interface{}) (ret C.xmlXPathObjectPtr) {
 			return
 		}
 	case float64:
-		content := val.(float64)
-		ret = C.xmlXPathNewFloat(C.double(content))
+		ret = C.xmlXPathNewFloat(C.double(v))
 	case string:
-		content := val.(string)
-		xpathBytes := GetCString([]byte(content))
+		xpathBytes := GetCString([]byte(v))
 		xpathPtr := unsafe.Pointer(&xpathBytes[0])
 		ret = C.xmlXPathNewString((*C.xmlChar)(xpathPtr))
 	default:

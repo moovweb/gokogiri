@@ -1,43 +1,48 @@
 package xml
 
+/*
+#cgo pkg-config: libxml-2.0
+
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+
+*/
+import "C"
+
 import "unsafe"
 
-type NodeSet struct {
-	Document
-	Nodes []Node
-	valid bool
-}
+type Nodeset []Node
 
-func NewNodeSet(document Document, nodes interface{}) (set *NodeSet) {
-	set = &NodeSet{valid: true}
-	set.Document = document
-
-	switch t := nodes.(type) {
-	case []Node:
-		set.Nodes = t
-	case []unsafe.Pointer:
-		if num := len(t); num > 0 {
-			set.Nodes = make([]Node, num)
-			for i, p := range t {
-				set.Nodes[i] = NewNode(p, document)
-			}
-		}
-	default:
-		//unexpected param type
-		//ignore the data
+// Produce a slice of unsafe.Pointer objects, suitable for passing to a C function
+func (n Nodeset) ToPointers() (pointers []unsafe.Pointer) {
+	for _, node := range n {
+		pointers = append(pointers, node.NodePtr())
 	}
 	return
 }
 
-func (set *NodeSet) Length() int {
-	return len(set.Nodes)
+// Produce a C.xmlXPathObjectPtr suitable for passing to libxml2
+func (n Nodeset) ToXPathNodeset() (ret C.xmlXPathObjectPtr) {
+	ret = C.xmlXPathNewNodeSet(nil)
+	for _, node := range n {
+		C.xmlXPathNodeSetAdd(ret.nodesetval, (*C.xmlNode)(node.NodePtr()))
+	}
+	return
 }
 
-func (set *NodeSet) Remove() {
-	if set.valid {
-		for _, node := range set.Nodes {
-			node.Remove()
-		}
-		set.valid = false
+// Produce a C.xmlXPathObjectPtr marked as a ResultValueTree, suitable for passing to libxml2
+func (n Nodeset) ToXPathValueTree() (ret C.xmlXPathObjectPtr) {
+	if len(n) == 0 {
+		ret = C.xmlXPathNewValueTree(nil)
+		return
 	}
+
+	ret = C.xmlXPathNewValueTree(nil)
+	for _, node := range n {
+		C.xmlXPathNodeSetAdd(ret.nodesetval, (*C.xmlNode)(node.NodePtr()))
+	}
+	//this hack-ish looking line tells libxml2 not to free the RVT
+	//if we don't do this we get horrible double-free crashes everywhere
+	ret.boolval = 0
+	return
 }
