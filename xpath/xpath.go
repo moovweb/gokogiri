@@ -37,7 +37,6 @@ int getXPathObjectType(xmlXPathObject* o) {
         return 0;
     return o->type;
 }
-
 */
 import "C"
 
@@ -247,7 +246,7 @@ func (xpath *XPath) Free() {
 func XPathObjectToValue(obj C.xmlXPathObjectPtr) (result interface{}) {
 	rt := XPathObjectType(C.getXPathObjectType(obj))
 	switch rt {
-	case XPATH_NODESET:
+	case XPATH_NODESET, XPATH_XSLT_TREE:
 		if nodesetPtr := obj.nodesetval; nodesetPtr != nil {
 			if nodesetSize := int(nodesetPtr.nodeNr); nodesetSize > 0 {
 				nodes := make([]unsafe.Pointer, nodesetSize)
