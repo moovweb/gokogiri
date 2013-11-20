@@ -45,29 +45,29 @@ type Document interface {
 type ParseOption int
 
 const (
-	XML_PARSE_RECOVER    ParseOption = 1       // recover on errors
-	XML_PARSE_NOENT      ParseOption = 2       // substitute entities
-	XML_PARSE_DTDLOAD    ParseOption = 4       // load the external subset
-	XML_PARSE_DTDATTR    ParseOption = 8       // default DTD attributes
-	XML_PARSE_DTDVALID   ParseOption = 16      // validate with the DTD
-	XML_PARSE_NOERROR    ParseOption = 32      // suppress error reports
-	XML_PARSE_NOWARNING  ParseOption = 64      // suppress warning reports
-	XML_PARSE_PEDANTIC   ParseOption = 128     // pedantic error reporting
-	XML_PARSE_NOBLANKS   ParseOption = 256     // remove blank nodes
-	XML_PARSE_SAX1       ParseOption = 512     // use the SAX1 interface internally
-	XML_PARSE_XINCLUDE   ParseOption = 1024    // Implement XInclude substitition
-	XML_PARSE_NONET      ParseOption = 2048    // Forbid network access
-	XML_PARSE_NODICT     ParseOption = 4096    // Do not reuse the context dictionnary
-	XML_PARSE_NSCLEAN    ParseOption = 8192    // remove redundant namespaces declarations
-	XML_PARSE_NOCDATA    ParseOption = 16384   // merge CDATA as text nodes
-	XML_PARSE_NOXINCNODE ParseOption = 32768   // do not generate XINCLUDE START/END nodes
-	XML_PARSE_COMPACT    ParseOption = 65536   // compact small text nodes; no modification of the tree allowed afterwards (will possibly crash if you try to modify the tree)
-	XML_PARSE_OLD10      ParseOption = 131072  // parse using XML-1.0 before update 5
-	XML_PARSE_NOBASEFIX  ParseOption = 262144  // do not fixup XINCLUDE xml//base uris
-	XML_PARSE_HUGE       ParseOption = 524288  // relax any hardcoded limit from the parser
-	XML_PARSE_OLDSAX     ParseOption = 1048576 // parse using SAX2 interface before 2.7.0
-	XML_PARSE_IGNORE_ENC ParseOption = 2097152 // ignore internal document encoding hint
-	XML_PARSE_BIG_LINES  ParseOption = 4194304 // Store big lines numbers in text PSVI field
+	XML_PARSE_RECOVER    ParseOption = 1 << iota // recover on errors
+	XML_PARSE_NOENT                              // substitute entities
+	XML_PARSE_DTDLOAD                            // load the external subset
+	XML_PARSE_DTDATTR                            // default DTD attributes
+	XML_PARSE_DTDVALID                           // validate with the DTD
+	XML_PARSE_NOERROR                            // suppress error reports
+	XML_PARSE_NOWARNING                          // suppress warning reports
+	XML_PARSE_PEDANTIC                           // pedantic error reporting
+	XML_PARSE_NOBLANKS                           // remove blank nodes
+	XML_PARSE_SAX1                               // use the SAX1 interface internally
+	XML_PARSE_XINCLUDE                           // Implement XInclude substitition
+	XML_PARSE_NONET                              // Forbid network access
+	XML_PARSE_NODICT                             // Do not reuse the context dictionnary
+	XML_PARSE_NSCLEAN                            // remove redundant namespaces declarations
+	XML_PARSE_NOCDATA                            // merge CDATA as text nodes
+	XML_PARSE_NOXINCNODE                         // do not generate XINCLUDE START/END nodes
+	XML_PARSE_COMPACT                            // compact small text nodes; makes tree read-only
+	XML_PARSE_OLD10                              // parse using XML-1.0 before update 5
+	XML_PARSE_NOBASEFIX                          // do not fixup XINCLUDE xml//base uris
+	XML_PARSE_HUGE                               // relax any hardcoded limit from the parser
+	XML_PARSE_OLDSAX                             // parse using SAX2 interface before 2.7.0
+	XML_PARSE_IGNORE_ENC                         // ignore internal document encoding hint
+	XML_PARSE_BIG_LINES                          // Store big lines numbers in text PSVI field
 )
 
 //default parsing option: relax parsing
@@ -77,7 +77,10 @@ const DefaultParseOption ParseOption = XML_PARSE_RECOVER |
 	XML_PARSE_NOWARNING
 
 //Stricter parsing option: load the DTD and report errors
-const StrictParseOption ParseOption = XML_PARSE_NOENT | XML_PARSE_DTDLOAD | XML_PARSE_DTDATTR | XML_PARSE_NOCDATA
+const StrictParseOption ParseOption = XML_PARSE_NOENT |
+	XML_PARSE_DTDLOAD |
+	XML_PARSE_DTDATTR |
+	XML_PARSE_NOCDATA
 
 //libxml2 use "utf-8" by default, and so do we
 const DefaultEncoding = "utf-8"
