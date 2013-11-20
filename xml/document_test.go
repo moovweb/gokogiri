@@ -295,3 +295,19 @@ func TestNodeById(t *testing.T) {
 		t.Errorf("Incorrect node selected by ID!")
 	}
 }
+
+func TestUnparsedEntityURI(t *testing.T) {
+	xml := "<!DOCTYPE doc [\n<!ELEMENT doc EMPTY>\n<!ATTLIST doc attr ENTITY #REQUIRED>\n<!NOTATION JPEG SYSTEM \"jpeg.exe\">\n<!ENTITY test SYSTEM \"test.jpg\" NDATA JPEG>\n]>\n<doc attr='test'/>"
+	doc, _ := Parse([]byte(xml), DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	expected := "test.jpg"
+	actual := doc.UnparsedEntityURI("test")
+
+	if actual == "" {
+		t.Errorf("Did not find unparsed entity 'test'")
+		return
+	}
+
+	if actual != expected {
+		t.Errorf("Expected '%s', but got '%s' calling doc.UnparsedEntityURI", expected, actual)
+	}
+}
