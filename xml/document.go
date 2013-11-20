@@ -41,6 +41,7 @@ type Document interface {
 	BookkeepFragment(*DocumentFragment)
 
 	RecursivelyRemoveNamespaces() error
+	UnparsedEntityURI(string) string
 }
 
 type ParseOption int
@@ -274,6 +275,35 @@ func (document *XmlDocument) ParseFragment(input, url []byte, options ParseOptio
 	return
 }
 
+// Return the value of an NDATA entity declared in the DTD. If there is no such entity or
+// the value cannot be encoded as a valid URI, an empty string is returned.
+//
+// Note that this library assumes you already know the name of entity and does not
+// expose any way of getting the list of entities.
+func (document *XmlDocument) UnparsedEntityURI(name string) (val string) {
+	if name == "" {
+		return
+	}
+
+	nameBytes := GetCString([]byte(name))
+	namePtr := unsafe.Pointer(&nameBytes[0])
+	entity := C.xmlGetDocEntity(document.Ptr, (*C.xmlChar)(namePtr))
+	if entity == nil {
+		return
+	}
+
+	// unlike entity.content (which returns the raw, unprocessed string value of the entity),
+	// it looks like entity.URI includes any escaping needed to treat the value as a URI.
+	valPtr := unsafe.Pointer(entity.URI)
+	if valPtr == nil {
+		return
+	}
+
+	val = C.GoString((*C.char)(valPtr))
+	return
+}
+
+// Free the C structures associated with this document.
 func (document *XmlDocument) Free() {
 	//must free the xpath context before freeing the fragments or unlinked nodes
 	//otherwise, it causes memory leaks and crashes when dealing with very large documents (a few MB)
