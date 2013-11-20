@@ -74,6 +74,7 @@ type Node interface {
 	IsValid() bool
 
 	ParseFragment([]byte, []byte, ParseOption) (*DocumentFragment, error)
+	LineNumber() int
 
 	//
 	NodeType() NodeType
@@ -1133,4 +1134,10 @@ func (xmlNode *XmlNode) SetNamespace(prefix, href string) {
 
 	ns := C.xmlNewNs(xmlNode.Ptr, (*C.xmlChar)(hrefPtr), (*C.xmlChar)(prefixPtr))
 	C.xmlSetNs(xmlNode.Ptr, ns)
+}
+
+// Returns the line number on which the node appears, or a -1 if the
+// line number cannot be determined.
+func (xmlNode *XmlNode) LineNumber() int {
+	return int(C.xmlGetLineNo(xmlNode.Ptr))
 }
