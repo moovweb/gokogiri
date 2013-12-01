@@ -36,6 +36,7 @@ type Document interface {
 	Free()
 	String() string
 	Root() *ElementNode
+	SetRoot(*ElementNode)
 	NodeById(string) *ElementNode
 	BookkeepFragment(*DocumentFragment)
 
@@ -219,6 +220,10 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 		element = NewNode(unsafe.Pointer(nodePtr), document).(*ElementNode)
 	}
 	return
+}
+
+func (document *XmlDocument) SetRoot(element *ElementNode) {
+	C.xmlDocSetRootElement(document.Ptr, element.Ptr)
 }
 
 // Get an element node by the value of its ID attribute. By convention this attribute

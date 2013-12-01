@@ -80,6 +80,29 @@ func TestBufferedDocuments(t *testing.T) {
 	}
 }
 
+func TestCreateRootDocument(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		return
+	}
+	offset := "\t"
+	expected := "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<root/>\n"
+	
+	defer CheckXmlMemoryLeaks(t)
+
+	buffer := make([]byte, 500000)
+
+	doc := CreateEmptyDocument(DefaultEncodingBytes, DefaultEncodingBytes)
+	envelope := doc.CreateElementNode("root")
+	doc.SetRoot(envelope)
+
+	if string(doc.ToBuffer(buffer)) != expected {
+		formattedOutput := offset + strings.Join(strings.Split("["+doc.String()+"]", "\n"), "\n"+offset)
+		formattedExpectedOutput := offset + strings.Join(strings.Split("["+expected+"]", "\n"), "\n"+offset)
+		t.Errorf("Test failed: %v-- Got --\n%v\n%v-- Expected --\n%v\n", offset, formattedOutput, offset, formattedExpectedOutput) 
+	}
+	doc.Free()
+}
+
 func RunParseDocumentWithBufferTest(t *testing.T, name string) (error *string) {
 	var errorMessage string
 	offset := "\t"
