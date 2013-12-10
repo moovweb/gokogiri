@@ -12,7 +12,7 @@ import (
 	"github.com/moovweb/gokogiri/help"
 	. "github.com/moovweb/gokogiri/util"
 	"github.com/moovweb/gokogiri/xpath"
-	//"runtime"
+	"os"
 	"unsafe"
 )
 
@@ -125,6 +125,13 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	return
 }
 
+// Parse creates an XmlDcument from some pre-existing content where the input encoding is known. Byte arrays created from
+// a Go string are utf-8 encoded (you can pass DefaultEncodingBytes in this scenario).
+
+// If you want to build up a document programatically, calling CreateEmptyDocument and building it up using the xml.Node
+// interface is a better approach than building a string and calling Parse.
+
+// If you have an XML file, then ReadFile will automatically determine the encoding according to the XML specification.
 func Parse(content, inEncoding, url []byte, options ParseOption, outEncoding []byte) (doc *XmlDocument, err error) {
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
@@ -158,6 +165,37 @@ func Parse(content, inEncoding, url []byte, options ParseOption, outEncoding []b
 	return
 }
 
+// ReadFile loads an XmlDocument from a filename. The encoding declared in the document will be
+// used as the input encoding. If no encoding is declared, the library will use the alogrithm
+// in the XML standard to determine if the document is encoded with UTF-8 or UTF-16.
+func ReadFile(filename string, options ParseOption) (doc *XmlDocument, err error) {
+	// verify the file exists and can be read before we invoke C API
+	_, err = os.Stat(filename)
+	if err != nil {
+		return
+	}
+
+	dataBytes := GetCString([]byte(filename))
+	dataPtr := unsafe.Pointer(&dataBytes[0])
+	var docPtr *C.xmlDoc
+	docPtr = C.xmlReadFile((*C.char)(dataPtr), nil, C.int(options))
+	if docPtr == nil {
+		err = ERR_FAILED_TO_PARSE_XML
+	} else {
+		var encoding []byte
+		// capture the detected input encoding
+		p := docPtr.encoding
+		if p != nil {
+			encoding = []byte(C.GoString((*C.char)(unsafe.Pointer(p))))
+		}
+		doc = NewDocument(unsafe.Pointer(docPtr), 0, encoding, DefaultEncodingBytes)
+	}
+	return
+}
+
+// Create an empty XML document and return an XmlDocument. The root element, along with
+// any top-level comments or processing instructions, can be added by calling
+// AddChild() on the document itself.
 func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *XmlDocument) {
 	help.LibxmlInitParser()
 	docPtr := C.newEmptyXmlDoc()
