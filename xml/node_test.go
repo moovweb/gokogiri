@@ -346,3 +346,21 @@ func TestEvalNumericExpr(t *testing.T) {
 		t.Errorf("TestEvalNumericExpr Expected: %v\nActual: %v", 7, out)
 	}
 }
+
+func TestDisableOutputEscaping(t *testing.T) {
+	doc := CreateEmptyDocument(DefaultEncodingBytes, DefaultEncodingBytes)
+	n := doc.CreateTextNode("<br/>")
+
+	//normal usage escapes the output
+	escaped := "&lt;br/&gt;"
+	if n.String() != escaped {
+		t.Errorf("TestDisableOutputEscaping (escaping enabled) Expected: %v\nActual: %v", escaped, n.String())
+	}
+
+	//now we disable the output escaping
+	unescaped := "<br/>"
+	n.DisableOutputEscaping()
+	if n.String() != unescaped {
+		t.Errorf("TestDisableOutputEscaping (escaping disabled) Expected: %v\nActual: %v", unescaped, n.String())
+	}
+}
