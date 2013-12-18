@@ -2,6 +2,12 @@ package xml
 
 /*
 AttributeNode represents an attribute, which has a name and a value.
+
+AttributeNodes are created by calling SetAttr or SetNsAttr on an element node,
+and retrieved by the Attribute and Attributes functions on an element node.
+
+Note that while mamespace declarations resemble attributes, they are a distinct node type
+and cannot be used or retreived as an AttributeNode.
 */
 type AttributeNode struct {
 	*XmlNode
