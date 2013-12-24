@@ -22,6 +22,7 @@ var (
 	ERR_CANNOT_COPY_TEXT_NODE_WHEN_ADD_CHILD = errors.New("cannot copy a text node when adding it")
 )
 
+// NodeType is an enumeration that indicates the type of XmlNode.
 type NodeType int
 
 const (
@@ -48,6 +49,7 @@ const (
 	XML_DOCB_DOCUMENT_NODE
 )
 
+// SerializationOption is a set of flags used to control how a node is written out.
 type SerializationOption int
 
 const (
@@ -61,6 +63,8 @@ const (
 	XML_SAVE_WSNONSIG                                 //format with non-significant whitespace
 )
 
+// NamespaceDeclaration represents a namespace declaration, providing both the prefix and the URI of the namespace.
+// It is returned by the DeclaredNamespaces function.
 type NamespaceDeclaration struct {
 	Prefix string
 	Uri    string
@@ -149,6 +153,9 @@ var ErrTooLarge = errors.New("Output buffer too large")
 //pre-allocate a buffer for serializing the document
 const initialOutputBufferSize = 10 //100K
 
+/*
+XmlNode implements the Node interface, and as such is the heart of the API.
+*/
 type XmlNode struct {
 	Ptr *C.xmlNode
 	Document
@@ -161,6 +168,8 @@ type WriteBuffer struct {
 	Offset int
 }
 
+// NewNode takes a C pointer from the libxml2 library and returns a Node instance of
+// the appropriate type.
 func NewNode(nodePtr unsafe.Pointer, document Document) (node Node) {
 	if nodePtr == nil {
 		return nil
@@ -315,7 +324,7 @@ func (xmlNode *XmlNode) MyDocument() (document Document) {
 	return
 }
 
-// Return a pointer to the underlying C struct.
+// NodePtr returns a pointer to the underlying C struct.
 func (xmlNode *XmlNode) NodePtr() (p unsafe.Pointer) {
 	p = unsafe.Pointer(xmlNode.Ptr)
 	return
@@ -326,6 +335,8 @@ func (xmlNode *XmlNode) NodeType() (nodeType NodeType) {
 	return
 }
 
+// Path returns an XPath expression that can be used to
+// select this node in the document.
 func (xmlNode *XmlNode) Path() (path string) {
 	pathPtr := C.xmlGetNodePath(xmlNode.Ptr)
 	if pathPtr != nil {
@@ -336,16 +347,21 @@ func (xmlNode *XmlNode) Path() (path string) {
 	return
 }
 
+// NextSibling returns the next sibling (if any) of the current node.
+// It is often used when iterating over the children of a node.
 func (xmlNode *XmlNode) NextSibling() Node {
 	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.next)
 	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
 }
 
+// PreviousSibling returns the previous sibling (if any) of the current node.
+// It is often used when iterating over the children of a node in reverse.
 func (xmlNode *XmlNode) PreviousSibling() Node {
 	siblingPtr := (*C.xmlNode)(xmlNode.Ptr.prev)
 	return NewNode(unsafe.Pointer(siblingPtr), xmlNode.Document)
 }
 
+// CountChildren returns the number of child nodes.
 func (xmlNode *XmlNode) CountChildren() int {
 	return int(C.xmlLsCountNode(xmlNode.Ptr))
 }
@@ -358,6 +374,11 @@ func (xmlNode *XmlNode) LastChild() Node {
 	return NewNode(unsafe.Pointer(xmlNode.Ptr.last), xmlNode.Document)
 }
 
+/*
+Parent returns the parent of the current node (or nil if there isn't one).
+This will always be an element or document node, as those are the only node types
+that can have children.
+*/
 func (xmlNode *XmlNode) Parent() Node {
 	if C.xmlNodePtrCheck(unsafe.Pointer(xmlNode.Ptr.parent)) == C.int(0) {
 		return nil
