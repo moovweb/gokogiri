@@ -43,6 +43,7 @@ type Document interface {
 	UnparsedEntityURI(string) string
 }
 
+// ParseOption values allow you to tune the behaviour of the parsing engine.
 type ParseOption int
 
 const (
@@ -71,23 +72,28 @@ const (
 	XML_PARSE_BIG_LINES                          // Store big lines numbers in text PSVI field
 )
 
-//default parsing option: relax parsing
+//DefaultParseOption provides liberal parsing highly tolerant of invalid documents. Errors and warnings
+// are suppressed and the DTD is not processed.
 const DefaultParseOption ParseOption = XML_PARSE_RECOVER |
 	XML_PARSE_NONET |
 	XML_PARSE_NOERROR |
 	XML_PARSE_NOWARNING
 
-//Stricter parsing option: load the DTD and report errors
+//StrictParseOption provides standard-compliant parsing. The DTD is processed, entity
+// substitions are made, and errors and warnings are reported back.
 const StrictParseOption ParseOption = XML_PARSE_NOENT |
 	XML_PARSE_DTDLOAD |
 	XML_PARSE_DTDATTR |
 	XML_PARSE_NOCDATA
 
-//libxml2 use "utf-8" by default, and so do we
+//DefaultEncoding is UTF-8, which is also the default for both libxml2 and Go strings.
 const DefaultEncoding = "utf-8"
 
 var ERR_FAILED_TO_PARSE_XML = errors.New("failed to parse xml input")
 
+/*
+XmlDocument is the primary interface for working with XML documents.
+*/
 type XmlDocument struct {
 	Ptr *C.xmlDoc
 	Me  Document
@@ -102,12 +108,15 @@ type XmlDocument struct {
 	fragments []*DocumentFragment //save the pointers to free them when the doc is freed
 }
 
-//default encoding in byte slice
-var DefaultEncodingBytes = []byte(DefaultEncoding)
+//DefaultEncodingBytes allows us to conveniently pass the DefaultEncoding to various functions that
+// expect the encoding as a byte array.
+const DefaultEncodingBytes = []byte(DefaultEncoding)
 
 const initialFragments = 2
 
-//create a document
+//NewDocument wraps the pointer to the C struct.
+
+// TODO: this should probably not be exported.
 func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *XmlDocument) {
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
@@ -125,7 +134,7 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 	return
 }
 
-// Parse creates an XmlDcument from some pre-existing content where the input encoding is known. Byte arrays created from
+// Parse creates an XmlDocument from some pre-existing content where the input encoding is known. Byte arrays created from
 // a Go string are utf-8 encoded (you can pass DefaultEncodingBytes in this scenario).
 
 // If you want to build up a document programatically, calling CreateEmptyDocument and building it up using the xml.Node
@@ -203,31 +212,44 @@ func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *XmlDocument) {
 	return
 }
 
+// DocPtr provides access to the libxml2 structure underlying the document.
 func (document *XmlDocument) DocPtr() (ptr unsafe.Pointer) {
 	ptr = unsafe.Pointer(document.Ptr)
 	return
 }
 
+// DocType returns one of the node type constants, usually XML_DOCUMENT_NODE. This
+// may be of use if you are working with the C API.
 func (document *XmlDocument) DocType() (t NodeType) {
 	t = document.Type
 	return
 }
 
+// DocRef returns the embedded Document interface.
 func (document *XmlDocument) DocRef() (d Document) {
 	d = document.Me
 	return
 }
 
+// InputEncoding is the original encoding of the document.
 func (document *XmlDocument) InputEncoding() (encoding []byte) {
 	encoding = document.InEncoding
 	return
 }
 
+// OutputEncoding is the encoding that will be used when the document is written out.
+// This can be overridden by explicitly specifying an encoding as an argument to any of the
+// output functions.
 func (document *XmlDocument) OutputEncoding() (encoding []byte) {
 	encoding = document.OutEncoding
 	return
 }
 
+// Returns an XPath context that can be used to compile and evaluate XPath
+// expressions.
+
+// In most cases, you should call the Search or EvalXPath functions instead of
+// handling the context directly.
 func (document *XmlDocument) DocXPathCtx() (ctx *xpath.XPath) {
 	ctx = document.XPathCtx
 	return
@@ -251,6 +273,11 @@ func (document *XmlDocument) BookkeepFragment(fragment *DocumentFragment) {
 	document.fragments = append(document.fragments, fragment)
 }
 
+// Root returns the root node of the document. Newly created documents do not
+// have a root node until an element node is added a child of the document.
+
+// Documents that have multiple root nodes are invalid adn the behaviour is
+// not well defined.
 func (document *XmlDocument) Root() (element *ElementNode) {
 	nodePtr := C.xmlDocGetRootElement(document.Ptr)
 	if nodePtr != nil {
@@ -274,6 +301,14 @@ func (document *XmlDocument) NodeById(id string) (element *ElementNode) {
 	return
 }
 
+/*
+CreateElementNode creates an element node with the specified tag name. It can be
+added as a child of any other element, or as a child of the document itself.
+
+Use SetNamespace if the element node needs to be in a namespace.
+
+Note that valid documents have only one child element, referred to as the root node.
+*/
 func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode) {
 	tagBytes := GetCString([]byte(tag))
 	tagPtr := unsafe.Pointer(&tagBytes[0])
@@ -283,6 +318,9 @@ func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode
 	return
 }
 
+//CreateTextNode creates a text node. It can be added as a child of an element.
+
+// The data argument is XML-escaped and used as the content of the node.
 func (document *XmlDocument) CreateTextNode(data string) (text *TextNode) {
 	dataBytes := GetCString([]byte(data))
 	dataPtr := unsafe.Pointer(&dataBytes[0])
@@ -294,6 +332,10 @@ func (document *XmlDocument) CreateTextNode(data string) (text *TextNode) {
 	return
 }
 
+//CreateCDataNode creates a CDATA node. CDATA nodes can
+// only be children of an element.
+
+// The data argument will become the content of the newly created node.
 func (document *XmlDocument) CreateCDataNode(data string) (cdata *CDataNode) {
 	dataLen := len(data)
 	dataBytes := GetCString([]byte(data))
@@ -305,6 +347,10 @@ func (document *XmlDocument) CreateCDataNode(data string) (cdata *CDataNode) {
 	return
 }
 
+//CreateCommentNode creates a comment node. Comment nodes can
+// be children of an element or of the document itself.
+
+// The data argument will become the content of the comment.
 func (document *XmlDocument) CreateCommentNode(data string) (comment *CommentNode) {
 	dataBytes := GetCString([]byte(data))
 	dataPtr := unsafe.Pointer(&dataBytes[0])
@@ -315,6 +361,11 @@ func (document *XmlDocument) CreateCommentNode(data string) (comment *CommentNod
 	return
 }
 
+//CreatePINode creates a processing instruction node with the specified name and data.
+// Processing instruction nodes can be children of an element or of the document itself.
+
+// While it's common to use an attribute-like syntax for processing instructions, the data
+// is actually an arbitrary string that you will need to generate or parse yourself.
 func (document *XmlDocument) CreatePINode(name, data string) (pi *ProcessingInstructionNode) {
 	nameBytes := GetCString([]byte(name))
 	namePtr := unsafe.Pointer(&nameBytes[0])
