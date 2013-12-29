@@ -110,7 +110,7 @@ type XmlDocument struct {
 
 //DefaultEncodingBytes allows us to conveniently pass the DefaultEncoding to various functions that
 // expect the encoding as a byte array.
-const DefaultEncodingBytes = []byte(DefaultEncoding)
+var DefaultEncodingBytes = []byte(DefaultEncoding)
 
 const initialFragments = 2
 
