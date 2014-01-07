@@ -347,9 +347,7 @@ func TestEvalNumericExpr(t *testing.T) {
 	}
 }
 
-//TODO(NOJ): Uncomment this test once it's passing again.  This test
-//seems to fail only in Darwin
-func _TestDisableOutputEscaping(t *testing.T) {
+func TestDisableOutputEscaping(t *testing.T) {
 	doc := CreateEmptyDocument(DefaultEncodingBytes, DefaultEncodingBytes)
 	n := doc.CreateTextNode("<br/>")
 
