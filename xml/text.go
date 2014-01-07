@@ -1,9 +1,8 @@
 package xml
 
 /*
-#include "helper.h"
-#include <string.h>
-const xmlChar xmlStringTextNoenc[] = { 't', 'e', 'x', 't', 'n', 'o', 'e', 'n', 'c', 0 };
+#include <libxml/parserInternals.h>
+
 const xmlChar* disableEscaping = xmlStringTextNoenc;
 */
 import "C"
