@@ -3,7 +3,9 @@ package xml
 /*
 #include <libxml/parserInternals.h>
 
-//const xmlChar* disableEscaping = xmlStringTextNoenc;
+void disable_escaping(xmlNodePtr node) {
+	node->name = xmlStringTextNoenc;
+}
 */
 import "C"
 
@@ -18,5 +20,5 @@ type TextNode struct {
 // may need to output unsupported entity references or use the XML API for non-XML output. It should never
 // be used in the normal course of XML processing.
 func (node *TextNode) DisableOutputEscaping() {
-	//	node.Ptr.name = C.disableEscaping
+	C.disable_escaping(node.Ptr)
 }

@@ -347,8 +347,7 @@ func TestEvalNumericExpr(t *testing.T) {
 	}
 }
 
-//TODO: uncomment out
-func _TestDisableOutputEscaping(t *testing.T) {
+func TestDisableOutputEscaping(t *testing.T) {
 	doc := CreateEmptyDocument(DefaultEncodingBytes, DefaultEncodingBytes)
 	n := doc.CreateTextNode("<br/>")
 
