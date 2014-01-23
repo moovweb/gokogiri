@@ -16,6 +16,7 @@ int go_can_resolve_function(void* ctxt, char* name, char* ns);
 void exec_xpath_function(xmlXPathParserContextPtr ctxt, int nargs);
 
 xmlXPathFunction go_resolve_function(void* ctxt, char* name, char* ns) {
+    // TODO(Noj) uncomment once this issue is resolved: https://code.google.com/p/go/issues/detail?id=6661
     //if (go_can_resolve_function(ctxt, name, ns))
     //    return exec_xpath_function;
 
