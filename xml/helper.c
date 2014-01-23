@@ -14,14 +14,14 @@ int close_callback(void * ctx) {
 }
 
 xmlDoc* newEmptyXmlDoc() {
-	return xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION); 
+	return xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION);
 }
 
 xmlElementType getNodeType(xmlNode *node) { return node->type; }
 
-void xmlFreeChars(char *buffer) { 
+void xmlFreeChars(char *buffer) {
 	if (buffer) {
-		xmlFree((xmlChar*)buffer); 
+		xmlFree((xmlChar*)buffer);
 	}
 }
 
@@ -44,7 +44,7 @@ xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int op
 	const char *c_url          = (char*)url;
 	const char *c_encoding     = (char*)encoding;
 	xmlDoc *doc = NULL;
-	
+
 	xmlResetLastError();
 	doc = xmlReadMemory(c_buffer, buffer_len, c_url, c_encoding, options);
 
@@ -77,7 +77,7 @@ xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, in
 		}
 		printf("errorcode %d\n", errCode);
 		return NULL;
-	} 
+	}
 	return root_element;
 }
 
@@ -101,7 +101,7 @@ void xmlSetContent(void *gonode, void *n, void *content) {
 	xmlNode *node = (xmlNode*)n;
 	xmlNode *child = node->children;
 	xmlNode *next = NULL;
-	char *encoded = xmlEncodeSpecialChars(node->doc, content);
+	unsigned char *encoded = xmlEncodeSpecialChars(node->doc, content);
 	if (encoded) {
 		while (child) {
 			next = child->next ;
@@ -124,7 +124,7 @@ int xmlUnlinkNodeWithCheck(xmlNode *node) {
 }
 
 int xmlNodePtrCheck(void *node) {
-	if (node == (void*)(-1)) 
+	if (node == (void*)(-1))
 		return 0;
 	return 1;
 }
@@ -132,7 +132,7 @@ int xmlNodePtrCheck(void *node) {
 int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
-	
+
 	savectx = xmlSaveToIO(
 	      (xmlOutputWriteCallback)xml_write_callback,
 	      (xmlOutputCloseCallback)close_callback,
