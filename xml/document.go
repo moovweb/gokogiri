@@ -42,6 +42,7 @@ type Document interface {
 
 	RecursivelyRemoveNamespaces() error
 	UnparsedEntityURI(string) string
+	Uri() string
 }
 
 // ParseOption values allow you to tune the behaviour of the parsing engine.
@@ -116,7 +117,7 @@ var DefaultEncodingBytes = []byte(DefaultEncoding)
 const initialFragments = 2
 
 //NewDocument wraps the pointer to the C struct.
-
+//
 // TODO: this should probably not be exported.
 func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byte) (doc *XmlDocument) {
 	inEncoding = AppendCStringTerminator(inEncoding)
@@ -137,10 +138,10 @@ func NewDocument(p unsafe.Pointer, contentLen int, inEncoding, outEncoding []byt
 
 // Parse creates an XmlDocument from some pre-existing content where the input encoding is known. Byte arrays created from
 // a Go string are utf-8 encoded (you can pass DefaultEncodingBytes in this scenario).
-
+//
 // If you want to build up a document programatically, calling CreateEmptyDocument and building it up using the xml.Node
 // interface is a better approach than building a string and calling Parse.
-
+//
 // If you have an XML file, then ReadFile will automatically determine the encoding according to the XML specification.
 func Parse(content, inEncoding, url []byte, options ParseOption, outEncoding []byte) (doc *XmlDocument, err error) {
 	inEncoding = AppendCStringTerminator(inEncoding)
@@ -248,7 +249,7 @@ func (document *XmlDocument) OutputEncoding() (encoding []byte) {
 
 // Returns an XPath context that can be used to compile and evaluate XPath
 // expressions.
-
+//
 // In most cases, you should call the Search or EvalXPath functions instead of
 // handling the context directly.
 func (document *XmlDocument) DocXPathCtx() (ctx *xpath.XPath) {
@@ -276,7 +277,7 @@ func (document *XmlDocument) BookkeepFragment(fragment *DocumentFragment) {
 
 // Root returns the root node of the document. Newly created documents do not
 // have a root node until an element node is added a child of the document.
-
+//
 // Documents that have multiple root nodes are invalid adn the behaviour is
 // not well defined.
 func (document *XmlDocument) Root() (element *ElementNode) {
@@ -289,7 +290,7 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 
 // Get an element node by the value of its ID attribute. By convention this attribute
 // is named id, but the actual name of the attribute is set by the document's DTD or schema.
-
+//
 // The value for an ID attribute is guaranteed to be unique within a valid document.
 func (document *XmlDocument) NodeById(id string) (element *ElementNode) {
 	dataBytes := GetCString([]byte(id))
@@ -320,7 +321,7 @@ func (document *XmlDocument) CreateElementNode(tag string) (element *ElementNode
 }
 
 //CreateTextNode creates a text node. It can be added as a child of an element.
-
+//
 // The data argument is XML-escaped and used as the content of the node.
 func (document *XmlDocument) CreateTextNode(data string) (text *TextNode) {
 	dataBytes := GetCString([]byte(data))
@@ -335,7 +336,7 @@ func (document *XmlDocument) CreateTextNode(data string) (text *TextNode) {
 
 //CreateCDataNode creates a CDATA node. CDATA nodes can
 // only be children of an element.
-
+//
 // The data argument will become the content of the newly created node.
 func (document *XmlDocument) CreateCDataNode(data string) (cdata *CDataNode) {
 	dataLen := len(data)
@@ -350,7 +351,7 @@ func (document *XmlDocument) CreateCDataNode(data string) (cdata *CDataNode) {
 
 //CreateCommentNode creates a comment node. Comment nodes can
 // be children of an element or of the document itself.
-
+//
 // The data argument will become the content of the comment.
 func (document *XmlDocument) CreateCommentNode(data string) (comment *CommentNode) {
 	dataBytes := GetCString([]byte(data))
@@ -364,7 +365,7 @@ func (document *XmlDocument) CreateCommentNode(data string) (comment *CommentNod
 
 //CreatePINode creates a processing instruction node with the specified name and data.
 // Processing instruction nodes can be children of an element or of the document itself.
-
+//
 // While it's common to use an attribute-like syntax for processing instructions, the data
 // is actually an arbitrary string that you will need to generate or parse yourself.
 func (document *XmlDocument) CreatePINode(name, data string) (pi *ProcessingInstructionNode) {
@@ -444,4 +445,12 @@ func (document *XmlDocument) Free() {
 		C.xmlFreeDoc(document.Ptr)
 		document.Ptr = nil
 	}
+}
+
+/* Uri returns the URI of the document - typically this is the filename if ReadFile was used to parse
+the document.
+*/
+func (document *XmlDocument) Uri() (val string) {
+	val = C.GoString((*C.char)(unsafe.Pointer(document.Ptr.URL)))
+	return
 }
