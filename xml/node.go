@@ -331,7 +331,8 @@ func (xmlNode *XmlNode) NodePtr() (p unsafe.Pointer) {
 }
 
 func (xmlNode *XmlNode) NodeType() (nodeType NodeType) {
-	nodeType = NodeType(C.getNodeType(xmlNode.Ptr))
+	nt := C.getNodeType(xmlNode.Ptr)
+	nodeType = NodeType(nt)
 	return
 }
 
@@ -437,6 +438,34 @@ func (xmlNode *XmlNode) InsertEnd(data interface{}) (err error) {
 		}
 	}
 	return
+}
+
+func (xmlNode *XmlNode) InsBefore(name, content string) *XmlNode {
+	element := xmlNode.MyDocument().CreateElementNode(name)
+	element.SetContent(content)
+	xmlNode.InsertBefore(element)
+	return element.XmlNode
+}
+
+func (xmlNode *XmlNode) InsAfter(name, content string) *XmlNode {
+	element := xmlNode.MyDocument().CreateElementNode(name)
+	element.SetContent(content)
+	xmlNode.InsertAfter(element)
+	return element.XmlNode
+}
+
+func (xmlNode *XmlNode) InsTop(name, content string) *XmlNode {
+	element := xmlNode.MyDocument().CreateElementNode(name)
+	element.SetContent(content)
+	xmlNode.InsertBegin(element)
+	return element.XmlNode
+}
+
+func (xmlNode *XmlNode) InsBottom(name, content string) *XmlNode {
+	element := xmlNode.MyDocument().CreateElementNode(name)
+	element.SetContent(content)
+	xmlNode.InsertEnd(element)
+	return element.XmlNode
 }
 
 func (xmlNode *XmlNode) SetChildren(data interface{}) (err error) {
@@ -598,7 +627,16 @@ func (xmlNode *XmlNode) Search(data interface{}) (result []Node, err error) {
 	return
 }
 
-// As the Search function, but passing a VariableScope that can be used to reolve variable
+func (xmlNode *XmlNode) Find(sel string) []Node {
+	results, err := xmlNode.Search(sel)
+	if err != nil {
+		return make([]Node, 0)
+	} else {
+		return results
+	}
+}
+
+// As the Search function, but passing a VariableScope that can be used to resolve variable
 // names or registered function references in the XPath being evaluated.
 func (xmlNode *XmlNode) SearchWithVariables(data interface{}, v xpath.VariableScope) (result []Node, err error) {
 	switch data := data.(type) {
@@ -728,10 +766,13 @@ func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) 
 
 // The local name of the node. Use Namespace() to get the namespace.
 func (xmlNode *XmlNode) Name() (name string) {
+	println("*** HEY")
 	if xmlNode.Ptr.name != nil {
+		println("*** HOO")
 		p := unsafe.Pointer(xmlNode.Ptr.name)
 		name = C.GoString((*C.char)(p))
 	}
+	println("*** HO")
 	return
 }
 
@@ -884,6 +925,13 @@ func (xmlNode *XmlNode) Remove() {
 	if xmlNode.valid && unsafe.Pointer(xmlNode.Ptr) != xmlNode.Document.DocPtr() {
 		xmlNode.Unlink()
 		xmlNode.valid = false
+	}
+}
+
+func (xmlNode *XmlNode) FindAndRemove(sel string) {
+	results := xmlNode.Find(sel)
+	for _, n := range results {
+		n.Remove()
 	}
 }
 

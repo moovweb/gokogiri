@@ -288,6 +288,35 @@ func (document *XmlDocument) Root() (element *ElementNode) {
 	return
 }
 
+func (document *XmlDocument) GetRoot() *XmlNode {
+	root := document.Root()
+	if root == nil {
+		return nil
+	} else {
+		return root.XmlNode
+	}
+}
+
+func (document *XmlDocument) Find(sel string) []Node {
+	xmlNode := document.GetRoot()
+	if xmlNode == nil {
+		return make([]Node, 0)
+	}
+	results, err := xmlNode.Search(sel)
+	if err != nil {
+		return make([]Node, 0)
+	} else {
+		return results
+	}
+}
+
+func (document *XmlDocument) FindAndRemove(sel string) {
+	results := document.Find(sel)
+	for _, n := range results {
+		n.Remove()
+	}
+}
+
 // Get an element node by the value of its ID attribute. By convention this attribute
 // is named id, but the actual name of the attribute is set by the document's DTD or schema.
 //
