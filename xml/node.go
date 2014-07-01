@@ -809,6 +809,52 @@ func (xmlNode *XmlNode) DuplicateTo(doc Document, level int) (dup Node) {
 	return
 }
 
+func (xmlNode *XmlNode) Dup() Node {
+	duplicate := xmlNode.Duplicate(1)
+	if duplicate.NodeType() == XML_ELEMENT_NODE {
+		xmlNode.InsertAfter(duplicate)
+	}
+	return duplicate
+}
+
+func (xmlNode *XmlNode) MoveHere(sel string) []Node {
+	movees := xmlNode.Find(sel)
+	for _, movee := range movees {
+		xmlNode.AddChild(movee)
+	}
+	return movees
+}
+
+func (xmlNode *XmlNode) MoveTo(sel string) Node {
+	destinations := xmlNode.Find(sel)
+	if len(destinations) > 0 {
+		destination := destinations[0]
+		destination.AddChild(xmlNode)
+	}
+	return xmlNode
+}
+
+func (xmlNode *XmlNode) CopyHere(sel string) []Node {
+	copyees := xmlNode.Find(sel)
+	theCopies := make([]Node, len(copyees))
+	for i, copyee := range copyees {
+		theCopy := copyee.Duplicate(1)
+		xmlNode.AddChild(theCopy)
+		theCopies[i] = theCopy
+	}
+	return theCopies
+}
+
+func (xmlNode * XmlNode) CopyTo(sel string) Node {
+	destinations := xmlNode.Find(sel)
+	theCopy := xmlNode.Duplicate(1)
+	if len(destinations) > 0 {
+		destination := destinations[0]
+		destination.AddChild(theCopy)
+	}
+	return theCopy
+}
+
 func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBuffer []byte) ([]byte, int) {
 	nodePtr := unsafe.Pointer(xmlNode.Ptr)
 	var encodingPtr unsafe.Pointer
