@@ -457,14 +457,22 @@ func (xmlNode *XmlNode) InsAfter(name, content string) *XmlNode {
 func (xmlNode *XmlNode) InsTop(name, content string) *XmlNode {
 	element := xmlNode.MyDocument().CreateElementNode(name)
 	element.SetContent(content)
-	xmlNode.InsertBegin(element)
+	if first := xmlNode.FirstChild(); first != nil {
+		first.AddPreviousSibling(element)
+	} else {
+		xmlNode.AddChild(element)
+	}
 	return element.XmlNode
 }
 
 func (xmlNode *XmlNode) InsBottom(name, content string) *XmlNode {
 	element := xmlNode.MyDocument().CreateElementNode(name)
 	element.SetContent(content)
-	xmlNode.InsertEnd(element)
+	if last := xmlNode.LastChild(); last != nil {
+		last.AddNextSibling(element)
+	} else {
+		xmlNode.AddChild(element)
+	}
 	return element.XmlNode
 }
 
@@ -568,6 +576,15 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 
 	C.xmlSetProp(xmlNode.Ptr, (*C.xmlChar)(namePtr), (*C.xmlChar)(valuePtr))
 	return
+}
+
+func (xmlNode *XmlNode) Attrs(attrs ...string) *XmlNode {
+	var numAttrs int
+	numAttrs = int(len(attrs)/2)*2 // chop off any stray unpaired attr-name
+	for i := 0; i < numAttrs; i += 2 {
+		xmlNode.SetAttr(attrs[i], attrs[i+1])
+	}
+	return xmlNode
 }
 
 // SetNsAttr sets the value of a namespaced attribute.
