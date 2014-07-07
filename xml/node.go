@@ -834,20 +834,69 @@ func (xmlNode *XmlNode) Dup() Node {
 	return duplicate
 }
 
-func (xmlNode *XmlNode) MoveHere(sel string) []Node {
+func (xmlNode *XmlNode) MoveHere(sel string, pos string) []Node {
 	movees := xmlNode.Find(sel)
-	for _, movee := range movees {
-		xmlNode.AddChild(movee)
+	switch pos {
+	case "before":
+		if len(movees) == 0 {
+			break
+		}
+		cursor := movees[0]
+		xmlNode.InsertBefore(cursor)
+		for _, movee := range movees[1:] {
+			cursor.InsertAfter(movee)
+			cursor = movee
+		}
+	case "after":
+		for _, movee := range movees {
+			xmlNode.InsertAfter(movee)
+		}
+	case "top":
+		if len(movees) == 0 {
+			break
+		}
+		if firstChild := xmlNode.FirstChild(); firstChild != nil {
+			cursor := movees[0]
+			firstChild.InsertBefore(cursor)
+			for _, movee := range movees[1:] {
+				cursor.InsertAfter(movee)
+				cursor = movee
+			}
+		} else {
+			for _, movee := range movees {
+				xmlNode.AddChild(movee)
+			}
+		}
+	default:
+		for _, movee := range movees {
+			xmlNode.AddChild(movee)
+		}
 	}
 	return movees
 }
 
-func (xmlNode *XmlNode) MoveTo(sel string) Node {
+func (xmlNode *XmlNode) MoveTo(sel string, pos string) Node {
 	destinations := xmlNode.Find(sel)
-	if len(destinations) > 0 {
-		destination := destinations[0]
+	if len(destinations) == 0 {
+		return xmlNode
+	}
+	destination := destinations[0]
+
+	switch pos {
+	case "before":
+		destination.InsertBefore(xmlNode)
+	case "after":
+		destination.InsertAfter(xmlNode)
+	case "top":
+		if firstChild := destination.FirstChild(); firstChild != nil {
+			firstChild.InsertBefore(xmlNode)
+		} else {
+			destination.AddChild(xmlNode)
+		}
+	default:
 		destination.AddChild(xmlNode)
 	}
+
 	return xmlNode
 }
 
