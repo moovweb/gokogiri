@@ -1,6 +1,8 @@
 package xpath
 
 /*
+#cgo CFLAGS: -I../../../../../clibs/include/libxml2
+#cgo LDFLAGS: -lxml2 -L../../../../../clibs/lib
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <string.h>
@@ -32,7 +34,7 @@ char *check_xpath_syntax(const char *xpath) {
 */
 import "C"
 import "unsafe"
-import . "gokogiri/util"
+import . "github.com/moovweb/gokogiri/util"
 
 //import "runtime"
 import "errors"
