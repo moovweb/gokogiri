@@ -2,6 +2,19 @@ package xml
 
 import "testing"
 
+func TestSlowXpath(t *testing.T) {
+ 	testLogic := func(t *testing.T, doc *XmlDocument) {
+		root := doc.Root()
+		result, _ := root.Search(".//a[not(contains(@href, 'blog.prosper.com') or contains(@href, '.pdf') or contains(@href, '/published/sec'))]")
+    t.Error(len(result))
+		if len(result) != 2 {
+			t.Error("search at root does not match")
+		}
+  }
+	RunTest(t, "node", "xpath", testLogic)
+}
+
+
 func TestSearch(t *testing.T) {
 
 	testLogic := func(t *testing.T, doc *XmlDocument) {
