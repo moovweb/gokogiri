@@ -3,41 +3,8 @@ package xpath
 /*
 #cgo CFLAGS: -I../../../clibs/include/libxml2
 #cgo LDFLAGS: -lxml2 -L../../../clibs/lib
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-#include <libxml/parser.h>
 
-xmlNode* fetchNode(xmlNodeSet *nodeset, int index) {
-    return nodeset->nodeTab[index];
-}
-
-xmlXPathObjectPtr go_resolve_variables(void* ctxt, char* name, char* ns);
-int go_can_resolve_function(void* ctxt, char* name, char* ns);
-void exec_xpath_function(xmlXPathParserContextPtr ctxt, int nargs);
-
-xmlXPathFunction go_resolve_function(void* ctxt, char* name, char* ns) {
-    // TODO(Noj) uncomment once this issue is resolved: https://code.google.com/p/go/issues/detail?id=6661
-    //if (go_can_resolve_function(ctxt, name, ns))
-    //    return exec_xpath_function;
-
-    return 0;
-}
-
-static void set_var_lookup(xmlXPathContext* c, void* data) {
-    c->varLookupFunc = (void *)go_resolve_variables;
-    c->varLookupData = data;
-}
-
-static void set_function_lookup(xmlXPathContext* c, void* data) {
-    c->funcLookupFunc = (void *)go_resolve_function;
-    c->funcLookupData = data;
-}
-
-int getXPathObjectType(xmlXPathObject* o) {
-    if(o == 0)
-        return 0;
-    return o->type;
-}
+#include "helper.h"
 */
 import "C"
 
@@ -50,6 +17,7 @@ import "errors"
 type XPath struct {
 	ContextPtr *C.xmlXPathContext
 	ResultPtr  *C.xmlXPathObject
+	Timeout    int
 }
 
 type XPathObjectType int
@@ -83,7 +51,7 @@ func NewXPath(docPtr unsafe.Pointer) (xpath *XPath) {
 	if docPtr == nil {
 		return
 	}
-	xpath = &XPath{ContextPtr: C.xmlXPathNewContext((*C.xmlDoc)(docPtr)), ResultPtr: nil}
+	xpath = &XPath{ContextPtr: C.xmlXPathNewContext((*C.xmlDoc)(docPtr)), ResultPtr: nil, Timeout: 5}
 	runtime.SetFinalizer(xpath, (*XPath).Free)
 	return
 }
@@ -130,6 +98,8 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (err
 		return
 	}
 
+	println("Evaluating expression:", xpathExpr.String())
+
 	oldXPContextDoc := xpath.ContextPtr.doc
 	oldXPContextNode := xpath.ContextPtr.node
 	oldXPProximityPosition := xpath.ContextPtr.proximityPosition
@@ -141,7 +111,8 @@ func (xpath *XPath) Evaluate(nodePtr unsafe.Pointer, xpathExpr *Expression) (err
 	if xpath.ResultPtr != nil {
 		C.xmlXPathFreeObject(xpath.ResultPtr)
 	}
-	xpath.ResultPtr = C.xmlXPathCompiledEval(xpathExpr.Ptr, xpath.ContextPtr)
+	// xpath.ResultPtr = C.xmlXPathCompiledEval(xpathExpr.Ptr, xpath.ContextPtr)
+	xpath.ResultPtr = C.xmlXPathEvalWithTimeout(xpathExpr.Ptr, xpath.ContextPtr, C.int(xpath.Timeout))
 
 	xpath.ContextPtr.doc = oldXPContextDoc
 	xpath.ContextPtr.node = oldXPContextNode
