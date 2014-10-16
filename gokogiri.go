@@ -7,6 +7,11 @@ and a simple DOM-like inteface allows for building up documents from scratch.
 */
 package gokogiri
 
+/*
+#include "libxml_shim.h"
+*/
+import "C"
+
 import (
 	"gokogiri/html"
 	"gokogiri/xml"
@@ -32,4 +37,8 @@ behaviour.
 */
 func ParseXml(content []byte) (doc *xml.XmlDocument, err error) {
 	return xml.Parse(content, xml.DefaultEncodingBytes, nil, xml.DefaultParseOption, xml.DefaultEncodingBytes)
+}
+
+func InitializeSymbols(version string) {
+	C.init(version)
 }

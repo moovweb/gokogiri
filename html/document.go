@@ -68,7 +68,7 @@ func Parse(content, inEncoding, url []byte, options xml.ParseOption, outEncoding
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
-	var docPtr *C.xmlDoc
+	var docPtr C.libxml_symbols->xmlDoc
 	contentLen := len(content)
 
 	if contentLen > 0 {
@@ -83,7 +83,7 @@ func Parse(content, inEncoding, url []byte, options xml.ParseOption, outEncoding
 			encodingPtr = unsafe.Pointer(&inEncoding[0])
 		}
 
-		docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
+		(C.libxml_symbols->htmlDoc)docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 
 		if docPtr == nil {
 			err = ERR_FAILED_TO_PARSE_HTML
@@ -99,7 +99,7 @@ func Parse(content, inEncoding, url []byte, options xml.ParseOption, outEncoding
 
 func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	help.LibxmlInitParser()
-	docPtr := C.htmlNewDoc(nil, nil)
+	docPtr := C.libxml_symbols->htmlNewDoc(nil, nil)
 	doc = NewDocument(unsafe.Pointer(docPtr), 0, inEncoding, outEncoding)
 	return
 }
@@ -115,7 +115,7 @@ func (document *HtmlDocument) ParseFragment(input, url []byte, options xml.Parse
 }
 
 func (doc *HtmlDocument) MetaEncoding() string {
-	metaEncodingXmlCharPtr := C.htmlGetMetaEncoding((*C.xmlDoc)(doc.DocPtr()))
+	metaEncodingXmlCharPtr := C.libxml_symbols->htmlGetMetaEncoding((*C.libxml_symbols->xmlDoc)(doc.DocPtr()))
 	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
@@ -125,7 +125,7 @@ func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err error) {
 		encodingBytes := AppendCStringTerminator([]byte(encoding))
 		encodingPtr = unsafe.Pointer(&encodingBytes[0])
 	}
-	ret := int(C.htmlSetMetaEncoding((*C.xmlDoc)(doc.DocPtr()), (*C.xmlChar)(encodingPtr)))
+	ret := int(C.libxml_symbols->htmlSetMetaEncoding((*C.libxml_symbols->xmlDoc)(doc.DocPtr()), (*C.libxml_symbols->xmlChar)(encodingPtr)))
 	if ret == -1 {
 		err = ErrSetMetaEncoding
 	}
