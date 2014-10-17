@@ -1,6 +1,11 @@
 package html
 
-//#include "helper.h"
+/*
+#cgo CFLAGS: -I .
+#cgo LDFLAGS: -L .
+
+#include "helper.h"
+*/
 import "C"
 import (
 	"bytes"
@@ -40,7 +45,8 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 		if len(inEncoding) > 0 {
 			encodingPtr = unsafe.Pointer(&inEncoding[0])
 		}
-		(C.libxml_symbols->xmlNode)htmlPtr := C.htmlParseFragmentAsDoc(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
+		// var htmlPtr *C.shim_xmlNode
+		htmlPtr := C.htmlParseFragmentAsDoc(document.DocPtr(), contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 
 		//Note we've parsed the fragment within the given document
 		//the root is not the root of the document; rather it's the root of the subtree from the fragment
@@ -63,7 +69,8 @@ func parsefragment(document xml.Document, node *xml.XmlNode, content, url []byte
 		newContent = append(newContent, fragmentWrapperEnd...)
 		contentPtr = unsafe.Pointer(&newContent[0])
 		contentLen := len(newContent)
-		(C.libxml_symbols->xmlNode)rootElementPtr := C.htmlParseFragment(node.NodePtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
+		// var rootElementPtr *C.shim_xmlNode
+		rootElementPtr := C.htmlParseFragment(node.NodePtr(), contentPtr, C.int(contentLen), urlPtr, C.int(options), nil, 0)
 		if rootElementPtr == nil {
 			//try to parse it as a doc
 			fragment, err = parsefragment(document, nil, content, url, options)

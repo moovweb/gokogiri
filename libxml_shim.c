@@ -1,8 +1,6 @@
 #include "libxml_shim.h"
 
-dispatchTable* libxml_symbols = nullptr;
-
-void init(const char* version) {
+dispatchTable* init(const char* version) {
   // Open the dynamic library
   void *handle = nullptr;
   switch (version) {
@@ -18,36 +16,14 @@ void init(const char* version) {
     fprintf(stderr, "%s\n", dlerror());
     exit(1);
   }
+  dispatchTable* libxml_symbols = nullptr;
+  loadSymbols(handle, libxml_symbols);
 
-  loadSymbols(handle);
-
-  return;
+  return libxml_symbols;
 }
 
-void loadSymbols(void* handle) {
-  //reset it
-  libxml_symbols = nullptr;
+void loadSymbols(void* handle, dispatchTable* libxml_symbols) {
 
-  libxml_symbols->xmlDoc = (xmlDoc_objPtr)dlsym(handle, "xmlDoc");
-  if (libxml_symbols->xmlDoc == nullptr) {
-    fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlDoc.\n");
-    return;
-  }
-  libxml_symbols->xmlNode = (xmlNode_objPtr)dlsym(handle, "xmlNode");
-  if (libxml_symbols->xmlNode == nullptr) {
-    fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlNode.\n");
-    return;
-  }
-  libxml_symbols->htmlDoc = (htmlDoc_objPtr)dlsym(handle, "htmlDoc");
-  if (libxml_symbols->htmlDoc == nullptr) {
-    fprintf(stderr,"Error: couldn't initialize libxml_symbols->htmlDoc.\n");
-    return;
-  }
-  libxml_symbols->xmlChar = (xmlChar_objPtr)dlsym(handle, "xmlChar");
-  if (libxml_symbols->xmlChar == nullptr) {
-    fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlChar.\n");
-    return;
-  }
   libxml_symbols->xmlResetLastError = (xmlResetLastError_fnPtr)dlsym(handle, "xmlResetLastError");
   if (libxml_symbols->xmlResetLastError == nullptr) {
     fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlResetLastError.\n");
@@ -93,7 +69,43 @@ void loadSymbols(void* handle) {
     fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlDocGetRootElement.\n");
     return;
   }
+  libxml_symbols->xmlNewNode = (xmlNewNode_fnPtr)dlsym(handle, "xmlNewNode");
+  if (libxml_symbols->xmlNewNode == nullptr) {
+    fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlNewNode.\n");
+    return;
+  }
+  libxml_symbols->xmlNewDoc = (xmlNewDoc_fnPtr)dlsym(handle, "xmlNewDoc");
+  if (libxml_symbols->xmlNewDoc == nullptr) {
+    fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlNewDoc.\n");
+    return;
+  }
+  libxml_symbols->xmlParseInNodeContext = (xmlParseInNodeContext_fnPtr)dlsym(handle, "xmlParseInNodeContext");
+  if (libxml_symbols->xmlParseInNodeContext == nullptr) {
+    fprintf(stderr,"Error: couldn't initialize libxml_symbols->xmlParseInNodeContext.\n");
+    return;
+  }
   //etc etc
+
+  //structs
+  // shim_htmlDoc = libxml_symbols->htmlNewDoc(NULL, NULL);
+  // shim_xmlNode = libxml_symbols->xmlNewNode(NULL, "div");
+  // shim_xmlDoc = libxml_symbols->xmlNewDoc(NULL);
 
   return;
 }
+
+// need wrapper functions because cgo can't handle function pointers :(
+
+shim_htmlDoc* shim_htmlNewDoc(const shim_xmlChar* URI, const shim_xmlChar* ExternalID, dispatchTable* libxml_symbols) {
+  return libxml_symbols->htmlNewDoc(URI, ExternalID);
+}
+
+shim_xmlChar* shim_htmlGetMetaEncoding(shim_htmlDoc* doc, dispatchTable* libxml_symbols) {
+  return libxml_symbols->htmlGetMetaEncoding(doc);
+}
+
+int shim_htmlSetMetaEncoding(shim_htmlDoc* doc, const shim_xmlChar* encoding, dispatchTable* libxml_symbols) {
+  return libxml_symbols->htmlSetMetaEncoding(doc, encoding);
+}
+
+

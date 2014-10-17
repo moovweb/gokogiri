@@ -1,11 +1,9 @@
 package html
 
 /*
-#cgo CFLAGS: -I../../../clibs/include/libxml2
-#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
+#cgo CFLAGS: -I .
+#cgo LDFLAGS: -L .
 
-#include <libxml/HTMLtree.h>
-#include <libxml/HTMLparser.h>
 #include "helper.h"
 */
 import "C"
@@ -68,7 +66,7 @@ func Parse(content, inEncoding, url []byte, options xml.ParseOption, outEncoding
 	inEncoding = AppendCStringTerminator(inEncoding)
 	outEncoding = AppendCStringTerminator(outEncoding)
 
-	var docPtr C.libxml_symbols->xmlDoc
+	var docPtr *C.shim_xmlDoc
 	contentLen := len(content)
 
 	if contentLen > 0 {
@@ -83,7 +81,7 @@ func Parse(content, inEncoding, url []byte, options xml.ParseOption, outEncoding
 			encodingPtr = unsafe.Pointer(&inEncoding[0])
 		}
 
-		(C.libxml_symbols->htmlDoc)docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
+		docPtr = C.htmlParse(contentPtr, C.int(contentLen), urlPtr, encodingPtr, C.int(options), nil, 0)
 
 		if docPtr == nil {
 			err = ERR_FAILED_TO_PARSE_HTML
@@ -99,7 +97,7 @@ func Parse(content, inEncoding, url []byte, options xml.ParseOption, outEncoding
 
 func CreateEmptyDocument(inEncoding, outEncoding []byte) (doc *HtmlDocument) {
 	help.LibxmlInitParser()
-	docPtr := C.libxml_symbols->htmlNewDoc(nil, nil)
+	docPtr := C.shim_htmlNewDoc(nil, nil)
 	doc = NewDocument(unsafe.Pointer(docPtr), 0, inEncoding, outEncoding)
 	return
 }
@@ -115,7 +113,7 @@ func (document *HtmlDocument) ParseFragment(input, url []byte, options xml.Parse
 }
 
 func (doc *HtmlDocument) MetaEncoding() string {
-	metaEncodingXmlCharPtr := C.libxml_symbols->htmlGetMetaEncoding((*C.libxml_symbols->xmlDoc)(doc.DocPtr()))
+	metaEncodingXmlCharPtr := C.shim_htmlGetMetaEncoding((*C.shim_xmlDoc)(doc.DocPtr()))
 	return C.GoString((*C.char)(unsafe.Pointer(metaEncodingXmlCharPtr)))
 }
 
@@ -125,7 +123,7 @@ func (doc *HtmlDocument) SetMetaEncoding(encoding string) (err error) {
 		encodingBytes := AppendCStringTerminator([]byte(encoding))
 		encodingPtr = unsafe.Pointer(&encodingBytes[0])
 	}
-	ret := int(C.libxml_symbols->htmlSetMetaEncoding((*C.libxml_symbols->xmlDoc)(doc.DocPtr()), (*C.libxml_symbols->xmlChar)(encodingPtr)))
+	ret := int(C.shim_htmlSetMetaEncoding((*C.shim_xmlDoc)(doc.DocPtr()), (*C.shim_xmlChar)(encodingPtr)))
 	if ret == -1 {
 		err = ErrSetMetaEncoding
 	}

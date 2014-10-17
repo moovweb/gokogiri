@@ -39,6 +39,8 @@ func ParseXml(content []byte) (doc *xml.XmlDocument, err error) {
 	return xml.Parse(content, xml.DefaultEncodingBytes, nil, xml.DefaultParseOption, xml.DefaultEncodingBytes)
 }
 
-func InitializeSymbols(version string) {
-	C.init(version)
+func InitializeSymbols(version string) (libxml_symbols *C.dispatchTable) {
+	//need to pass this around
+	libxml_symbols = C.init(version)
+	return
 }
