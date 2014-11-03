@@ -235,12 +235,12 @@ func (xpath *XPath) GetContextPosition() (position, size int) {
 }
 
 func (xpath *XPath) SetDeadline(deadline *time.Time) {
-	if deadline == nil {
-		C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(0))
-	} else {
-		t := deadline.Unix()
-		C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(t))
-	}
+	// if deadline == nil {
+	// 	C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(0))
+	// } else {
+	// 	t := deadline.Unix()
+	// 	C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(t))
+	// }
 }
 
 func (xpath *XPath) Free() {
