@@ -719,10 +719,8 @@ func (xmlNode *XmlNode) EvalXPathAsBoolean(data interface{}, v xpath.VariableSco
 // Evaluate an XPath and return a nodeset, but cancel the evaluation if not completed
 // by the deadline.
 func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) (result []Node, err error) {
-	xpathCtx := xmlNode.Document.DocXPathCtx()
-	xpathCtx.SetDeadline(deadline)
+	// deadline is ignored as it is not supported in our current libxml2
 	result, err = xmlNode.Search(data)
-	xpathCtx.SetDeadline(nil)
 	return
 }
 
