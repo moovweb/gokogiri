@@ -107,3 +107,12 @@ void libxmlGoInit() {
 	//xmlInitParser();
 }
 
+void moovMem() {
+	int wat = xmlMemUsed();
+	fprintf(stdout, "libxml2 MEMORY USED: %d\n", wat);
+	// printf("xmlMemShow 10 last allocated:\n");
+	// xmlMemShow(stdout, 10);
+	printf("xmlMemDisplayLast:\n");
+	xmlMemDisplayLast(stdout, 4096);
+	// xmlMemoryDump();
+}

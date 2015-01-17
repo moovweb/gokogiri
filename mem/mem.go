@@ -12,9 +12,13 @@ import "C"
 const LIBXML_VERSION = C.LIBXML_DOTTED_VERSION
 
 func init() {
-	C.libxmlGoInit()
+	// C.libxmlGoInit()
 }
 
 func AllocSize() int {
 	return int(C.libxmlGoAllocSize())
+}
+
+func FunctionThatDoesSomething() {
+	C.moovMem()
 }
