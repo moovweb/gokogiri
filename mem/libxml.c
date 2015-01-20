@@ -116,3 +116,7 @@ void moovMem() {
 	xmlMemDisplayLast(stdout, 4096);
 	// xmlMemoryDump();
 }
+
+void moovMemDump() {
+	xmlMemoryDump();
+}

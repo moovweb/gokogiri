@@ -22,3 +22,7 @@ func AllocSize() int {
 func FunctionThatDoesSomething() {
 	C.moovMem()
 }
+
+func Dump() {
+	C.moovMemDump()
+}

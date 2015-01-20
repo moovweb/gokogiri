@@ -4,5 +4,6 @@
 unsigned long libxmlGoAllocSize();
 void libxmlGoInit();
 void moovMem();
+void moovMemDump();
 
 #endif
