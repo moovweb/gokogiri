@@ -1,9 +1,9 @@
 Gokogiri
 ========
-by Zhigang Chen and Hampton Catlin
-----------------------------------
+LibXML bindings for the Go programming language.
+------------------------------------------------
+By Zhigang Chen and Hampton Catlin
 
-A straightforward and simple library for using LibXML in native Go.
 
 This is a major rewrite from v0 in the following places:
 
@@ -41,7 +41,7 @@ Basic example:
       // parse the web page
       doc, _ := gokogiri.ParseHtml(page)
 
-      // perform operations on the parsed page -- consult the docs for the API
+      // perform operations on the parsed page -- consult the tests for examples
 
       // important -- don't forget to free the resources when you're done!
       doc.Free()
