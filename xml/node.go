@@ -6,10 +6,10 @@ import "C"
 
 import (
 	"errors"
-	. "github.com/moovweb/gokogiri/util"
-	"github.com/moovweb/gokogiri/xpath"
 	"strconv"
 	"unsafe"
+	. "github.com/moovweb/gokogiri/util"
+	"github.com/moovweb/gokogiri/xpath"
 )
 
 var (
@@ -496,7 +496,7 @@ func (xmlNode *XmlNode) Attribute(name string) (attribute *AttributeNode) {
 }
 
 // Attr returns the value of an attribute.
-
+//
 // If you need to check for the existence of an attribute,
 // use Attribute.
 func (xmlNode *XmlNode) Attr(name string) (val string) {
@@ -517,10 +517,10 @@ func (xmlNode *XmlNode) Attr(name string) (val string) {
 
 // SetAttr sets the value of an attribute. If the attribute is in a namespace,
 // use SetNsAttr instead.
-
+//
 // While this call accepts QNames for the name parameter, it does not check
 // their validity.
-
+//
 // Attributes such as "xml:lang" or "xml:space" are not is a formal namespace
 // and should be set by calling SetAttr with the prefix as part of the name.
 func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
@@ -539,10 +539,10 @@ func (xmlNode *XmlNode) SetAttr(name, value string) (val string) {
 }
 
 // SetNsAttr sets the value of a namespaced attribute.
-
+//
 // Attributes such as "xml:lang" or "xml:space" are not is a formal namespace
 // and should be set by calling SetAttr with the xml prefix as part of the name.
-
+//
 // The namespace should already be declared and in-scope when SetNsAttr is called.
 // This restriction will be lifted in a future version.
 func (xmlNode *XmlNode) SetNsAttr(href, name, value string) (val string) {
@@ -627,13 +627,13 @@ func (xmlNode *XmlNode) SearchWithVariables(data interface{}, v xpath.VariableSc
 // Evaluate an XPath and return a result of the appropriate type.
 // If a non-nil VariableScope is provided, any variables or functions present
 // in the xpath will be resolved.
-
+//
 // If the result is a nodeset (or the empty nodeset), a nodeset will be returned.
-
+//
 // If the result is a number, a float64 will be returned.
-
+//
 // If the result is a boolean, a bool will be returned.
-
+//
 // In any other cases, the result will be coerced to a string.
 func (xmlNode *XmlNode) EvalXPath(data interface{}, v xpath.VariableScope) (result interface{}, err error) {
 	switch data := data.(type) {
@@ -681,11 +681,11 @@ func (xmlNode *XmlNode) EvalXPath(data interface{}, v xpath.VariableScope) (resu
 // Evaluate an XPath and coerce the result to a boolean according to the
 // XPath rules. In the presence of an error, this function will return false
 // even if the expression cannot actually be evaluated.
-
+//
 // In most cases you are better advised to call EvalXPath; this function is
 // intended for packages that implement XML standards and that are fully aware
 // of the consequences of suppressing a compilation error.
-
+//
 // If a non-nil VariableScope is provided, any variables or registered functions present
 // in the xpath will be resolved.
 func (xmlNode *XmlNode) EvalXPathAsBoolean(data interface{}, v xpath.VariableScope) (result bool) {
@@ -781,7 +781,7 @@ func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBu
 
 // SerializeWithFormat allows you to control the serialization flags passed to libxml.
 // In most cases ToXml() and ToHtml() provide sensible defaults and should be preferred.
-
+//
 // The format parameter should be a set of SerializationOption constants or'd together.
 // If encoding is nil, the document's output encoding is used - this defaults to UTF-8.
 // If outputBuffer is nil, one will be created for you.
@@ -792,9 +792,9 @@ func (xmlNode *XmlNode) SerializeWithFormat(format SerializationOption, encoding
 // ToXml generates an indented XML document with an XML declaration.
 // It is not guaranteed to be well formed unless xmlNode is an element node,
 // or a document node with only one element child.
-
+//
 // If you need finer control over the formatting, call SerializeWithFormat.
-
+//
 // If encoding is nil, the document's output encoding is used - this defaults to UTF-8.
 // If outputBuffer is nil, one will be created for you.
 func (xmlNode *XmlNode) ToXml(encoding, outputBuffer []byte) ([]byte, int) {
@@ -816,10 +816,10 @@ func (xmlNode *XmlNode) ToUnformattedXml() string {
 
 // ToHtml generates an indented XML document that conforms to HTML 4.0 rules; meaning
 // that some elements may be unclosed or forced to use end tags even when empty.
-
+//
 // If you want to output XHTML, call SerializeWithFormat and enable the XML_SAVE_XHTML
 // flag as part of the format.
-
+//
 // If encoding is nil, the document's output encoding is used - this defaults to UTF-8.
 // If outputBuffer is nil, one will be created for you.
 func (xmlNode *XmlNode) ToHtml(encoding, outputBuffer []byte) ([]byte, int) {
@@ -1062,10 +1062,10 @@ func (xmlNode *XmlNode) RemoveDefaultNamespace() {
 }
 
 // Returns a list of all the namespace declarations that exist on this node.
-
+//
 // You can add a namespace declaration by calling DeclareNamespace.
 // Calling SetNamespace will automatically add a declaration if required.
-
+//
 // Calling SetNsAttr does *not* automatically create a declaration. This will
 // fixed in a future version.
 func (xmlNode *XmlNode) DeclaredNamespaces() (result []NamespaceDeclaration) {
@@ -1082,7 +1082,7 @@ func (xmlNode *XmlNode) DeclaredNamespaces() (result []NamespaceDeclaration) {
 }
 
 // Add a namespace declaration to an element.
-
+//
 // This is typically done on the root element or node high up in the tree
 // to avoid duplication. The declaration is not created if the namespace
 // is already declared in this scope with the same prefix.
