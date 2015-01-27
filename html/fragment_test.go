@@ -130,7 +130,7 @@ func TestAddFragmentWithNamespace(t *testing.T) {
 <div class="not so cool"></div>
 <div xmlns="http://www.moovweb.com" class="cool"><h1></h1></div>
 </body></html>
-` 	{
+` {
 		t.Errorf("document does not match after adding a fragment with namespace\n")
 	}
 	CheckXmlMemoryLeaks(t)
