@@ -6,10 +6,10 @@ import "C"
 
 import (
 	"errors"
-	. "github.com/moovweb/gokogiri/util"
-	"github.com/moovweb/gokogiri/xpath"
 	"strconv"
 	"unsafe"
+	. "github.com/moovweb/gokogiri/util"
+	"github.com/moovweb/gokogiri/xpath"
 )
 
 var (
@@ -149,6 +149,9 @@ var ErrTooLarge = errors.New("Output buffer too large")
 
 //pre-allocate a buffer for serializing the document
 const initialOutputBufferSize = 10 //100K
+
+// store pointers during serialize->cgo->xmlNodeWriteCallback, in case runtime moves them
+var pendingWrites = make(map[uintptr]*WriteBuffer)
 
 /*
 XmlNode implements the Node interface, and as such is the heart of the API.
@@ -770,10 +773,11 @@ func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBu
 	wbuffer := &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
 	wbufferPtr := unsafe.Pointer(wbuffer)
 
+	pendingWrites[uintptr(wbufferPtr)] = wbuffer
 	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
+	delete(pendingWrites, uintptr(wbufferPtr))
 	if ret < 0 {
 		panic("output error in xml node serialization: " + strconv.Itoa(ret))
-		return nil, 0
 	}
 
 	return wbuffer.Buffer, wbuffer.Offset
@@ -964,7 +968,7 @@ func (xmlNode *XmlNode) ParseFragment(input, url []byte, options ParseOption) (f
 
 //export xmlNodeWriteCallback
 func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
-	wbuffer := (*WriteBuffer)(wbufferObj)
+	wbuffer := pendingWrites[uintptr(wbufferObj)]
 	offset := wbuffer.Offset
 
 	if offset > len(wbuffer.Buffer) {
