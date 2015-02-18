@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -310,4 +311,27 @@ func TestUnparsedEntityURI(t *testing.T) {
 	if actual != expected {
 		t.Errorf("Expected '%s', but got '%s' calling doc.UnparsedEntityURI", expected, actual)
 	}
+}
+
+// Check we survive runtime moving our stack during String() call
+func TestStringStackMove(t *testing.T) {
+	var wg sync.WaitGroup
+	for i := 0; i < 25000; i++ {
+		wg.Add(1)
+		go func(j int) {
+			stringWithStack(j, &wg)
+		}(i)
+	}
+	wg.Wait()
+}
+
+func stringWithStack(n int, wg *sync.WaitGroup) string {
+	content := []byte("<hello>world " + strings.Repeat("a", n) + "</hello>")
+	d, err := Parse(content, DefaultEncodingBytes, nil, DefaultParseOption, DefaultEncodingBytes)
+	if err != nil {
+		return err.Error()
+	}
+	defer d.Free()
+	defer wg.Done()
+	return d.String()
 }

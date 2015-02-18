@@ -41,13 +41,14 @@ int getXPathObjectType(xmlXPathObject* o) {
 import "C"
 
 import "unsafe"
-import . "github.com/moovweb/gokogiri/util"
+import . "github.com/ThomsonReutersEikon/gokogiri/util"
 import "runtime"
 import "errors"
 
 type XPath struct {
-	ContextPtr *C.xmlXPathContext
-	ResultPtr  *C.xmlXPathObject
+	ContextPtr    *C.xmlXPathContext
+	ResultPtr     *C.xmlXPathObject
+	VariableScope VariableScope
 }
 
 type XPathObjectType int
@@ -208,8 +209,9 @@ func (xpath *XPath) ResultAsBoolean() (val bool, err error) {
 
 // Add a variable resolver.
 func (xpath *XPath) SetResolver(v VariableScope) {
-	C.set_var_lookup(xpath.ContextPtr, unsafe.Pointer(&v))
-	C.set_function_lookup(xpath.ContextPtr, unsafe.Pointer(&v))
+	xpath.VariableScope = v
+	C.set_var_lookup(xpath.ContextPtr, unsafe.Pointer(&xpath.VariableScope))
+	C.set_function_lookup(xpath.ContextPtr, unsafe.Pointer(&xpath.VariableScope))
 }
 
 // SetContextPosition sets the internal values needed to
