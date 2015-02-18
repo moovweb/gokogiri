@@ -14,7 +14,7 @@ import "C"
 
 import "unsafe"
 import "reflect"
-import . "github.com/moovweb/gokogiri/util"
+import . "github.com/ThomsonReutersEikon/gokogiri/util"
 
 //export go_resolve_variables
 func go_resolve_variables(ctxt unsafe.Pointer, name, ns *C.char) (ret C.xmlXPathObjectPtr) {
