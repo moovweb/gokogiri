@@ -2,7 +2,7 @@ package mem
 
 import "testing"
 
-const EXPECTED_VERSION = "2.7.8"
+const EXPECTED_VERSION = "2.9.2"
 
 func TestLibxml(t *testing.T) {
 	if LIBXML_VERSION != EXPECTED_VERSION {
