@@ -3,10 +3,30 @@
 
 //internal callback functions
 int xml_write_callback(void *ctx, char *buffer, int len) {
-	if (len > 0) {
-		xmlNodeWriteCallback(ctx, buffer, len);
+	struct MemBuffer* buf = (struct MemBuffer*)ctx;
+	
+	if (!buf || buf->offset > buf->capacity) {
+		return -1;
 	}
-  	return len;
+
+	if (len > 0) {
+		int emptySpace = buf->capacity - buf->offset;
+		if (emptySpace < len) {     // either double, or just add len, whichever is larger
+			int minSize = buf->offset + len;
+			int new_cap = (buf->capacity*2 > minSize) ? buf->capacity*2 : minSize;
+			char* tmp = realloc(buf->data, new_cap);
+			if (0 == tmp) {           // failed to allocate, err
+				return -1;
+			}
+			buf->data = tmp;
+			buf->capacity = new_cap;
+		}
+
+		memcpy(&buf->data[buf->offset], buffer, len);
+		buf->offset += len;
+	}
+
+ 	return len;
 }
 
 int close_callback(void * ctx) {
@@ -129,19 +149,21 @@ int xmlNodePtrCheck(void *node) {
 	return 1;
 }
 
-int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {
+struct MemBuffer xmlSaveNode(void *node, void *encoding, int options) {
+	struct MemBuffer buf = {0,0,0};
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
 
 	savectx = xmlSaveToIO(
 	      (xmlOutputWriteCallback)xml_write_callback,
 	      (xmlOutputCloseCallback)close_callback,
-	      wbuffer,
+	      &buf,
 	      encoding,
 	      options
 	  );
 	xmlSaveTree(savectx, (xmlNode*)node);
-	return xmlSaveClose(savectx);
+	xmlSaveClose(savectx);
+	return buf;
 }
 
 void removeNamespace(xmlNs **source, xmlNs *target) {

@@ -8,10 +8,9 @@ import "time"
 
 import (
 	"errors"
-	. "gokogiri/util"
-	"gokogiri/xpath"
-	"strconv"
 	"unsafe"
+	. "github.com/moovweb/gokogiri/util"
+	"github.com/moovweb/gokogiri/xpath"
 )
 
 var (
@@ -778,16 +777,21 @@ func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBu
 		encodingPtr = nil
 	}
 
-	wbuffer := &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
-	wbufferPtr := unsafe.Pointer(wbuffer)
-
-	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
-	if ret < 0 {
-		panic("output error in xml node serialization: " + strconv.Itoa(ret))
+	ret := C.xmlSaveNode(nodePtr, encodingPtr, C.int(format))
+	if ret.offset < 0 {
+		if ret.data != nil {
+			C.free(unsafe.Pointer(ret.data))
+		}
+		panic("output error in xml node serialization: ")
 		return nil, 0
 	}
 
-	return wbuffer.Buffer, wbuffer.Offset
+	if ret.data != nil {
+		outputBuffer = C.GoBytes(unsafe.Pointer(ret.data), ret.offset)
+		C.free(unsafe.Pointer(ret.data))
+	}
+
+	return outputBuffer, len(outputBuffer)
 }
 
 // SerializeWithFormat allows you to control the serialization flags passed to libxml.
@@ -973,39 +977,10 @@ func (xmlNode *XmlNode) ParseFragment(input, url []byte, options ParseOption) (f
 	return
 }
 
-//export xmlNodeWriteCallback
-func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
-	wbuffer := (*WriteBuffer)(wbufferObj)
-	offset := wbuffer.Offset
-
-	if offset > len(wbuffer.Buffer) {
-		panic("fatal error in xmlNodeWriteCallback")
-	}
-
-	buffer := wbuffer.Buffer[:offset]
-	dataLen := int(data_len)
-
-	if dataLen > 0 {
-		if len(buffer)+dataLen > cap(buffer) {
-			newBuffer := grow(buffer, dataLen)
-			wbuffer.Buffer = newBuffer
-		}
-		destBufPtr := unsafe.Pointer(&(wbuffer.Buffer[offset]))
-		C.memcpy(destBufPtr, data, C.size_t(dataLen))
-		wbuffer.Offset += dataLen
-	}
-}
-
 //export xmlUnlinkNodeCallback
 func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
 	xmlNode := (*XmlNode)(gonodePtr)
 	xmlNode.Document.AddUnlinkedNode(nodePtr)
-}
-
-func grow(buffer []byte, n int) (newBuffer []byte) {
-	newBuffer = makeSlice(2*cap(buffer) + n)
-	copy(newBuffer, buffer)
-	return
 }
 
 func makeSlice(n int) []byte {

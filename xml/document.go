@@ -1,8 +1,8 @@
 package xml
 
 /*
-#cgo CFLAGS: -I../../../clibs/include/libxml2
-#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
+#cgo CFLAGS: -I../../../../../../clibs/include/libxml2
+#cgo LDFLAGS: -L../../../../../../clibs/lib -lxml2
 
 #include "helper.h"
 */
@@ -10,9 +10,9 @@ import "C"
 
 import (
 	"errors"
-	"gokogiri/help"
-	. "gokogiri/util"
-	"gokogiri/xpath"
+	"github.com/moovweb/gokogiri/help"
+	. "github.com/moovweb/gokogiri/util"
+	"github.com/moovweb/gokogiri/xpath"
 	"os"
 	"unsafe"
 )

@@ -1,8 +1,8 @@
 package xpath
 
 /*
-#cgo CFLAGS: -I../../../clibs/include/libxml2
-#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
+#cgo CFLAGS: -I../../../../../../clibs/include/libxml2
+#cgo LDFLAGS: -L../../../../../../clibs/lib -lxml2
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
@@ -14,7 +14,7 @@ import "C"
 
 import "unsafe"
 import "reflect"
-import . "gokogiri/util"
+import . "github.com/moovweb/gokogiri/util"
 
 //export go_resolve_variables
 func go_resolve_variables(ctxt unsafe.Pointer, name, ns *C.char) (ret C.xmlXPathObjectPtr) {

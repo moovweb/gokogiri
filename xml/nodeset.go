@@ -1,8 +1,8 @@
 package xml
 
 /*
-#cgo CFLAGS: -I../../../clibs/include/libxml2
-#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
+#cgo CFLAGS: -I../../../../../../clibs/include/libxml2
+#cgo LDFLAGS: -L../../../../../../clibs/lib -lxml2
 
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
