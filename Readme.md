@@ -37,7 +37,7 @@ Basic example:
       // fetch and read a web page
       resp, _ := http.Get("http://www.google.com")
       page, _ := ioutil.ReadAll(resp.Body)
-      defer resp.Body.Close()
+      resp.Body.Close()
 
       // parse the web page
       doc, _ := gokogiri.ParseHtml(page)
