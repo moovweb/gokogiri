@@ -111,6 +111,9 @@ func go_can_resolve_function(ctxt unsafe.Pointer, name, ns *C.char) (ret C.int) 
 	function := C.GoString(name)
 	namespace := C.GoString(ns)
 	context := (*VariableScope)(ctxt)
+	if *context == nil {
+		return C.int(0)
+	}
 	if (*context).IsFunctionRegistered(function, namespace) {
 		return C.int(1)
 	}
