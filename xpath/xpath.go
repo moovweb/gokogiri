@@ -46,8 +46,9 @@ import "runtime"
 import "errors"
 
 type XPath struct {
-	ContextPtr *C.xmlXPathContext
-	ResultPtr  *C.xmlXPathObject
+	ContextPtr    *C.xmlXPathContext
+	ResultPtr     *C.xmlXPathObject
+	variableScope VariableScope
 }
 
 type XPathObjectType int
@@ -208,8 +209,9 @@ func (xpath *XPath) ResultAsBoolean() (val bool, err error) {
 
 // Add a variable resolver.
 func (xpath *XPath) SetResolver(v VariableScope) {
-	C.set_var_lookup(xpath.ContextPtr, unsafe.Pointer(&v))
-	C.set_function_lookup(xpath.ContextPtr, unsafe.Pointer(&v))
+	xpath.variableScope = v
+	C.set_var_lookup(xpath.ContextPtr, unsafe.Pointer(&xpath.variableScope))
+	C.set_function_lookup(xpath.ContextPtr, unsafe.Pointer(&xpath.variableScope))
 }
 
 // SetContextPosition sets the internal values needed to
