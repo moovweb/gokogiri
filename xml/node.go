@@ -6,10 +6,12 @@ import "C"
 
 import (
 	"errors"
+	"strconv"
+	"sync"
+	"unsafe"
+
 	. "github.com/moovweb/gokogiri/util"
 	"github.com/moovweb/gokogiri/xpath"
-	"strconv"
-	"unsafe"
 )
 
 var (
@@ -394,16 +396,23 @@ func (xmlNode *XmlNode) ResetChildren() {
 	}
 }
 
+var (
+	contentNode  *XmlNode
+	contentMutex sync.Mutex
+)
+
 func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	switch data := content.(type) {
 	default:
 		err = ERR_UNDEFINED_SET_CONTENT_PARAM
 	case string:
-		err = xmlNode.SetContent([]byte(data))
+		contentMutex.Lock()
+		contentNode = xmlNode
+		C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), C.CString(data))
+		contentNode = nil
+		contentMutex.Unlock()
 	case []byte:
-		contentBytes := GetCString(data)
-		contentPtr := unsafe.Pointer(&contentBytes[0])
-		C.xmlSetContent(unsafe.Pointer(xmlNode), unsafe.Pointer(xmlNode.Ptr), contentPtr)
+		err = xmlNode.SetContent(string(data))
 	}
 	return
 }
@@ -986,9 +995,9 @@ func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_l
 }
 
 //export xmlUnlinkNodeCallback
-func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
-	xmlNode := (*XmlNode)(gonodePtr)
-	xmlNode.Document.AddUnlinkedNode(nodePtr)
+// NOTE: contentMutex is locked
+func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer) {
+	contentNode.Document.AddUnlinkedNode(nodePtr)
 }
 
 func grow(buffer []byte, n int) (newBuffer []byte) {

@@ -97,17 +97,17 @@ xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *ur
 	return tmpRoot;
 }
 
-void xmlSetContent(void *gonode, void *n, void *content) {
+void xmlSetContent(void *n, char *content) {
 	xmlNode *node = (xmlNode*)n;
 	xmlNode *child = node->children;
 	xmlNode *next = NULL;
-	unsigned char *encoded = xmlEncodeSpecialChars(node->doc, content);
+	unsigned char *encoded = xmlEncodeSpecialChars(node->doc, (xmlChar*)content);
 	if (encoded) {
 		while (child) {
 			next = child->next ;
 			xmlUnlinkNode(child);
 			//xmlFreeNode(child);
-			xmlUnlinkNodeCallback(child, gonode);
+			xmlUnlinkNodeCallback(child);
 			child = next ;
 	  	}
 	  	xmlNodeSetContent(node, (xmlChar*)encoded);
