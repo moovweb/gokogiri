@@ -12,21 +12,48 @@ int getXPathObjectType(xmlXPathObject* o);
 */
 import "C"
 
-import "unsafe"
+import (
+	"sync"
+	"unsafe"
+)
 import "reflect"
 import . "github.com/moovweb/gokogiri/util"
 
+var (
+	contextMap   = make(map[unsafe.Pointer]VariableScope)
+	contextMutex sync.Mutex
+)
+
+func GetScope(ctxt unsafe.Pointer) VariableScope {
+	contextMutex.Lock()
+	context := contextMap[ctxt]
+	contextMutex.Unlock()
+	return context
+}
+
+func SetScope(ctxt unsafe.Pointer, v VariableScope) {
+	contextMutex.Lock()
+	contextMap[ctxt] = v
+	contextMutex.Unlock()
+}
+
+func ClearScope(ctxt unsafe.Pointer) {
+	contextMutex.Lock()
+	delete(contextMap, ctxt)
+	contextMutex.Unlock()
+
+}
+
 //export go_resolve_variables
 func go_resolve_variables(ctxt unsafe.Pointer, name, ns *C.char) (ret C.xmlXPathObjectPtr) {
-	variable := C.GoString(name)
-	namespace := C.GoString(ns)
+	if context := GetScope(ctxt); context != nil {
+		variable := C.GoString(name)
+		namespace := C.GoString(ns)
 
-	context := (*VariableScope)(ctxt)
-	if context != nil {
-		val := (*context).ResolveVariable(variable, namespace)
-		ret = ValueToXPathObject(val)
+		val := context.ResolveVariable(variable, namespace)
+		return ValueToXPathObject(val)
 	}
-	return
+	return nil
 }
 
 // Convert an arbitrary value into a C.xmlXPathObjectPtr
@@ -75,7 +102,8 @@ func ValueToXPathObject(val interface{}) (ret C.xmlXPathObjectPtr) {
 func exec_xpath_function(ctxt C.xmlXPathParserContextPtr, nargs C.int) {
 	function := C.GoString((*C.char)(unsafe.Pointer(ctxt.context.function)))
 	namespace := C.GoString((*C.char)(unsafe.Pointer(ctxt.context.functionURI)))
-	context := (*VariableScope)(ctxt.context.funcLookupData)
+
+	context := GetScope(unsafe.Pointer(ctxt.context))
 
 	argcount := int(nargs)
 	var args []interface{}
@@ -95,9 +123,9 @@ func exec_xpath_function(ctxt C.xmlXPathParserContextPtr, nargs C.int) {
 	// push the result onto the stack
 	// if for some reason we are unable to resolve the
 	// function we push an empty nodeset
-	f := (*context).ResolveFunction(function, namespace)
+	f := context.ResolveFunction(function, namespace)
 	if f != nil {
-		retval := f(*context, args)
+		retval := f(context, args)
 		C.valuePush(ctxt, ValueToXPathObject(retval))
 	} else {
 		ret := C.xmlXPathNewNodeSet(nil)
@@ -110,8 +138,8 @@ func exec_xpath_function(ctxt C.xmlXPathParserContextPtr, nargs C.int) {
 func go_can_resolve_function(ctxt unsafe.Pointer, name, ns *C.char) (ret C.int) {
 	function := C.GoString(name)
 	namespace := C.GoString(ns)
-	context := (*VariableScope)(ctxt)
-	if (*context).IsFunctionRegistered(function, namespace) {
+	context := GetScope(ctxt)
+	if context != nil && context.IsFunctionRegistered(function, namespace) {
 		return C.int(1)
 	}
 	return C.int(0)
