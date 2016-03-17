@@ -776,16 +776,22 @@ func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBu
 		encodingPtr = nil
 	}
 
-	wbuffer := &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
-	wbufferPtr := unsafe.Pointer(wbuffer)
+	wbufferMutex.Lock()
+	defer wbufferMutex.Unlock()
+	if outputBuffer == nil {
+		outputBuffer = make([]byte, 0)
+	}
+	wbuffer = &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
 
-	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
+	ret := int(C.xmlSaveNode(nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
 		panic("output error in xml node serialization: " + strconv.Itoa(ret))
 		return nil, 0
 	}
+	b, o := wbuffer.Buffer, wbuffer.Offset
+	wbuffer = nil
 
-	return wbuffer.Buffer, wbuffer.Offset
+	return b, o
 }
 
 // SerializeWithFormat allows you to control the serialization flags passed to libxml.
@@ -971,9 +977,14 @@ func (xmlNode *XmlNode) ParseFragment(input, url []byte, options ParseOption) (f
 	return
 }
 
+var (
+	wbuffer      *WriteBuffer
+	wbufferMutex sync.Mutex
+)
+
 //export xmlNodeWriteCallback
-func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
-	wbuffer := (*WriteBuffer)(wbufferObj)
+// NOTE: wbufferMutex is locked
+func xmlNodeWriteCallback(data unsafe.Pointer, data_len C.int) {
 	offset := wbuffer.Offset
 
 	if offset > len(wbuffer.Buffer) {

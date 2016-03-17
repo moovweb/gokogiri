@@ -4,7 +4,7 @@
 //internal callback functions
 int xml_write_callback(void *ctx, char *buffer, int len) {
 	if (len > 0) {
-		xmlNodeWriteCallback(ctx, buffer, len);
+		xmlNodeWriteCallback(buffer, len);
 	}
   	return len;
 }
@@ -129,14 +129,14 @@ int xmlNodePtrCheck(void *node) {
 	return 1;
 }
 
-int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {
+int xmlSaveNode(void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
 
 	savectx = xmlSaveToIO(
 	      (xmlOutputWriteCallback)xml_write_callback,
 	      (xmlOutputCloseCallback)close_callback,
-	      wbuffer,
+	      NULL,
 	      encoding,
 	      options
 	  );
