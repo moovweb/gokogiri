@@ -4,7 +4,7 @@
 //internal callback functions
 int xml_write_callback(void *ctx, char *buffer, int len) {
 	if (len > 0) {
-		xmlNodeWriteCallback(ctx, buffer, len);
+		xmlNodeWriteCallback(buffer, len);
 	}
   	return len;
 }
@@ -97,17 +97,17 @@ xmlNode* xmlParseFragmentAsDoc(void *doc, void *buffer, int buffer_len, void *ur
 	return tmpRoot;
 }
 
-void xmlSetContent(void *gonode, void *n, void *content) {
+void xmlSetContent(void *n, char *content) {
 	xmlNode *node = (xmlNode*)n;
 	xmlNode *child = node->children;
 	xmlNode *next = NULL;
-	unsigned char *encoded = xmlEncodeSpecialChars(node->doc, content);
+	unsigned char *encoded = xmlEncodeSpecialChars(node->doc, (xmlChar*)content);
 	if (encoded) {
 		while (child) {
 			next = child->next ;
 			xmlUnlinkNode(child);
 			//xmlFreeNode(child);
-			xmlUnlinkNodeCallback(child, gonode);
+			xmlUnlinkNodeCallback(child);
 			child = next ;
 	  	}
 	  	xmlNodeSetContent(node, (xmlChar*)encoded);
@@ -129,14 +129,14 @@ int xmlNodePtrCheck(void *node) {
 	return 1;
 }
 
-int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {
+int xmlSaveNode(void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
 
 	savectx = xmlSaveToIO(
 	      (xmlOutputWriteCallback)xml_write_callback,
 	      (xmlOutputCloseCallback)close_callback,
-	      wbuffer,
+	      NULL,
 	      encoding,
 	      options
 	  );

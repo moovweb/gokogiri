@@ -8,9 +8,13 @@ package mem
 */
 import "C"
 
-const LIBXML_VERSION = C.LIBXML_DOTTED_VERSION
+const (
+	LIBXML_VERSION         = C.LIBXML_DOTTED_VERSION
+	LIBXML_NUMERIC_VERSION = C.LIBXML_VERSION
+)
 
 func init() {
+	C.xmlCheckVersion(LIBXML_NUMERIC_VERSION)
 	C.libxmlGoInit()
 }
 

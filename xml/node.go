@@ -6,10 +6,12 @@ import "C"
 
 import (
 	"errors"
+	"strconv"
+	"sync"
+	"unsafe"
+
 	. "github.com/moovweb/gokogiri/util"
 	"github.com/moovweb/gokogiri/xpath"
-	"strconv"
-	"unsafe"
 )
 
 var (
@@ -394,16 +396,23 @@ func (xmlNode *XmlNode) ResetChildren() {
 	}
 }
 
+var (
+	contentNode  *XmlNode
+	contentMutex sync.Mutex
+)
+
 func (xmlNode *XmlNode) SetContent(content interface{}) (err error) {
 	switch data := content.(type) {
 	default:
 		err = ERR_UNDEFINED_SET_CONTENT_PARAM
 	case string:
-		err = xmlNode.SetContent([]byte(data))
+		contentMutex.Lock()
+		contentNode = xmlNode
+		C.xmlSetContent(unsafe.Pointer(xmlNode.Ptr), C.CString(data))
+		contentNode = nil
+		contentMutex.Unlock()
 	case []byte:
-		contentBytes := GetCString(data)
-		contentPtr := unsafe.Pointer(&contentBytes[0])
-		C.xmlSetContent(unsafe.Pointer(xmlNode), unsafe.Pointer(xmlNode.Ptr), contentPtr)
+		err = xmlNode.SetContent(string(data))
 	}
 	return
 }
@@ -767,16 +776,22 @@ func (xmlNode *XmlNode) serialize(format SerializationOption, encoding, outputBu
 		encodingPtr = nil
 	}
 
-	wbuffer := &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
-	wbufferPtr := unsafe.Pointer(wbuffer)
+	wbufferMutex.Lock()
+	defer wbufferMutex.Unlock()
+	if outputBuffer == nil {
+		outputBuffer = make([]byte, 0)
+	}
+	wbuffer = &WriteBuffer{Node: xmlNode, Buffer: outputBuffer}
 
-	ret := int(C.xmlSaveNode(wbufferPtr, nodePtr, encodingPtr, C.int(format)))
+	ret := int(C.xmlSaveNode(nodePtr, encodingPtr, C.int(format)))
 	if ret < 0 {
 		panic("output error in xml node serialization: " + strconv.Itoa(ret))
 		return nil, 0
 	}
+	b, o := wbuffer.Buffer, wbuffer.Offset
+	wbuffer = nil
 
-	return wbuffer.Buffer, wbuffer.Offset
+	return b, o
 }
 
 // SerializeWithFormat allows you to control the serialization flags passed to libxml.
@@ -962,9 +977,14 @@ func (xmlNode *XmlNode) ParseFragment(input, url []byte, options ParseOption) (f
 	return
 }
 
+var (
+	wbuffer      *WriteBuffer
+	wbufferMutex sync.Mutex
+)
+
 //export xmlNodeWriteCallback
-func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_len C.int) {
-	wbuffer := (*WriteBuffer)(wbufferObj)
+// NOTE: wbufferMutex is locked
+func xmlNodeWriteCallback(data unsafe.Pointer, data_len C.int) {
 	offset := wbuffer.Offset
 
 	if offset > len(wbuffer.Buffer) {
@@ -986,9 +1006,9 @@ func xmlNodeWriteCallback(wbufferObj unsafe.Pointer, data unsafe.Pointer, data_l
 }
 
 //export xmlUnlinkNodeCallback
-func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer, gonodePtr unsafe.Pointer) {
-	xmlNode := (*XmlNode)(gonodePtr)
-	xmlNode.Document.AddUnlinkedNode(nodePtr)
+// NOTE: contentMutex is locked
+func xmlUnlinkNodeCallback(nodePtr unsafe.Pointer) {
+	contentNode.Document.AddUnlinkedNode(nodePtr)
 }
 
 func grow(buffer []byte, n int) (newBuffer []byte) {
