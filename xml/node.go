@@ -4,10 +4,12 @@ package xml
 //#include <string.h>
 import "C"
 
+import "time"
+
 import (
 	"errors"
-	. "github.com/moovweb/gokogiri/util"
-	"github.com/moovweb/gokogiri/xpath"
+	. "gokogiri/util"
+	"gokogiri/xpath"
 	"strconv"
 	"unsafe"
 )
@@ -120,6 +122,7 @@ type Node interface {
 
 	Search(interface{}) ([]Node, error)
 	SearchWithVariables(interface{}, xpath.VariableScope) ([]Node, error)
+	SearchByDeadline(interface{}, *time.Time) ([]Node, error)
 	EvalXPath(interface{}, xpath.VariableScope) (interface{}, error)
 	EvalXPathAsBoolean(interface{}, xpath.VariableScope) bool
 
@@ -710,6 +713,16 @@ func (xmlNode *XmlNode) EvalXPathAsBoolean(data interface{}, v xpath.VariableSco
 	default:
 		//err = ERR_UNDEFINED_SEARCH_PARAM
 	}
+	return
+}
+
+// Evaluate an XPath and return a nodeset, but cancel the evaluation if not completed
+// by the deadline.
+func (xmlNode *XmlNode) SearchByDeadline(data interface{}, deadline *time.Time) (result []Node, err error) {
+	xpathCtx := xmlNode.Document.DocXPathCtx()
+	xpathCtx.SetDeadline(deadline)
+	result, err = xmlNode.Search(data)
+	xpathCtx.SetDeadline(nil)
 	return
 }
 

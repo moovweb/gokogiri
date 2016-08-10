@@ -1,8 +1,8 @@
 package xpath
 
 /*
-#cgo pkg-config: libxml-2.0
-
+#cgo CFLAGS: -I../../../clibs/include/libxml2
+#cgo LDFLAGS: -lxml2 -L../../../clibs/lib
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/parser.h>
@@ -16,8 +16,9 @@ int go_can_resolve_function(void* ctxt, char* name, char* ns);
 void exec_xpath_function(xmlXPathParserContextPtr ctxt, int nargs);
 
 xmlXPathFunction go_resolve_function(void* ctxt, char* name, char* ns) {
-    if (go_can_resolve_function(ctxt, name, ns))
-        return exec_xpath_function;
+    // TODO(Noj) uncomment once this issue is resolved: https://code.google.com/p/go/issues/detail?id=6661
+    //if (go_can_resolve_function(ctxt, name, ns))
+    //    return exec_xpath_function;
 
     return 0;
 }
@@ -40,8 +41,9 @@ int getXPathObjectType(xmlXPathObject* o) {
 */
 import "C"
 
+import "time"
 import "unsafe"
-import . "github.com/moovweb/gokogiri/util"
+import . "gokogiri/util"
 import "runtime"
 import "errors"
 
@@ -230,6 +232,15 @@ func (xpath *XPath) GetContextPosition() (position, size int) {
 	position = int(xpath.ContextPtr.proximityPosition)
 	size = int(xpath.ContextPtr.contextSize)
 	return
+}
+
+func (xpath *XPath) SetDeadline(deadline *time.Time) {
+	// if deadline == nil {
+	// 	C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(0))
+	// } else {
+	// 	t := deadline.Unix()
+	// 	C.xmlXPathContextSetDeadline(xpath.ContextPtr, C.time_t(t))
+	// }
 }
 
 func (xpath *XPath) Free() {
