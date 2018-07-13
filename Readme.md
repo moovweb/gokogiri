@@ -13,36 +13,45 @@ This is a major rewrite from v0 in the following places:
 - Serialization
 - Some API adjustment
 
-To install:
+## Installation
 
-- sudo apt-get install libxml2-dev
-- go get github.com/moovweb/gokogiri
+```bash
+# Linux
+sudo apt-get install libxml2-dev
+# Mac
+brew install libxml2
 
-To run test:
+go get github.com/moovweb/gokogiri
+```
 
-- go test github.com/moovweb/gokogiri/html
-- go test github.com/moovweb/gokogiri/xml
+## Running tests
 
-Basic example:
+```bash
+go test github.com/moovweb/gokogiri/...
+```
 
-    package main
+## Basic example
 
-    import (
-      "net/http"
-      "io/ioutil"
-      "github.com/moovweb/gokogiri"
-    )
+```go
+package main
 
-    func main() {
-      // fetch and read a web page
-      resp, _ := http.Get("http://www.google.com")
-      page, _ := ioutil.ReadAll(resp.Body)
+import (
+  "net/http"
+  "io/ioutil"
+  "github.com/moovweb/gokogiri"
+)
 
-      // parse the web page
-      doc, _ := gokogiri.ParseHtml(page)
+func main() {
+  // fetch and read a web page
+  resp, _ := http.Get("http://www.google.com")
+  page, _ := ioutil.ReadAll(resp.Body)
 
-      // perform operations on the parsed page -- consult the tests for examples
+  // parse the web page
+  doc, _ := gokogiri.ParseHtml(page)
 
-      // important -- don't forget to free the resources when you're done!
-      doc.Free()
-    }
+  // perform operations on the parsed page -- consult the tests for examples
+
+  // important -- don't forget to free the resources when you're done!
+  doc.Free()
+}
+```
