@@ -15,12 +15,33 @@ This is a major rewrite from v0 in the following places:
 
 ## Installation
 
-```bash
-# Linux
-sudo apt-get install libxml2-dev
-# Mac
-brew install libxml2
+### OSX
 
+If your environment doesn't have "pkg-config" and "libxml2".
+
+```bash
+brew install libxml2
+brew install pkg-config
+```
+
+By the way, don't forget to add these paths either ~/.bashrc or  ~/.zshrc.
+
+```bash
+export LDFLAGS="-L/usr/local/opt/libxml2/lib"
+export CPPFLAGS="-I/usr/local/opt/libxml2/include"
+export PKG_CONFIG_PATH="/usr/local/opt/libxml2/lib/pkgconfig"
+```
+
+Finally,
+
+```bash
+go get github.com/moovweb/gokogiri
+```
+
+### Linux
+
+```bash
+sudo apt-get install libxml2-dev
 go get github.com/moovweb/gokogiri
 ```
 
@@ -52,6 +73,6 @@ func main() {
   // perform operations on the parsed page -- consult the tests for examples
 
   // important -- don't forget to free the resources when you're done!
-  doc.Free()
+  defer doc.Free()
 }
 ```
