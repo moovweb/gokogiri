@@ -73,6 +73,6 @@ func main() {
   // perform operations on the parsed page -- consult the tests for examples
 
   // important -- don't forget to free the resources when you're done!
-  doc.Free()
+  defer doc.Free()
 }
 ```
