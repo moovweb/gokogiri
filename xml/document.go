@@ -327,7 +327,8 @@ func (document *XmlDocument) CreateTextNode(data string) (text *TextNode) {
 	dataPtr := unsafe.Pointer(&dataBytes[0])
 	nodePtr := C.xmlNewText((*C.xmlChar)(dataPtr))
 	if nodePtr != nil {
-		nodePtr.doc = (*_Ctype_struct__xmlDoc)(document.DocPtr())
+		//nodePtr.doc = (*_Ctype_struct__xmlDoc)(document.DocPtr())
+		nodePtr.doc = (*C.xmlDoc)(document.DocPtr())
 		text = NewNode(unsafe.Pointer(nodePtr), document).(*TextNode)
 	}
 	return
