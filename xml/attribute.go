@@ -1,5 +1,6 @@
 package xml
 
+import "C"
 /*
 AttributeNode represents an attribute, which has a name and a value.
 

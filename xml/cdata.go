@@ -1,5 +1,7 @@
 package xml
 
+import "C"
+
 /* CDataNode represents a CDATA section. This XML node type allows the embedding of unescaped, verbatim text within an XML document.
 
 It is otherwise identical to a TextNode. It is most often used to wrap content that is whitespace-sensitive or likely to contain
